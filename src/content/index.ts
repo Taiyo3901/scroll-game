@@ -8,6 +8,7 @@ import { RULES } from '../rules';
 import { createDebug } from './debug';
 import { Miner } from './miner';
 import { createOverlay, type Overlay } from './overlay/overlay';
+import { createSpaceReserver } from './overlay/reserve';
 import { getView, initStore, onViewChange } from './store';
 import { startTracker } from './tracker';
 
@@ -41,6 +42,7 @@ function main(): void {
   });
   const miner = new Miner();
   const debug = createDebug();
+  const reserver = createSpaceReserver();
   let overlay: Overlay | null = null;
   let timer: ReturnType<typeof setInterval> | null = null;
   let lastSeenSeq = -1;
@@ -52,6 +54,8 @@ function main(): void {
       overlay.destroy();
       overlay = null;
     }
+    // 帯と同じ幅の余白をページ側に取る（サイトと重ならないように）
+    reserver.set(wantOverlay && getView().settings.reserveSpace, CONFIG.OVERLAY_WIDTH_PX);
     debug.setEnabled(getView().settings.debugOverlay);
   };
 

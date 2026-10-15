@@ -1,3 +1,5 @@
+import { CONFIG } from '../../config';
+
 /** 右端の帯のCSS。アニメーションは transform と opacity だけを動かす（レイアウトを触らない）。 */
 export const OVERLAY_CSS = `
 :host { all: initial; }
@@ -5,7 +7,7 @@ export const OVERLAY_CSS = `
 
 .band {
   position: fixed; top: 0; bottom: 0; right: var(--sb, 0px);
-  width: 44px; z-index: 2147483647; pointer-events: none;
+  width: ${CONFIG.OVERLAY_WIDTH_PX}px; z-index: 2147483647; pointer-events: none;
   display: flex; flex-direction: column; align-items: center; justify-content: space-between;
   padding: 10px 0 12px;
   background: linear-gradient(90deg, rgba(0,0,0,0) 0%, var(--strata, #8b6b4a) 100%);
@@ -39,7 +41,7 @@ export const OVERLAY_CSS = `
 }
 .oil.low .oil-fill { background: #ff7043; animation: flicker 1.1s steps(2, end) infinite; }
 
-.pops { position: fixed; top: 38%; right: calc(var(--sb, 0px) + 52px); z-index: 2147483647; pointer-events: none; }
+.pops { position: fixed; top: 38%; right: calc(var(--sb, 0px) + ${CONFIG.OVERLAY_WIDTH_PX + 8}px); z-index: 2147483647; pointer-events: none; }
 .pop {
   position: absolute; right: 0; top: 0; white-space: nowrap;
   padding: 6px 10px; border-radius: 8px;

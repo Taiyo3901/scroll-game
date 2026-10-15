@@ -39,6 +39,7 @@ npm run dev        # 開発用（変更が自動で反映される。dist/ を�
 chrome.storage.local.set({ settings: { debugOverlay: false } })  // オフ
 chrome.storage.local.set({ settings: { debugOverlay: true } })   // オン
 chrome.storage.local.set({ settings: { effects: false } })       // 右端の演出をオフ
+chrome.storage.local.set({ settings: { reserveSpace: false } })  // ページの右に余白を取らず、帯を重ねる
 ```
 
 ## 保存データの確認・リセット

@@ -9,11 +9,14 @@ export interface Settings {
   debugOverlay: boolean;
   /** 画面右端の演出 */
   effects: boolean;
+  /** 帯の幅ぶんページの右に余白を取り、サイトと重ならないようにする */
+  reserveSpace: boolean;
 }
 
 export const defaultSettings = (): Settings => ({
   debugOverlay: CONFIG.DEBUG_OVERLAY_DEFAULT,
   effects: true,
+  reserveSpace: true,
 });
 
 /** 保存しない方がよい一時的な状態。service worker が chrome.idle から書き、content が読む。 */
