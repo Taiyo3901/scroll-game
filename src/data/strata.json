@@ -1,0 +1,8 @@
+[
+  { "id": "topsoil", "name": "表土", "startDepthM": 0, "color": "#8b6b4a" },
+  { "id": "quaternary", "name": "第四紀", "startDepthM": 50, "color": "#a3845a" },
+  { "id": "neogene", "name": "新第三紀", "startDepthM": 150, "color": "#7a7f5c" },
+  { "id": "cretaceous", "name": "白亜紀", "startDepthM": 400, "color": "#5f7a74" },
+  { "id": "jurassic", "name": "ジュラ紀", "startDepthM": 800, "color": "#4f6272" },
+  { "id": "paleozoic", "name": "古生代", "startDepthM": 1500, "color": "#4a3f6b" }
+]

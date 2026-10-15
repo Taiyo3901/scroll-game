@@ -1,0 +1,43 @@
+[
+  { "id": "pebble", "stratumId": "topsoil", "rarity": 1, "name": "小石",
+    "description": "岩がくだけたり、水に削られたりしてできた小さな石。足もとにあるありふれた石も、長い時間をかけて形づくられている。" },
+  { "id": "pottery", "stratumId": "topsoil", "rarity": 2, "name": "土器のかけら",
+    "description": "粘土を焼いて作った器の破片。日本では縄文時代から土器が作られ、遺跡からよく見つかる。模様から、作られた時代や地域を推測できる。" },
+  { "id": "old-coin", "stratumId": "topsoil", "rarity": 3, "name": "古銭",
+    "description": "昔使われていたお金。日本では江戸時代まで、穴のあいた銅の銭が広く使われていた。土の中から見つかることがある。" },
+
+  { "id": "quartz", "stratumId": "quaternary", "rarity": 1, "name": "石英",
+    "description": "二酸化ケイ素でできた鉱物で、花こう岩や砂にも多く含まれる。透明な結晶になったものが水晶と呼ばれる。" },
+  { "id": "gold-dust", "stratumId": "quaternary", "rarity": 2, "name": "砂金",
+    "description": "川の砂や砂利にまじった、小さな金の粒。金は重くてさびにくいので、川底にたまりやすい。" },
+  { "id": "mammoth-tusk", "stratumId": "quaternary", "rarity": 3, "name": "マンモスの牙",
+    "description": "氷河時代に生きたマンモスの、長く湾曲した牙。シベリアの永久凍土からは、ほぼ丸ごとの化石も見つかっている。" },
+
+  { "id": "pyrite", "stratumId": "neogene", "rarity": 1, "name": "黄鉄鉱",
+    "description": "鉄と硫黄でできた、金色に輝く鉱物。金によく似ているため「愚者の金」とも呼ばれる。" },
+  { "id": "leaf-fossil", "stratumId": "neogene", "rarity": 2, "name": "葉の化石",
+    "description": "木の葉が泥や火山灰にうもれ、その形が岩に残ったもの。当時の植物や気候を知る手がかりになる。" },
+  { "id": "megalodon-tooth", "stratumId": "neogene", "rarity": 3, "name": "メガロドンの歯",
+    "description": "約2000万年前から360万年前ごろの海にいた、巨大なサメ、メガロドンの歯。大きなものは10cmをこえる。" },
+
+  { "id": "ammonite", "stratumId": "cretaceous", "rarity": 1, "name": "アンモナイトの化石",
+    "description": "巻貝に似た殻をもつ、イカやタコの仲間の化石。約6600万年前の白亜紀の終わりに絶滅した。" },
+  { "id": "amber", "stratumId": "cretaceous", "rarity": 2, "name": "琥珀",
+    "description": "木の樹脂が長い年月をかけて固まったもの。中に昆虫が閉じこめられていることもあり、昔の生き物の姿をそのまま伝える。" },
+  { "id": "dinosaur-tooth", "stratumId": "cretaceous", "rarity": 3, "name": "恐竜の歯",
+    "description": "中生代に栄えた恐竜の歯。鳥の仲間をのぞく恐竜は、約6600万年前に絶滅した。歯の形から、何を食べていたかを推測できる。" },
+
+  { "id": "petrified-wood", "stratumId": "jurassic", "rarity": 1, "name": "珪化木",
+    "description": "地中で木の成分が二酸化ケイ素に置きかわり、石になったもの。年輪などの木のつくりが残っていることもある。" },
+  { "id": "ichthyosaur-bone", "stratumId": "jurassic", "rarity": 2, "name": "魚竜の骨",
+    "description": "魚竜は、イルカに似た体つきで中生代の海にいた爬虫類。恐竜の仲間ではなく、子を体の中で育てて産んだことが化石からわかっている。" },
+  { "id": "archaeopteryx-feather", "stratumId": "jurassic", "rarity": 3, "name": "始祖鳥の羽の化石",
+    "description": "約1億5千万年前の始祖鳥には、鳥のような羽と、爬虫類のような歯や長い尾があった。ドイツの石灰岩から見つかっている。" },
+
+  { "id": "crinoid", "stratumId": "paleozoic", "rarity": 1, "name": "ウミユリの化石",
+    "description": "名前は植物のようだが、ウニやヒトデの仲間の動物。古生代の海底でさかえ、茎の部分の化石がよく見つかる。" },
+  { "id": "trilobite", "stratumId": "paleozoic", "rarity": 2, "name": "三葉虫の化石",
+    "description": "古生代の海でさかえた節足動物。体が3つの部分に分かれていてこの名がある。約2億5千万年前に絶滅した。" },
+  { "id": "jade", "stratumId": "paleozoic", "rarity": 3, "name": "翡翠",
+    "description": "緑色の美しい石。日本では新潟県の糸魚川周辺が有名な産地で、縄文時代から飾りとして使われてきた。日本の国石でもある。" }
+]

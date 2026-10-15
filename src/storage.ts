@@ -1,21 +1,31 @@
 import { CONFIG } from './config';
-import { initialGameState, type GameState } from './core/progress';
+import { normalizeState, type GameState } from './core/state';
 
 export const STATE_KEY = 'state';
 export const SETTINGS_KEY = 'settings';
+export const RUNTIME_KEY = 'runtime';
 
 export interface Settings {
   debugOverlay: boolean;
+  /** 画面右端の演出 */
+  effects: boolean;
 }
 
 export const defaultSettings = (): Settings => ({
   debugOverlay: CONFIG.DEBUG_OVERLAY_DEFAULT,
+  effects: true,
 });
+
+/** 保存しない方がよい一時的な状態。service worker が chrome.idle から書き、content が読む。 */
+export interface Runtime {
+  idleState: 'active' | 'idle' | 'locked';
+}
+
+export const defaultRuntime = (): Runtime => ({ idleState: 'active' });
 
 export async function loadState(): Promise<GameState> {
   const got = await chrome.storage.local.get(STATE_KEY);
-  const s = got[STATE_KEY] as GameState | undefined;
-  return s && s.version === 1 ? s : initialGameState();
+  return normalizeState(got[STATE_KEY], Date.now(), CONFIG.OIL_MAX);
 }
 
 export async function saveState(state: GameState): Promise<void> {
@@ -25,4 +35,9 @@ export async function saveState(state: GameState): Promise<void> {
 export async function loadSettings(): Promise<Settings> {
   const got = await chrome.storage.local.get(SETTINGS_KEY);
   return { ...defaultSettings(), ...(got[SETTINGS_KEY] as Partial<Settings> | undefined) };
+}
+
+export async function loadRuntime(): Promise<Runtime> {
+  const got = await chrome.storage.local.get(RUNTIME_KEY);
+  return { ...defaultRuntime(), ...(got[RUNTIME_KEY] as Partial<Runtime> | undefined) };
 }

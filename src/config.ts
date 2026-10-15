@@ -44,6 +44,9 @@ const BASE = {
   RARITY_WEIGHTS: { 1: 70, 2: 25, 3: 5 } as Record<1 | 2 | 3, number>,
   RARITY_POINTS: { 1: 1, 2: 3, 3: 10 } as Record<1 | 2 | 3, number>,
 
+  /** この値以下になるとバッジを警告色にし、右端の明かりをちらつかせる */
+  OIL_LOW_THRESHOLD: 20,
+
   // --- デバッグ表示 ---
   DEBUG_OVERLAY_DEFAULT: true,
   DEBUG_REFRESH_MS: 500,
