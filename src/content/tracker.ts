@@ -142,12 +142,17 @@ export function startTracker(opts: TrackerOptions = {}): Tracker {
       if (!el) return;
 
       const now = performance.now();
-      lastAnyScrollAt = now; // 採掘の「最後のスクロール」は、向きや原因を問わない
-      lastScroller = el;
-
       const cur = el.scrollTop;
       const prev = lastTop.get(el);
       lastTop.set(el, cur);
+
+      // 縦に動いていないスクロール（横に自動で流れるバナー、カルーセル等）は無視する。
+      // これを「最後のスクロール」に含めると、採掘の待ち時間が満たされなくなる。
+      if (prev !== undefined && cur === prev) return;
+
+      // 採掘の「最後のスクロール」は、縦に動いたものなら向きや原因を問わない
+      lastAnyScrollAt = now;
+      lastScroller = el;
       if (prev === undefined) return; // 初回は基準位置を覚えるだけ
 
       const delta = downwardDelta(prev, cur);
