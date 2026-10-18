@@ -75,7 +75,8 @@ export function createDebug(): DebugView {
         `深度: ${state.depthM.toFixed(1)} m  ${state.mode === 'exploring' ? '探検中' : '地上'}`,
         `油: ${oil.toFixed(0)} / ${CONFIG.OIL_MAX}  バッグ: ${Object.values(state.bag).reduce((a, b) => a + b, 0)}個`,
         `採掘: ${m.mining ? `${Math.round(m.gauge * 100)}%` : '待機'}  今日 ${minesToday(state, dayKey)}/${CONFIG.MAX_MINES_PER_DAY}回`,
-        `画面内の文字数(概算): ${m.visibleChars}（必要 ${CONFIG.MIN_VISIBLE_TEXT_CHARS}）`,
+        `画面内の文字数(概算): ${m.visibleChars}（必要 ${CONFIG.MIN_VISIBLE_TEXT_CHARS}）  要素 ${m.textSeen} / 文字あり ${m.textWithText}`,
+        `位置: ${m.spot}  このページで掘った場所: ${m.dugCount}`,
         `条件: ${checks}`,
       ].join('\n');
     },

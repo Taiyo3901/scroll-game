@@ -3,8 +3,9 @@ import { minesToday } from '../core/game';
 import { evaluateConditions, type ConditionResult } from '../core/mining';
 import { localDayKey } from '../core/week';
 import type { MineCompleteMessage } from '../messages';
+import { sendToBackground } from './send';
 import { getView } from './store';
-import { estimateVisibleChars } from './text';
+import { estimateVisibleText, type TextEstimate } from './text';
 import type { TrackerSnapshot } from './tracker';
 
 export interface MinerSnapshot {
@@ -13,6 +14,12 @@ export interface MinerSnapshot {
   gauge: number;
   checks: ConditionResult;
   visibleChars: number;
+  /** 文字数の概算に使った要素の数（デバッグ用） */
+  textSeen: number;
+  textWithText: number;
+  /** 今いる位置のキーと、このページで掘った場所の数（デバッグ用。URLは含まない） */
+  spot: string;
+  dugCount: number;
 }
 
 const TEXT_CHECK_INTERVAL_MS = 1000;
@@ -27,7 +34,7 @@ const STALE_STEP_MS = 2000;
 export class Miner {
   private startedAt: number | null = null;
   private readonly dug = new Set<string>();
-  private chars = 0;
+  private text: TextEstimate = { chars: 0, seen: 0, withText: 0 };
   private charsAt = -Infinity;
   private lastStepAt = -Infinity;
   private last: MinerSnapshot = {
@@ -44,6 +51,10 @@ export class Miner {
       underDailyCap: true,
     },
     visibleChars: 0,
+    textSeen: 0,
+    textWithText: 0,
+    spot: '-',
+    dugCount: 0,
   };
 
   get snapshot(): MinerSnapshot {
@@ -83,12 +94,12 @@ export class Miner {
     };
 
     // 文字数の概算は少し重いので、ほかの条件がそろったときだけ、1秒に1回まで計算する
-    let result = evaluateConditions({ ...base, visibleChars: this.chars });
+    let result = evaluateConditions({ ...base, visibleChars: this.text.chars });
     const othersOk = Object.entries(result.checks).every(([k, v]) => k === 'enoughText' || v);
     if (othersOk && now - this.charsAt >= TEXT_CHECK_INTERVAL_MS) {
-      this.chars = estimateVisibleChars();
+      this.text = estimateVisibleText();
       this.charsAt = now;
-      result = evaluateConditions({ ...base, visibleChars: this.chars });
+      result = evaluateConditions({ ...base, visibleChars: this.text.chars });
     }
 
     if (!result.ok) {
@@ -105,15 +116,24 @@ export class Miner {
       this.startedAt = null;
       mining = false;
       gauge = 0;
-      try {
-        const msg: MineCompleteMessage = { type: 'mine-complete' };
-        void chrome.runtime.sendMessage(msg).catch(() => {});
-      } catch {
-        /* extension context invalidated */
-      }
+      const spot = snap.spotKey;
+      const msg: MineCompleteMessage = { type: 'mine-complete' };
+      // 報告が届かなかったときは、その場所をまた掘れるようにする（鉱石が付かないまま消費しない）
+      void sendToBackground(msg).then((ok) => {
+        if (!ok) this.dug.delete(spot);
+      });
     }
 
-    this.last = { mining, gauge, checks: result.checks, visibleChars: this.chars };
+    this.last = {
+      mining,
+      gauge,
+      checks: result.checks,
+      visibleChars: this.text.chars,
+      textSeen: this.text.seen,
+      textWithText: this.text.withText,
+      spot: snap.spotKey,
+      dugCount: this.dug.size,
+    };
     return this.last;
   }
 

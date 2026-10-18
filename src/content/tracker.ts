@@ -11,6 +11,7 @@ import {
   type SkimState,
 } from '../core/skim';
 import type { ScrollBatchMessage } from '../messages';
+import { sendToBackground } from './send';
 
 const skimCfg: SkimConfig = {
   windowSec: CONFIG.SKIM_WINDOW_SEC,
@@ -111,12 +112,13 @@ export function startTracker(opts: TrackerOptions = {}): Tracker {
     const msg: ScrollBatchMessage = { type: 'scroll-batch', px: pendingPx, skimPx: pendingSkimPx };
     pendingPx = 0;
     pendingSkimPx = 0;
-    try {
-      // 拡張機能の再読み込み後など、送れないことがある。ページ側には何も投げない
-      void chrome.runtime.sendMessage(msg).catch(() => {});
-    } catch {
-      /* extension context invalidated */
-    }
+    // 届かなかった分は、次の送信にまわす（拡張機能の再読み込み後などは捨てる）
+    void sendToBackground(msg).then((ok) => {
+      if (ok || !chrome.runtime?.id) return;
+      pendingPx += msg.px;
+      pendingSkimPx += msg.skimPx;
+      scheduleFlush();
+    });
   };
 
   const scheduleFlush = () => {
