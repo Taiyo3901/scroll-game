@@ -30,6 +30,10 @@ npm run dev        # 開発用（変更が自動で反映される。dist/ を�
 - 初めてインストールしたときは、何を記録するかの説明画面が開きます。
 - 企画の詳細は `docs/CONCEPT-DUNGEON.md` を参照。
 
+## ドットアイコンの作り直し
+
+発見品のアイコンは `tools/make-sprites.py` で作ります（Python 3）。絵を変えたら `python tools/make-sprites.py` を実行すると `src/data/sprites.json` が更新されます。
+
 ## デバッグ表示のオン・オフ
 
 拡張機能カードの「service worker」を開いて DevTools のコンソールに入力する。

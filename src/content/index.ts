@@ -4,6 +4,7 @@ import { formatBadge } from '../core/format';
 import { findsToday } from '../core/game';
 import type { GameEvent } from '../core/state';
 import { localDayKey } from '../core/week';
+import { spriteUri } from '../core/sprites';
 import { CATALOG } from '../data';
 import { createDebug } from './debug';
 import { Miner } from './miner';
@@ -23,6 +24,7 @@ function describeEvent(e: GameEvent): Parameters<Overlay['pop']>[0] | null {
     text: item.name,
     tone: `r${item.rarity}` as 'r1' | 'r2' | 'r3',
     stars: item.rarity,
+    iconUri: spriteUri(item.id) ?? undefined,
     sub: count <= 1 ? '新発見！ 図鑑に追加' : `図鑑 ${count}個目`,
   };
 }
@@ -58,6 +60,7 @@ function main(): void {
       const area = areaAt(CATALOG.areas, state.depthM);
       overlay.update({
         depthText: formatBadge(state.depthM),
+        areaId: area.id,
         depthM: state.depthM,
         strataName: area.name,
         strataColor: area.color,

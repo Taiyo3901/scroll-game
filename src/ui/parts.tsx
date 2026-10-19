@@ -1,5 +1,25 @@
 import type { GenreDef, ItemDef } from '../core/catalog';
 import type { Job } from '../core/job';
+import { spriteUri } from '../core/sprites';
+
+/** 発見品のドットアイコン。未発見のときは黒いシルエットにする。 */
+export function ItemIcon(props: {
+  itemId: string;
+  found: boolean;
+  rarity: 1 | 2 | 3;
+  fallbackColor?: string;
+  size?: 'sm';
+}) {
+  const uri = spriteUri(props.itemId);
+  const cls = ['icon', `r${props.rarity}`, props.found ? '' : 'silhouette', props.size ?? ''].join(' ').trim();
+  return uri ? (
+    <span className={cls} aria-hidden="true">
+      <img src={uri} alt="" draggable={false} />
+    </span>
+  ) : (
+    <span className={`${cls} fallback`} style={{ background: props.fallbackColor }} aria-hidden="true" />
+  );
+}
 
 export const RARITY_LABEL: Record<1 | 2 | 3, string> = { 1: '★', 2: '★★', 3: '★★★' };
 
@@ -17,9 +37,7 @@ export function ItemCard(props: {
   const cls = ['ore', `r${item.rarity}`, found ? 'found' : 'unknown', selected ? 'selected' : ''].join(' ');
   const body = (
     <>
-      <div className="gem" style={found ? { background: color } : undefined} aria-hidden="true">
-        {found ? item.name.slice(0, 1) : '？'}
-      </div>
+      <ItemIcon itemId={item.id} found={found} rarity={item.rarity} fallbackColor={color} />
       <div className="ore-text">
         <div className="ore-name">
           <span className="stars">{RARITY_LABEL[item.rarity]}</span> {found ? item.name : '？？？'}

@@ -1,7 +1,10 @@
 import { OVERLAY_CSS, TILE_HEIGHT_PX } from './styles';
+import { PICK_URI, TORCH_SVG, wallUri } from './wall';
 
 export interface OverlayView {
   depthText: string;
+  /** 階層のID（石壁の絵を選ぶ） */
+  areaId: string;
   /** 背景の岩肌を流す量に使う（m） */
   depthM: number;
   strataName: string;
@@ -20,6 +23,8 @@ export interface PopSpec {
   /** レア度 1〜3 の鉱石、または一般のお知らせ / 警告 */
   tone: 'r1' | 'r2' | 'r3' | 'info' | 'warn';
   stars?: number;
+  /** 発見品のドットアイコン（data URI） */
+  iconUri?: string;
 }
 
 export interface Overlay {
@@ -45,24 +50,37 @@ export function createOverlay(): Overlay {
   style.textContent = OVERLAY_CSS;
 
   const band = el('div', 'band');
-  const depth = el('div', 'depth');
+  const depth = el('div', 'depth panel');
   const strataName = el('div', 'strata-name');
   const mid = el('div', 'mid');
   const pick = el('span', 'pick');
-  pick.textContent = '⛏';
-  const gauge = el('div', 'gauge');
+  const pickImg = document.createElement('img');
+  pickImg.src = PICK_URI;
+  pickImg.alt = '';
+  pick.append(pickImg);
+  const gauge = el('div', 'gauge panel');
+  const gaugeInner = el('div', 'gauge-inner');
   const gaugeFill = el('div', 'gauge-fill');
-  gauge.append(gaugeFill);
+  gaugeInner.append(gaugeFill);
+  gauge.append(gaugeInner);
   mid.append(pick, gauge);
-  const today = el('div', 'today');
+  const today = el('div', 'today panel');
   const col = el('div', 'col');
   col.append(depth, strataName, mid, today);
   const rock = el('div', 'rock');
-  const tint = el('div', 'tint');
   const shade = el('div', 'shade');
   const glow = el('div', 'glow');
-  const stalac = el('div', 'stalac');
-  band.append(rock, tint, shade, glow, stalac, col);
+  band.append(rock, shade, glow);
+  for (const pos of ['t1', 't2']) {
+    // 壁の松明（飾り）。SVG は自前の固定文字列で、ページの内容は入らない
+    const torch = el('div', `torch ${pos}`);
+    const halo = el('div', 'halo');
+    const holder = el('div', 'flame');
+    holder.innerHTML = TORCH_SVG;
+    torch.append(halo, holder);
+    band.append(torch);
+  }
+  band.append(col);
   const pops = el('div', 'pops');
   root.append(style, band, pops);
   document.documentElement.append(host);
@@ -77,15 +95,15 @@ export function createOverlay(): Overlay {
   return {
     update(v) {
       set('depth', v.depthText, () => (depth.textContent = v.depthText));
-      set('strata', v.strataName + v.strataColor, () => {
+      set('strata', v.areaId + v.strataName, () => {
         strataName.textContent = v.strataName;
-        band.style.setProperty('--strata', v.strataColor);
+        band.style.setProperty('--wall', wallUri(v.areaId));
       });
-      // 深く進むほど岩肌が上へ流れる（1mあたり3px。タイル1枚ぶんでひと回り）
+      // 深く進むほど石壁が上へ流れる（1mあたり3px。タイル1枚ぶんでひと回り）
       const shift = Math.floor(v.depthM * 3) % TILE_HEIGHT_PX;
       set('rock', String(shift), () => (rock.style.transform = `translateY(${-shift}px)`));
       // ゲージがたまるほど、ツルハシの周りが明るくなる
-      const glowOpacity = (0.3 + 0.6 * v.gauge).toFixed(2);
+      const glowOpacity = (0.25 + 0.6 * v.gauge).toFixed(2);
       set('glow', glowOpacity, () => (glow.style.opacity = glowOpacity));
       set('gauge', v.gauge.toFixed(3), () => (gaugeFill.style.transform = `scaleY(${v.gauge})`));
       set('pick', String(v.mining), () => (pick.className = v.mining ? 'pick mining' : 'pick'));
@@ -94,17 +112,27 @@ export function createOverlay(): Overlay {
 
     pop(p) {
       const e = el('div', `pop ${p.tone}`);
+      if (p.iconUri) {
+        const ico = el('span', 'ico');
+        const img = document.createElement('img');
+        img.src = p.iconUri;
+        img.alt = '';
+        ico.append(img);
+        e.append(ico);
+      }
+      const text = el('span', 'txt');
       if (p.stars) {
         const stars = el('span', 'stars');
         stars.textContent = '★'.repeat(p.stars) + ' ';
-        e.append(stars);
+        text.append(stars);
       }
-      e.append(document.createTextNode(p.text));
+      text.append(document.createTextNode(p.text));
       if (p.sub) {
         const sub = el('span', 'sub');
         sub.textContent = p.sub;
-        e.append(sub);
+        text.append(sub);
       }
+      e.append(text);
       e.addEventListener('animationend', (ev) => {
         // r3 は枠の拡大アニメーションも持つので、本体のアニメーション終了だけで消す
         if (ev.target === e && /^pop/.test((ev as AnimationEvent).animationName)) e.remove();

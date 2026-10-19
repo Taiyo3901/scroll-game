@@ -6,7 +6,7 @@ import { localDayKey } from '../core/week';
 import { CATALOG } from '../data';
 import { saveSettings } from '../storage';
 import { mount } from '../ui/mount';
-import { JobBadge, RARITY_LABEL } from '../ui/parts';
+import { ItemIcon, JobBadge, RARITY_LABEL } from '../ui/parts';
 import { useView } from '../ui/store';
 
 function openPage(file: string): void {
@@ -63,6 +63,7 @@ function Popup() {
           <ul className="bag">
             {recent.map((item, i) => (
               <li key={`${item.id}-${i}`}>
+                <ItemIcon itemId={item.id} found rarity={item.rarity} size="sm" />
                 <span className={`stars r${item.rarity}`}>{RARITY_LABEL[item.rarity]}</span> {item.name}
               </li>
             ))}
