@@ -78,8 +78,8 @@ function Popup() {
         <button type="button" onClick={() => openPage('collection.html')}>
           図鑑を開く
         </button>
-        <button type="button" disabled title="準備中です">
-          ランキング
+        <button type="button" onClick={() => openPage('friends.html')}>
+          フレンド
         </button>
       </nav>
 

@@ -1,0 +1,220 @@
+// 自動生成: tools/make-rules.mjs（直接編集しない。データや設定を変えたら作り直す）
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+    function userPath(uid) { return /databases/$(database)/documents/users/$(uid); }
+    function requestPath(id) { return /databases/$(database)/documents/friendRequests/$(id); }
+
+    // ---- 値の検査（上限は、1日の発見数の上限 300 から計算） ----
+    function validNickname(n) { return n is string && n.size() >= 1 && n.size() <= 64; }
+
+    function validWeekly(w) {
+      return w is map &&
+        w.keys().hasOnly(['weekId', 'points', 'finds']) &&
+        w.keys().hasAll(['weekId', 'points', 'finds']) &&
+        w.weekId is string && w.weekId.matches('^[0-9]{4}-W[0-9]{2}$') &&
+        w.points is int && w.points >= 0 && w.points <= 21000 &&
+        w.finds is int && w.finds >= 0 && w.finds <= 2100;
+    }
+
+    // 図鑑: 発見品ごとの所持数
+    function validCollection(c) {
+      return c is map && c.size() <= 76 &&
+        c.keys().hasOnly(['film-scrap', 'worn-ticket', 'lens-shard', 'screen-scrap', 'glowing-projector', 'legend-film-can', 'bubble-shell', 'message-slip', 'faded-flag', 'speaking-tube', 'resonant-bell', 'crowd-horn', 'type-piece', 'old-newspaper', 'ink-pot', 'extra-edition', 'red-pen', 'front-page-plate', 'parchment-scrap', 'worn-chalk', 'old-bookmark', 'annotated-codex', 'star-chart-copy', 'sage-tome', 'old-price-tag', 'chipped-coin', 'wheelless-cart', 'magic-purse', 'appraiser-scales', 'gold-seal', 'rusty-gear', 'circuit-chip', 'screw-vial', 'automaton-arm', 'cipher-plate', 'perpetual-blueprint', 'loaded-dice', 'wooden-piece', 'rusty-buckler', 'victor-medal', 'polished-sword', 'champion-crown', 'record-shard', 'broken-lute', 'score-scrap', 'unending-flute', 'silver-harp', 'divine-score', 'worn-ticket-stub', 'map-corner', 'worn-sole', 'true-compass', 'traveler-cloak', 'worlds-end-map', 'wax-seal', 'postmark', 'dry-pen', 'carrier-feather', 'scroll-case', 'royal-decree', 'old-pouch', 'broken-torch', 'cracked-urn', 'adventurer-diary', 'mystery-key', 'guardian-ring', 'secret-cave', 'secret-waterway', 'secret-mine', 'secret-crystal', 'secret-magma', 'secret-abyss', 'mimic-coin', 'mimic-fang', 'mimic-key', 'mimic-gem']) &&
+      (!('film-scrap' in c) || (c['film-scrap'] is int && c['film-scrap'] >= 0 && c['film-scrap'] <= 9999)) &&
+      (!('worn-ticket' in c) || (c['worn-ticket'] is int && c['worn-ticket'] >= 0 && c['worn-ticket'] <= 9999)) &&
+      (!('lens-shard' in c) || (c['lens-shard'] is int && c['lens-shard'] >= 0 && c['lens-shard'] <= 9999)) &&
+      (!('screen-scrap' in c) || (c['screen-scrap'] is int && c['screen-scrap'] >= 0 && c['screen-scrap'] <= 9999)) &&
+      (!('glowing-projector' in c) || (c['glowing-projector'] is int && c['glowing-projector'] >= 0 && c['glowing-projector'] <= 9999)) &&
+      (!('legend-film-can' in c) || (c['legend-film-can'] is int && c['legend-film-can'] >= 0 && c['legend-film-can'] <= 9999)) &&
+      (!('bubble-shell' in c) || (c['bubble-shell'] is int && c['bubble-shell'] >= 0 && c['bubble-shell'] <= 9999)) &&
+      (!('message-slip' in c) || (c['message-slip'] is int && c['message-slip'] >= 0 && c['message-slip'] <= 9999)) &&
+      (!('faded-flag' in c) || (c['faded-flag'] is int && c['faded-flag'] >= 0 && c['faded-flag'] <= 9999)) &&
+      (!('speaking-tube' in c) || (c['speaking-tube'] is int && c['speaking-tube'] >= 0 && c['speaking-tube'] <= 9999)) &&
+      (!('resonant-bell' in c) || (c['resonant-bell'] is int && c['resonant-bell'] >= 0 && c['resonant-bell'] <= 9999)) &&
+      (!('crowd-horn' in c) || (c['crowd-horn'] is int && c['crowd-horn'] >= 0 && c['crowd-horn'] <= 9999)) &&
+      (!('type-piece' in c) || (c['type-piece'] is int && c['type-piece'] >= 0 && c['type-piece'] <= 9999)) &&
+      (!('old-newspaper' in c) || (c['old-newspaper'] is int && c['old-newspaper'] >= 0 && c['old-newspaper'] <= 9999)) &&
+      (!('ink-pot' in c) || (c['ink-pot'] is int && c['ink-pot'] >= 0 && c['ink-pot'] <= 9999)) &&
+      (!('extra-edition' in c) || (c['extra-edition'] is int && c['extra-edition'] >= 0 && c['extra-edition'] <= 9999)) &&
+      (!('red-pen' in c) || (c['red-pen'] is int && c['red-pen'] >= 0 && c['red-pen'] <= 9999)) &&
+      (!('front-page-plate' in c) || (c['front-page-plate'] is int && c['front-page-plate'] >= 0 && c['front-page-plate'] <= 9999)) &&
+      (!('parchment-scrap' in c) || (c['parchment-scrap'] is int && c['parchment-scrap'] >= 0 && c['parchment-scrap'] <= 9999)) &&
+      (!('worn-chalk' in c) || (c['worn-chalk'] is int && c['worn-chalk'] >= 0 && c['worn-chalk'] <= 9999)) &&
+      (!('old-bookmark' in c) || (c['old-bookmark'] is int && c['old-bookmark'] >= 0 && c['old-bookmark'] <= 9999)) &&
+      (!('annotated-codex' in c) || (c['annotated-codex'] is int && c['annotated-codex'] >= 0 && c['annotated-codex'] <= 9999)) &&
+      (!('star-chart-copy' in c) || (c['star-chart-copy'] is int && c['star-chart-copy'] >= 0 && c['star-chart-copy'] <= 9999)) &&
+      (!('sage-tome' in c) || (c['sage-tome'] is int && c['sage-tome'] >= 0 && c['sage-tome'] <= 9999)) &&
+      (!('old-price-tag' in c) || (c['old-price-tag'] is int && c['old-price-tag'] >= 0 && c['old-price-tag'] <= 9999)) &&
+      (!('chipped-coin' in c) || (c['chipped-coin'] is int && c['chipped-coin'] >= 0 && c['chipped-coin'] <= 9999)) &&
+      (!('wheelless-cart' in c) || (c['wheelless-cart'] is int && c['wheelless-cart'] >= 0 && c['wheelless-cart'] <= 9999)) &&
+      (!('magic-purse' in c) || (c['magic-purse'] is int && c['magic-purse'] >= 0 && c['magic-purse'] <= 9999)) &&
+      (!('appraiser-scales' in c) || (c['appraiser-scales'] is int && c['appraiser-scales'] >= 0 && c['appraiser-scales'] <= 9999)) &&
+      (!('gold-seal' in c) || (c['gold-seal'] is int && c['gold-seal'] >= 0 && c['gold-seal'] <= 9999)) &&
+      (!('rusty-gear' in c) || (c['rusty-gear'] is int && c['rusty-gear'] >= 0 && c['rusty-gear'] <= 9999)) &&
+      (!('circuit-chip' in c) || (c['circuit-chip'] is int && c['circuit-chip'] >= 0 && c['circuit-chip'] <= 9999)) &&
+      (!('screw-vial' in c) || (c['screw-vial'] is int && c['screw-vial'] >= 0 && c['screw-vial'] <= 9999)) &&
+      (!('automaton-arm' in c) || (c['automaton-arm'] is int && c['automaton-arm'] >= 0 && c['automaton-arm'] <= 9999)) &&
+      (!('cipher-plate' in c) || (c['cipher-plate'] is int && c['cipher-plate'] >= 0 && c['cipher-plate'] <= 9999)) &&
+      (!('perpetual-blueprint' in c) || (c['perpetual-blueprint'] is int && c['perpetual-blueprint'] >= 0 && c['perpetual-blueprint'] <= 9999)) &&
+      (!('loaded-dice' in c) || (c['loaded-dice'] is int && c['loaded-dice'] >= 0 && c['loaded-dice'] <= 9999)) &&
+      (!('wooden-piece' in c) || (c['wooden-piece'] is int && c['wooden-piece'] >= 0 && c['wooden-piece'] <= 9999)) &&
+      (!('rusty-buckler' in c) || (c['rusty-buckler'] is int && c['rusty-buckler'] >= 0 && c['rusty-buckler'] <= 9999)) &&
+      (!('victor-medal' in c) || (c['victor-medal'] is int && c['victor-medal'] >= 0 && c['victor-medal'] <= 9999)) &&
+      (!('polished-sword' in c) || (c['polished-sword'] is int && c['polished-sword'] >= 0 && c['polished-sword'] <= 9999)) &&
+      (!('champion-crown' in c) || (c['champion-crown'] is int && c['champion-crown'] >= 0 && c['champion-crown'] <= 9999)) &&
+      (!('record-shard' in c) || (c['record-shard'] is int && c['record-shard'] >= 0 && c['record-shard'] <= 9999)) &&
+      (!('broken-lute' in c) || (c['broken-lute'] is int && c['broken-lute'] >= 0 && c['broken-lute'] <= 9999)) &&
+      (!('score-scrap' in c) || (c['score-scrap'] is int && c['score-scrap'] >= 0 && c['score-scrap'] <= 9999)) &&
+      (!('unending-flute' in c) || (c['unending-flute'] is int && c['unending-flute'] >= 0 && c['unending-flute'] <= 9999)) &&
+      (!('silver-harp' in c) || (c['silver-harp'] is int && c['silver-harp'] >= 0 && c['silver-harp'] <= 9999)) &&
+      (!('divine-score' in c) || (c['divine-score'] is int && c['divine-score'] >= 0 && c['divine-score'] <= 9999)) &&
+      (!('worn-ticket-stub' in c) || (c['worn-ticket-stub'] is int && c['worn-ticket-stub'] >= 0 && c['worn-ticket-stub'] <= 9999)) &&
+      (!('map-corner' in c) || (c['map-corner'] is int && c['map-corner'] >= 0 && c['map-corner'] <= 9999)) &&
+      (!('worn-sole' in c) || (c['worn-sole'] is int && c['worn-sole'] >= 0 && c['worn-sole'] <= 9999)) &&
+      (!('true-compass' in c) || (c['true-compass'] is int && c['true-compass'] >= 0 && c['true-compass'] <= 9999)) &&
+      (!('traveler-cloak' in c) || (c['traveler-cloak'] is int && c['traveler-cloak'] >= 0 && c['traveler-cloak'] <= 9999)) &&
+      (!('worlds-end-map' in c) || (c['worlds-end-map'] is int && c['worlds-end-map'] >= 0 && c['worlds-end-map'] <= 9999)) &&
+      (!('wax-seal' in c) || (c['wax-seal'] is int && c['wax-seal'] >= 0 && c['wax-seal'] <= 9999)) &&
+      (!('postmark' in c) || (c['postmark'] is int && c['postmark'] >= 0 && c['postmark'] <= 9999)) &&
+      (!('dry-pen' in c) || (c['dry-pen'] is int && c['dry-pen'] >= 0 && c['dry-pen'] <= 9999)) &&
+      (!('carrier-feather' in c) || (c['carrier-feather'] is int && c['carrier-feather'] >= 0 && c['carrier-feather'] <= 9999)) &&
+      (!('scroll-case' in c) || (c['scroll-case'] is int && c['scroll-case'] >= 0 && c['scroll-case'] <= 9999)) &&
+      (!('royal-decree' in c) || (c['royal-decree'] is int && c['royal-decree'] >= 0 && c['royal-decree'] <= 9999)) &&
+      (!('old-pouch' in c) || (c['old-pouch'] is int && c['old-pouch'] >= 0 && c['old-pouch'] <= 9999)) &&
+      (!('broken-torch' in c) || (c['broken-torch'] is int && c['broken-torch'] >= 0 && c['broken-torch'] <= 9999)) &&
+      (!('cracked-urn' in c) || (c['cracked-urn'] is int && c['cracked-urn'] >= 0 && c['cracked-urn'] <= 9999)) &&
+      (!('adventurer-diary' in c) || (c['adventurer-diary'] is int && c['adventurer-diary'] >= 0 && c['adventurer-diary'] <= 9999)) &&
+      (!('mystery-key' in c) || (c['mystery-key'] is int && c['mystery-key'] >= 0 && c['mystery-key'] <= 9999)) &&
+      (!('guardian-ring' in c) || (c['guardian-ring'] is int && c['guardian-ring'] >= 0 && c['guardian-ring'] <= 9999)) &&
+      (!('secret-cave' in c) || (c['secret-cave'] is int && c['secret-cave'] >= 0 && c['secret-cave'] <= 9999)) &&
+      (!('secret-waterway' in c) || (c['secret-waterway'] is int && c['secret-waterway'] >= 0 && c['secret-waterway'] <= 9999)) &&
+      (!('secret-mine' in c) || (c['secret-mine'] is int && c['secret-mine'] >= 0 && c['secret-mine'] <= 9999)) &&
+      (!('secret-crystal' in c) || (c['secret-crystal'] is int && c['secret-crystal'] >= 0 && c['secret-crystal'] <= 9999)) &&
+      (!('secret-magma' in c) || (c['secret-magma'] is int && c['secret-magma'] >= 0 && c['secret-magma'] <= 9999)) &&
+      (!('secret-abyss' in c) || (c['secret-abyss'] is int && c['secret-abyss'] >= 0 && c['secret-abyss'] <= 9999)) &&
+      (!('mimic-coin' in c) || (c['mimic-coin'] is int && c['mimic-coin'] >= 0 && c['mimic-coin'] <= 9999)) &&
+      (!('mimic-fang' in c) || (c['mimic-fang'] is int && c['mimic-fang'] >= 0 && c['mimic-fang'] <= 9999)) &&
+      (!('mimic-key' in c) || (c['mimic-key'] is int && c['mimic-key'] >= 0 && c['mimic-key'] <= 9999)) &&
+      (!('mimic-gem' in c) || (c['mimic-gem'] is int && c['mimic-gem'] >= 0 && c['mimic-gem'] <= 9999));
+    }
+
+    // 部屋ごとの発見数
+    function validGenreFinds(g) {
+      return g is map && g.size() <= 11 &&
+        g.keys().hasOnly(['video', 'sns', 'news', 'study', 'shop', 'dev', 'game', 'music', 'travel', 'work', 'other']) &&
+      (!('video' in g) || (g['video'] is int && g['video'] >= 0 && g['video'] <= 99999)) &&
+      (!('sns' in g) || (g['sns'] is int && g['sns'] >= 0 && g['sns'] <= 99999)) &&
+      (!('news' in g) || (g['news'] is int && g['news'] >= 0 && g['news'] <= 99999)) &&
+      (!('study' in g) || (g['study'] is int && g['study'] >= 0 && g['study'] <= 99999)) &&
+      (!('shop' in g) || (g['shop'] is int && g['shop'] >= 0 && g['shop'] <= 99999)) &&
+      (!('dev' in g) || (g['dev'] is int && g['dev'] >= 0 && g['dev'] <= 99999)) &&
+      (!('game' in g) || (g['game'] is int && g['game'] >= 0 && g['game'] <= 99999)) &&
+      (!('music' in g) || (g['music'] is int && g['music'] >= 0 && g['music'] <= 99999)) &&
+      (!('travel' in g) || (g['travel'] is int && g['travel'] >= 0 && g['travel'] <= 99999)) &&
+      (!('work' in g) || (g['work'] is int && g['work'] >= 0 && g['work'] <= 99999)) &&
+      (!('other' in g) || (g['other'] is int && g['other'] >= 0 && g['other'] <= 99999));
+    }
+
+    function validUser(d) {
+      return d.keys().hasOnly(['nickname', 'friendCode', 'friendUids', 'weekly', 'shared', 'collection', 'showcase', 'genreFinds', 'updatedAt']) &&
+        d.keys().hasAll(['nickname', 'friendCode', 'friendUids', 'weekly', 'shared', 'updatedAt']) &&
+        validNickname(d.nickname) &&
+        d.friendCode is string && d.friendCode.matches('^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{8}$') &&
+        d.friendUids is list && d.friendUids.size() <= 100 &&
+        validWeekly(d.weekly) &&
+        d.shared is bool &&
+        (!('collection' in d) || validCollection(d.collection)) &&
+        (!('showcase' in d) || (d.showcase is list && d.showcase.size() <= 3)) &&
+        (!('genreFinds' in d) || validGenreFinds(d.genreFinds)) &&
+        d.updatedAt is timestamp;
+    }
+
+    // 2人のあいだに、承認済みの申請がある（どちらの向きでも）
+    function acceptedBetween(a, b) {
+      return (exists(requestPath(a + '_' + b)) && get(requestPath(a + '_' + b)).data.status == 'accepted') ||
+             (exists(requestPath(b + '_' + a)) && get(requestPath(b + '_' + a)).data.status == 'accepted');
+    }
+
+    // friendUids の変更: そのまま / 減らす / 承認済みの相手を1人だけ足す
+    function friendUidsChangeOk(uid) {
+      let before = resource.data.friendUids;
+      let after = request.resource.data.friendUids;
+      return after == before ||
+        before.hasAll(after) ||
+        (after.size() == before.size() + 1 && after.hasAll(before) && acceptedBetween(uid, after.removeAll(before)[0]));
+    }
+
+    // ---- 公開プロフィール ----
+    match /users/{uid} {
+      // 本人と、お互いに friendUids に入っている人だけが読める。一覧は取れない。
+      allow get: if signedIn() && (
+        request.auth.uid == uid ||
+        (request.auth.uid in resource.data.friendUids &&
+         uid in get(userPath(request.auth.uid)).data.friendUids)
+      );
+      allow list: if false;
+
+      // 作るとき: 自分の分だけ。フレンドコードは、同時に作る friendCodes と対応していること。
+      allow create: if isOwner(uid) &&
+        validUser(request.resource.data) &&
+        request.resource.data.friendUids.size() == 0 &&
+        getAfter(/databases/$(database)/documents/friendCodes/$(request.resource.data.friendCode)).data.uid == uid;
+
+      // 更新: 自分の分だけ。フレンドコードは変えられない。
+      allow update: if isOwner(uid) &&
+        validUser(request.resource.data) &&
+        request.resource.data.friendCode == resource.data.friendCode &&
+        friendUidsChangeOk(uid);
+
+      allow delete: if isOwner(uid);
+    }
+
+    // ---- フレンドコード → ユーザー ----
+    match /friendCodes/{code} {
+      // コードを指定して1件ずつ読める。一覧は取れない。
+      allow get: if signedIn();
+      allow list: if false;
+      // プロフィールを最初に作るときだけ、自分のコードを1つ作れる（増やせない）
+      allow create: if signedIn() &&
+        code.matches('^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{8}$') &&
+        request.resource.data.keys().hasOnly(['uid']) &&
+        request.resource.data.uid == request.auth.uid &&
+        !exists(userPath(request.auth.uid));
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // ---- フレンド申請（IDは「送る人_受ける人」で、同じ向きの申請は1つだけ） ----
+    match /friendRequests/{id} {
+      allow get, list: if signedIn() &&
+        (resource.data.fromUid == request.auth.uid || resource.data.toUid == request.auth.uid);
+
+      allow create: if signedIn() &&
+        request.resource.data.keys().hasOnly(['fromUid', 'toUid', 'status', 'fromNickname', 'createdAt']) &&
+        request.resource.data.keys().hasAll(['fromUid', 'toUid', 'status', 'fromNickname', 'createdAt']) &&
+        request.resource.data.fromUid == request.auth.uid &&
+        request.resource.data.toUid is string &&
+        request.resource.data.toUid.size() <= 128 &&
+        request.resource.data.toUid != request.auth.uid &&
+        id == request.auth.uid + '_' + request.resource.data.toUid &&
+        request.resource.data.status == 'pending' &&
+        validNickname(request.resource.data.fromNickname) &&
+        request.resource.data.createdAt == request.time &&
+        exists(userPath(request.auth.uid));
+
+      // 返事ができるのは、受け取った人だけ。変えられるのは status だけ。
+      allow update: if signedIn() &&
+        resource.data.toUid == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) &&
+        request.resource.data.status in ['accepted', 'declined'];
+
+      // 取り消し・片づけは、当事者のどちらでもできる
+      allow delete: if signedIn() &&
+        (resource.data.fromUid == request.auth.uid || resource.data.toUid == request.auth.uid);
+    }
+  }
+}

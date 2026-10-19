@@ -1,5 +1,5 @@
 import { initialGameState, normalizeState, type GameState } from '../core/state';
-import { SETTINGS_KEY, STATE_KEY, defaultSettings, loadSettings, loadState, type Settings } from '../storage';
+import { SETTINGS_KEY, STATE_KEY, defaultSettings, loadSettings, loadState, normalizeSettings, type Settings } from '../storage';
 
 export interface View {
   state: GameState;
@@ -29,10 +29,7 @@ export async function initStore(): Promise<void> {
       changed = true;
     }
     if (changes[SETTINGS_KEY]) {
-      view = {
-        ...view,
-        settings: { ...defaultSettings(), ...(changes[SETTINGS_KEY].newValue as Partial<Settings>) },
-      };
+      view = { ...view, settings: normalizeSettings(changes[SETTINGS_KEY].newValue) };
       changed = true;
     }
     if (changed) emit();
