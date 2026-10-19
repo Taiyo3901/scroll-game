@@ -1,4 +1,5 @@
 import { CONFIG } from './config';
+import { normalizeProfile, type Profile } from './core/profile';
 import { normalizeState, type GameState } from './core/state';
 
 export const STATE_KEY = 'state';
@@ -43,4 +44,21 @@ export async function loadSettings(): Promise<Settings> {
 export async function loadRuntime(): Promise<Runtime> {
   const got = await chrome.storage.local.get(RUNTIME_KEY);
   return { ...defaultRuntime(), ...(got[RUNTIME_KEY] as Partial<Runtime> | undefined) };
+}
+
+export const PROFILE_KEY = 'profile';
+
+/** 標本棚と初回確認。標本棚は図鑑にある鉱石だけに整える。 */
+export async function loadProfile(): Promise<Profile> {
+  const got = await chrome.storage.local.get([PROFILE_KEY, STATE_KEY]);
+  const state = normalizeState(got[STATE_KEY], Date.now(), CONFIG.OIL_MAX);
+  return normalizeProfile(got[PROFILE_KEY], state.collection);
+}
+
+export async function saveProfile(profile: Profile): Promise<void> {
+  await chrome.storage.local.set({ [PROFILE_KEY]: profile });
+}
+
+export async function saveSettings(patch: Partial<Settings>): Promise<void> {
+  await chrome.storage.local.set({ [SETTINGS_KEY]: { ...(await loadSettings()), ...patch } });
 }

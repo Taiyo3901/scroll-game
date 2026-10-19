@@ -5,7 +5,7 @@ import { formatBadge } from '../core/format';
 import type { GameState } from '../core/state';
 import { localDayKey } from '../core/week';
 import { CATALOG } from '../data';
-import { isContentMessage } from '../messages';
+import { isContentMessage, isReturnMessage } from '../messages';
 import { RULES } from '../rules';
 import { RUNTIME_KEY, loadState, saveState, type Runtime } from '../storage';
 
@@ -38,7 +38,13 @@ function update(f: (s: GameState, now: number, day: string) => GameState): Promi
   return queue;
 }
 
-chrome.runtime.onMessage.addListener((message: unknown) => {
+chrome.runtime.onMessage.addListener((message: unknown, sender, sendResponse) => {
+  if (isReturnMessage(message)) {
+    // ポップアップなど拡張機能自身のページからだけ受け付ける（content script の sender.url は閲覧中のページ）
+    if (sender.id !== chrome.runtime.id || !sender.url?.startsWith(chrome.runtime.getURL(''))) return false;
+    void update((s, now, day) => returnToSurface(s, 'manual', now, day, env())).then(() => sendResponse({ ok: true }));
+    return true;
+  }
   if (!isContentMessage(message)) return false;
   if (message.type === 'scroll-batch') {
     void update((s, now, day) =>
@@ -48,11 +54,6 @@ chrome.runtime.onMessage.addListener((message: unknown) => {
     void update((s, now, day) => applyMine(s, now, day, env()));
   }
   return false;
-});
-
-/** ツールバーのアイコンを押すと地上に戻る（Phase 3 でポップアップのボタンに置き換える） */
-chrome.action.onClicked.addListener(() => {
-  void update((s, now, day) => returnToSurface(s, 'manual', now, day, env()));
 });
 
 // 1分ごと: 自動帰還の判定、油の回復を反映、バッジ更新
@@ -73,6 +74,11 @@ async function writeIdle(idleState: Runtime['idleState']): Promise<void> {
 
 chrome.idle.setDetectionInterval(CONFIG.IDLE_DETECTION_SEC);
 chrome.idle.onStateChanged.addListener((s) => void writeIdle(s));
+
+// 初めてインストールしたとき、何を記録するかの説明画面を開く
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === 'install') void chrome.tabs.create({ url: chrome.runtime.getURL('welcome.html') });
+});
 
 function boot(): void {
   void ensureAlarm();
