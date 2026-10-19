@@ -72,18 +72,18 @@ body.popup { width: 330px; }
 
 /* 部屋ごとのひとまとまり: 暗い革張りの板 */
 .stratum { background: rgba(32, 24, 17, .88); box-shadow: var(--px-panel); border-left: 8px solid; padding: 4px 14px 14px; margin: 18px 6px; }
-.ore-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
-.ore {
+.item-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+.item {
   display: flex; gap: 10px; align-items: flex-start; text-align: left; width: 100%; margin: 0;
   background: var(--card); color: var(--fg); padding: 10px; box-shadow: var(--px-small);
 }
-.ore.unknown { background: #211812; color: var(--muted); }
-.ore.found:hover { background: var(--card-2); }
-.ore.selected { box-shadow: 0 0 0 2px var(--edge), 0 0 0 4px var(--accent); background: #4a3a1a; }
-.ore-name { font-weight: 700; }
-.ore-count { font-size: 12px; color: var(--muted); }
-.ore-desc { font-size: 12px; margin: 4px 0 0; }
-.ore.r3.found { box-shadow: var(--px-small), 0 0 12px 2px rgba(246, 212, 76, .25); }
+.item.unknown { background: #211812; color: var(--muted); }
+.item.found:hover { background: var(--card-2); }
+.item.selected { box-shadow: 0 0 0 2px var(--edge), 0 0 0 4px var(--accent); background: #4a3a1a; }
+.item-name { font-weight: 700; }
+.item-count { font-size: 12px; color: var(--muted); }
+.item-desc { font-size: 12px; margin: 4px 0 0; }
+.item.r3.found { box-shadow: var(--px-small), 0 0 12px 2px rgba(246, 212, 76, .25); }
 
 /* 飾り棚: 坑道の壁（木の支柱つき）に、木の板を渡して品を置く */
 .shelf {
@@ -105,9 +105,9 @@ body.popup { width: 330px; }
   box-shadow: 0 0 0 2px var(--edge);
 }
 .slot > * { position: relative; z-index: 1; width: 100%; }
-.slot .ore { background: rgba(44, 33, 24, .92); flex-direction: column; align-items: center; text-align: center; box-shadow: var(--px-small); }
+.slot .item { background: rgba(44, 33, 24, .92); flex-direction: column; align-items: center; text-align: center; box-shadow: var(--px-small); }
 .slot .muted { text-align: center; color: rgba(255, 255, 255, .55); }
-.slot.filled .ore { animation: none; }
+.slot.filled .item { animation: none; }
 
 .row { display: flex; justify-content: space-between; gap: 8px; margin: 8px 0 14px; flex-wrap: wrap; }
 .seg { display: flex; }

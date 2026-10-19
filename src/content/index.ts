@@ -96,7 +96,7 @@ function main(): void {
     debug.update(t, m);
   };
 
-  // 新しい出来事（鉱石を掘り当てた、地上に戻った）を演出する。ページを開いた時点の古いものは出さない。
+  // 新しい出来事（品を見つけた）を演出する。ページを開いた時点の古いものは出さない。
   const showNewEvents = () => {
     const { events } = getView().state;
     const now = Date.now();

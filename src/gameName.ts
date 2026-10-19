@@ -1,2 +1,2 @@
 /** ゲームの正式名称は未定。変更はここ1か所で済むようにしておく。 */
-export const GAME_NAME = '地底探検スクロールゲーム（仮称）';
+export const GAME_NAME = '迷宮スクロール（仮称）';

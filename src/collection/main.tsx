@@ -66,7 +66,7 @@ function Book(props: { collection: Record<string, number>; days: Record<string, 
                 {g.about}　{n} / {items.length}
               </small>
             </h2>
-            <div className="ore-grid">
+            <div className="item-grid">
               {items.map((i) => (
                 <ItemCard key={i.id} item={i} count={collection[i.id] ?? 0} color={g.color} />
               ))}
@@ -82,7 +82,7 @@ function Book(props: { collection: Record<string, number>; days: Record<string, 
           </span>
           <small>各階層で、まれに見つかる</small>
         </h2>
-        <div className="ore-grid">
+        <div className="item-grid">
           {secrets.map((i) => (
             <ItemCard key={i.id} item={i} count={collection[i.id] ?? 0} color={SECRET_COLOR} />
           ))}
@@ -96,7 +96,7 @@ function Book(props: { collection: Record<string, number>; days: Record<string, 
           </span>
           <small>宝箱に化けた魔物から、まれに手に入る</small>
         </h2>
-        <div className="ore-grid">
+        <div className="item-grid">
           {mimics.map((i) => (
             <ItemCard key={i.id} item={i} count={collection[i.id] ?? 0} color={MIMIC_COLOR} />
           ))}
@@ -130,7 +130,7 @@ function Showcase(props: { collection: Record<string, number>; showcase: string[
       {owned.length === 0 ? (
         <p className="muted">品を見つけると、ここから選べます。</p>
       ) : (
-        <div className="ore-grid">
+        <div className="item-grid">
           {owned.map((i) => (
             <ItemCard
               key={i.id}

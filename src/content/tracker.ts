@@ -90,10 +90,10 @@ export function startTracker(): Tracker {
       lastTop.set(el, cur);
 
       // 縦に動いていないスクロール（横に自動で流れるバナー、カルーセル等）は無視する。
-      // これを「最後のスクロール」に含めると、採掘の待ち時間が満たされなくなる。
+      // これを「最後のスクロール」に含めると、物色の待ち時間が満たされなくなる。
       if (prev !== undefined && cur === prev) return;
 
-      // 採掘の「最後のスクロール」は、縦に動いたものなら向きや原因を問わない
+      // 「最後のスクロール」は、縦に動いたものなら向きや原因を問わない
       lastAnyScrollAt = now;
       if (prev === undefined) return; // 初回は基準位置を覚えるだけ
 

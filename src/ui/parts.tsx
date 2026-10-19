@@ -40,17 +40,17 @@ export function ItemCard(props: {
 }) {
   const { item, count, color, selected, onClick, compact } = props;
   const found = count > 0;
-  const cls = ['ore', `r${item.rarity}`, found ? 'found' : 'unknown', selected ? 'selected' : ''].join(' ');
+  const cls = ['item', `r${item.rarity}`, found ? 'found' : 'unknown', selected ? 'selected' : ''].join(' ');
   const body = (
     <>
       <ItemIcon itemId={item.id} found={found} rarity={item.rarity} fallbackColor={color} />
-      <div className="ore-text">
-        <div className="ore-name">
+      <div className="item-text">
+        <div className="item-name">
           <span className="stars">{RARITY_LABEL[item.rarity]}</span> {found ? item.name : '？？？'}
         </div>
-        {found && <div className="ore-count">所持 {count}個</div>}
-        {found && !compact && <p className="ore-desc">{item.description}</p>}
-        {!found && !compact && <p className="ore-desc muted">まだ見つけていない品</p>}
+        {found && <div className="item-count">所持 {count}個</div>}
+        {found && !compact && <p className="item-desc">{item.description}</p>}
+        {!found && !compact && <p className="item-desc muted">まだ見つけていない品</p>}
       </div>
     </>
   );

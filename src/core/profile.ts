@@ -1,10 +1,10 @@
-/** 標本棚に飾れる鉱石の数 */
+/** 飾り棚に飾れる品の数 */
 export const SHOWCASE_MAX = 3;
 
 /** ユーザーが決めて残しておく設定的なデータ（ゲーム状態とは別に保存する）。 */
 export interface Profile {
   version: 1;
-  /** 標本棚に飾る鉱石ID（最大 SHOWCASE_MAX 個、重複なし） */
+  /** 飾り棚に飾る発見品ID（最大 SHOWCASE_MAX 個、重複なし） */
   showcase: string[];
   /** 初回の説明画面を確認した */
   onboarded: boolean;
@@ -12,7 +12,7 @@ export interface Profile {
 
 export const defaultProfile = (): Profile => ({ version: 1, showcase: [], onboarded: false });
 
-/** 保存データを読み込むときの整形。壊れた値や、図鑑にない鉱石は取り除く。 */
+/** 保存データを読み込むときの整形。壊れた値や、図鑑にない品は取り除く。 */
 export function normalizeProfile(raw: unknown, collection: Record<string, number>): Profile {
   const base = defaultProfile();
   if (typeof raw !== 'object' || raw === null) return base;
@@ -27,14 +27,14 @@ export function normalizeProfile(raw: unknown, collection: Record<string, number
   return { ...base, showcase, onboarded: r.onboarded === true };
 }
 
-/** 標本棚への飾る/外すの切り替え。図鑑にない鉱石、上限超えは変えない。 */
+/** 飾り棚への飾る/外すの切り替え。図鑑にない品、上限超えは変えない。 */
 export function toggleShowcase(
   p: Profile,
-  oreId: string,
+  itemId: string,
   collection: Record<string, number>,
 ): Profile {
-  if (p.showcase.includes(oreId)) return { ...p, showcase: p.showcase.filter((id) => id !== oreId) };
-  if ((collection[oreId] ?? 0) <= 0) return p;
+  if (p.showcase.includes(itemId)) return { ...p, showcase: p.showcase.filter((id) => id !== itemId) };
+  if ((collection[itemId] ?? 0) <= 0) return p;
   if (p.showcase.length >= SHOWCASE_MAX) return p;
-  return { ...p, showcase: [...p.showcase, oreId] };
+  return { ...p, showcase: [...p.showcase, itemId] };
 }

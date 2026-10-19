@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CATALOG } from '../src/data';
 import { areaAt, itemsOfGenre, OTHER_GENRE, secretOf } from '../src/core/catalog';
 
-describe('data/strata.json (areas)', () => {
+describe('data/areas.json', () => {
   it('are sorted by depth, start at 0, with unique ids, valid colors and positive weights', () => {
     const { areas } = CATALOG;
     expect(areas[0]?.startDepthM).toBe(0);

@@ -4,8 +4,15 @@ import { GAME_NAME } from './src/gameName.ts';
 export default defineManifest({
   manifest_version: 3,
   name: GAME_NAME,
-  version: '0.4.0',
-  description: '下にスクロールして迷宮を降り、手を止めると、見ているサイトにまつわる品が見つかるゲーム。',
+  version: '0.5.0',
+  description:
+    'スクロールで迷宮を降り、立ち止まって入れ物を物色すると、見ているサイトの種類にまつわる品が見つかる。いつものブラウジングにプラスαの探索ゲーム。',
+  icons: {
+    16: 'src/icons/icon16.png',
+    32: 'src/icons/icon32.png',
+    48: 'src/icons/icon48.png',
+    128: 'src/icons/icon128.png',
+  },
   permissions: ['storage'],
   background: {
     service_worker: 'src/background/index.ts',
@@ -22,5 +29,9 @@ export default defineManifest({
   action: {
     default_title: GAME_NAME,
     default_popup: 'popup.html',
+    default_icon: {
+      16: 'src/icons/icon16.png',
+      32: 'src/icons/icon32.png',
+    },
   },
 });
