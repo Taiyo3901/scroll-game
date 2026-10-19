@@ -6,16 +6,12 @@ export interface OverlayView {
   depthM: number;
   strataName: string;
   strataColor: string;
-  /** 0〜1 */
-  oilRatio: number;
-  oilLow: boolean;
-  /** 地上にいる（ツルハシを暗くする） */
-  surface: boolean;
+  /** 今日見つけた数 */
+  todayFinds: number;
+  /** ゲージがたまっている最中（ツルハシが動く） */
   mining: boolean;
   /** 0〜1 */
   gauge: number;
-  /** 地上で油が足りず、探検を再開できない */
-  refilling: boolean;
 }
 
 export interface PopSpec {
@@ -57,13 +53,10 @@ export function createOverlay(): Overlay {
   const gauge = el('div', 'gauge');
   const gaugeFill = el('div', 'gauge-fill');
   gauge.append(gaugeFill);
-  const status = el('div', 'status');
-  mid.append(pick, gauge, status);
-  const oil = el('div', 'oil');
-  const oilFill = el('div', 'oil-fill');
-  oil.append(oilFill);
+  mid.append(pick, gauge);
+  const today = el('div', 'today');
   const col = el('div', 'col');
-  col.append(depth, strataName, mid, oil);
+  col.append(depth, strataName, mid, today);
   const rock = el('div', 'rock');
   const tint = el('div', 'tint');
   const shade = el('div', 'shade');
@@ -91,20 +84,12 @@ export function createOverlay(): Overlay {
       // 深く進むほど岩肌が上へ流れる（1mあたり3px。タイル1枚ぶんでひと回り）
       const shift = Math.floor(v.depthM * 3) % TILE_HEIGHT_PX;
       set('rock', String(shift), () => (rock.style.transform = `translateY(${-shift}px)`));
-      // 油が多いほどランタンの明かりが強い。地上では弱める
-      const glowOpacity = (v.surface ? 0.25 : 0.35 + 0.6 * v.oilRatio).toFixed(2);
+      // ゲージがたまるほど、ツルハシの周りが明るくなる
+      const glowOpacity = (0.3 + 0.6 * v.gauge).toFixed(2);
       set('glow', glowOpacity, () => (glow.style.opacity = glowOpacity));
       set('gauge', v.gauge.toFixed(3), () => (gaugeFill.style.transform = `scaleY(${v.gauge})`));
-      set('oil', v.oilRatio.toFixed(3), () => (oilFill.style.transform = `scaleY(${v.oilRatio})`));
-      set('oilLow', String(v.oilLow), () => oil.classList.toggle('low', v.oilLow));
-      const pickState = v.mining ? 'mining' : v.surface ? 'idle' : 'active';
-      set('pick', pickState, () => {
-        pick.className = `pick ${pickState === 'idle' ? '' : 'active'} ${
-          pickState === 'mining' ? pickState : ''
-        }`.trim();
-      });
-      const statusText = v.refilling ? '油を補充中' : '';
-      set('status', statusText, () => (status.textContent = statusText));
+      set('pick', String(v.mining), () => (pick.className = v.mining ? 'pick mining' : 'pick'));
+      set('today', String(v.todayFinds), () => (today.textContent = `今日\n${v.todayFinds}`));
     },
 
     pop(p) {

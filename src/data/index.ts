@@ -1,8 +1,10 @@
-import type { Catalog, OreDef, StratumDef } from '../core/strata';
-import oresJson from './ores.json';
+import type { AreaDef, Catalog, GenreDef, ItemDef } from '../core/catalog';
+import genresJson from './genres.json';
+import itemsJson from './items.json';
 import strataJson from './strata.json';
 
 export const CATALOG: Catalog = {
-  strata: strataJson as StratumDef[],
-  ores: oresJson as OreDef[],
+  areas: strataJson as AreaDef[],
+  genres: genresJson as GenreDef[],
+  items: itemsJson as ItemDef[],
 };

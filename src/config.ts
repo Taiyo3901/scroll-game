@@ -1,6 +1,6 @@
 /**
  * 調整が必要な数値はすべてここに集める。
- * 値は暫定。Phase 1 のデバッグ表示で実測してから決め直す（SPEC 12章）。
+ * 値は暫定。実際に遊んでから決め直す（SPEC 12章）。
  */
 
 /** true で発表向けのデモ設定に切り替わる（Phase 6 で実行時に切替できるようにする） */
@@ -17,29 +17,16 @@ const BASE = {
   /** content script から service worker へ距離をまとめて送る間隔 */
   BATCH_INTERVAL_SEC: 5,
 
-  // --- 採掘（Phase 2 で使用） ---
-  MINING_START_DELAY_SEC: 1,
-  MINING_DURATION_SEC: 4,
-  MAX_MINES_PER_DAY: 60,
+  // --- 調べる（発見） ---
+  /** スクロールが止まってから、ゲージがたまり始めるまで */
+  FIND_START_DELAY_SEC: 1,
+  /** ゲージが満タンになるまで */
+  FIND_DURATION_SEC: 4,
+  /** 1日の発見数の上限（ランキングの不正値を見分ける基準。普通に遊んで届かない数） */
+  MAX_FINDS_PER_DAY: 300,
 
-  // --- 油と帰還（Phase 2 で使用） ---
-  OIL_MAX: 100,
-  OIL_PER_MINE: 10,
-  /** 実際の距離1mあたりの消費量 */
-  OIL_PER_METER: 0.02,
-  AUTO_RETURN_MIN: 5,
-  /** 約15分で満タン */
-  OIL_RECOVER_PER_MIN: 100 / 15,
-  START_OIL_MIN: 30,
-  /** chrome.idle の検出間隔(秒)。最小値は15 */
-  IDLE_DETECTION_SEC: 60,
-
-  // --- 鉱石（Phase 2 で使用） ---
-  RARITY_WEIGHTS: { 1: 70, 2: 25, 3: 5 } as Record<1 | 2 | 3, number>,
+  // --- 発見品 ---
   RARITY_POINTS: { 1: 1, 2: 3, 3: 10 } as Record<1 | 2 | 3, number>,
-
-  /** この値以下になるとバッジを警告色にし、右端の明かりをちらつかせる */
-  OIL_LOW_THRESHOLD: 20,
 
   // --- 画面右端の演出 ---
   /** 帯の幅(px)。ページ側にも同じ幅の余白を取る */
@@ -47,14 +34,13 @@ const BASE = {
 
   // --- デバッグ表示 ---
   DEBUG_OVERLAY_DEFAULT: false,
-  DEBUG_REFRESH_MS: 500,
 };
 
 /** デモモードで上書きする値（短時間で見せるため） */
 const DEMO_OVERRIDES: Partial<typeof BASE> = {
   DEPTH_MULTIPLIER: 600,
-  MINING_START_DELAY_SEC: 1,
-  MINING_DURATION_SEC: 3,
+  FIND_START_DELAY_SEC: 1,
+  FIND_DURATION_SEC: 2,
 };
 
 export const CONFIG = { ...BASE, ...(DEMO_MODE ? DEMO_OVERRIDES : {}) };

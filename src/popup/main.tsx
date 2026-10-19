@@ -1,13 +1,12 @@
-import { useState } from 'react';
 import { CONFIG } from '../config';
-import { bagCount, currentOil, minesToday } from '../core/game';
-import { findOre, stratumAt } from '../core/strata';
+import { areaAt, findItem } from '../core/catalog';
+import { findsToday } from '../core/game';
+import { JOB_MIN_FINDS, diagnoseJob, sumGenreFinds } from '../core/job';
 import { localDayKey } from '../core/week';
 import { CATALOG } from '../data';
-import { RULES } from '../rules';
 import { saveSettings } from '../storage';
 import { mount } from '../ui/mount';
-import { Meter, RARITY_LABEL } from '../ui/parts';
+import { JobBadge, RARITY_LABEL } from '../ui/parts';
 import { useView } from '../ui/store';
 
 function openPage(file: string): void {
@@ -17,24 +16,17 @@ function openPage(file: string): void {
 
 function Popup() {
   const { loaded, state, settings, profile, now } = useView();
-  const [returning, setReturning] = useState(false);
   if (!loaded) return <main className="popup-main" aria-busy="true" />;
 
-  const stratum = stratumAt(CATALOG.strata, state.depthM);
-  const oil = currentOil(state, now, RULES);
-  const exploring = state.mode === 'exploring';
-  const bag = Object.entries(state.bag)
-    .map(([id, n]) => ({ ore: findOre(CATALOG, id), n }))
-    .filter((x): x is { ore: NonNullable<typeof x.ore>; n: number } => x.ore !== undefined);
-
-  const goSurface = async () => {
-    setReturning(true);
-    try {
-      await chrome.runtime.sendMessage({ type: 'return-to-surface' });
-    } finally {
-      setReturning(false);
-    }
-  };
+  const area = areaAt(CATALOG.areas, state.depthM);
+  const allFinds = sumGenreFinds(Object.values(state.days));
+  const total = Object.values(allFinds).reduce((a, b) => a + b, 0);
+  const found = CATALOG.items.filter((i) => (state.collection[i.id] ?? 0) > 0).length;
+  const recent = [...state.events]
+    .reverse()
+    .map((e) => findItem(CATALOG, e.itemId))
+    .filter((i) => i !== undefined)
+    .slice(0, 3);
 
   return (
     <main className="popup-main">
@@ -44,54 +36,42 @@ function Popup() {
         </button>
       )}
 
-      <section className="status" style={{ borderLeftColor: stratum.color }}>
+      <section className="status" style={{ borderLeftColor: area.color }}>
         <div className="depth">
           {state.depthM.toFixed(1)}
           <small> m</small>
         </div>
-        <div className="where">
-          <span className="chip" style={{ background: stratum.color }}>
-            {stratum.name}
-          </span>
-          <span className={`mode ${exploring ? 'on' : ''}`}>{exploring ? '探検中' : '地上'}</span>
-        </div>
+        <span className="chip" style={{ background: area.color }}>
+          {area.name}
+        </span>
       </section>
 
-      <Meter
-        label="ランタンの油"
-        ratio={oil / CONFIG.OIL_MAX}
-        text={`${Math.floor(oil)} / ${CONFIG.OIL_MAX}`}
-        tone={exploring && oil <= CONFIG.OIL_LOW_THRESHOLD ? 'low' : 'oil'}
+      <JobBadge
+        job={diagnoseJob(allFinds, CATALOG.genres)}
+        genres={CATALOG.genres}
+        label="職業"
+        need={Math.max(0, JOB_MIN_FINDS - total)}
       />
-      {!exploring && oil < CONFIG.START_OIL_MIN && (
-        <p className="hint">油が{CONFIG.START_OIL_MIN}以上たまると、スクロールで探検を再開できます。</p>
-      )}
 
       <section>
         <h2>
-          バッグ <small>{bagCount(state)}個</small>
+          最近の発見 <small>今日 {findsToday(state, localDayKey(new Date(now)))}個</small>
         </h2>
-        {bag.length === 0 ? (
-          <p className="muted">まだ何も入っていません。</p>
+        {recent.length === 0 ? (
+          <p className="muted">ページをスクロールして止めると、品が見つかります。</p>
         ) : (
           <ul className="bag">
-            {bag.map(({ ore, n }) => (
-              <li key={ore.id}>
-                <span className={`stars r${ore.rarity}`}>{RARITY_LABEL[ore.rarity]}</span> {ore.name}
-                <span className="n">×{n}</span>
+            {recent.map((item, i) => (
+              <li key={`${item.id}-${i}`}>
+                <span className={`stars r${item.rarity}`}>{RARITY_LABEL[item.rarity]}</span> {item.name}
               </li>
             ))}
           </ul>
         )}
         <p className="muted small">
-          今日の採掘 {minesToday(state, localDayKey(new Date(now)))} / {CONFIG.MAX_MINES_PER_DAY} 回
+          図鑑 {found} / {CATALOG.items.length}　（1日の上限 {CONFIG.MAX_FINDS_PER_DAY}個）
         </p>
       </section>
-
-      <button type="button" className="primary" disabled={!exploring || returning} onClick={() => void goSurface()}>
-        地上に戻る
-      </button>
-      <p className="muted small">戻ると、バッグの鉱石が図鑑に登録されます。</p>
 
       <nav className="links">
         <button type="button" onClick={() => openPage('collection.html')}>

@@ -1,10 +1,10 @@
 import { CONFIG } from '../config';
+import { areaAt, findItem } from '../core/catalog';
 import { formatBadge } from '../core/format';
-import { currentOil } from '../core/game';
-import { findOre, stratumAt } from '../core/strata';
+import { findsToday } from '../core/game';
 import type { GameEvent } from '../core/state';
+import { localDayKey } from '../core/week';
 import { CATALOG } from '../data';
-import { RULES } from '../rules';
 import { createDebug } from './debug';
 import { Miner } from './miner';
 import { createOverlay, type Overlay } from './overlay/overlay';
@@ -16,30 +16,19 @@ const TICK_MS = 250;
 const EVENT_MAX_AGE_MS = 10_000;
 
 function describeEvent(e: GameEvent): Parameters<Overlay['pop']>[0] | null {
-  if (e.kind === 'mined') {
-    const ore = findOre(CATALOG, e.oreId);
-    if (!ore) return null;
-    return { text: ore.name, tone: `r${ore.rarity}` as 'r1' | 'r2' | 'r3', stars: ore.rarity };
-  }
-  if (e.how === 'forced') {
-    return {
-      tone: 'warn',
-      text: '油が切れた！',
-      sub: `鉱石を${e.lost}個失い、${e.registered}個を持ち帰った`,
-    };
-  }
+  const item = findItem(CATALOG, e.itemId);
+  if (!item) return null;
+  const count = getView().state.collection[item.id] ?? 0;
   return {
-    tone: 'info',
-    text: e.how === 'auto' ? '地上に戻りました（自動）' : '地上に戻りました',
-    sub: `鉱石${e.registered}個を図鑑に登録（+${e.points}点）`,
+    text: item.name,
+    tone: `r${item.rarity}` as 'r1' | 'r2' | 'r3',
+    stars: item.rarity,
+    sub: count <= 1 ? '新発見！ 図鑑に追加' : `図鑑 ${count}個目`,
   };
 }
 
 function main(): void {
-  const tracker = startTracker({
-    // 地上にいる間は、スクロールをすぐ送って探検の再開を素早く反映する
-    flushImmediately: () => getView().state.mode === 'surface',
-  });
+  const tracker = startTracker();
   const miner = new Miner();
   const debug = createDebug();
   const reserver = createSpaceReserver();
@@ -66,20 +55,15 @@ function main(): void {
     const { state } = getView();
 
     if (overlay) {
-      const oil = currentOil(state, Date.now(), RULES);
-      const refilling =
-        state.mode === 'surface' && oil < CONFIG.START_OIL_MIN && t.msSinceLastScroll < 4000;
+      const area = areaAt(CATALOG.areas, state.depthM);
       overlay.update({
         depthText: formatBadge(state.depthM),
         depthM: state.depthM,
-        strataName: stratumAt(CATALOG.strata, state.depthM).name,
-        strataColor: stratumAt(CATALOG.strata, state.depthM).color,
-        oilRatio: Math.max(0, Math.min(1, oil / CONFIG.OIL_MAX)),
-        oilLow: state.mode === 'exploring' && oil <= CONFIG.OIL_LOW_THRESHOLD,
-        surface: state.mode === 'surface',
+        strataName: area.name,
+        strataColor: area.color,
+        todayFinds: findsToday(state, localDayKey(new Date())),
         mining: m.mining,
         gauge: m.gauge,
-        refilling,
       });
     }
     debug.update(t, m);

@@ -2,12 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { CONDITION_KEYS, evaluateConditions, type MiningInput } from '../src/core/mining';
 
 const good: MiningInput = {
-  exploring: true,
-  msSinceLastScroll: 3000,
-  startDelayMs: 3000,
+  msSinceLastScroll: 1000,
+  startDelayMs: 1000,
   visible: true,
-  minesToday: 0,
-  maxMinesPerDay: 60,
+  findsToday: 0,
+  maxFindsPerDay: 300,
 };
 
 describe('evaluateConditions', () => {
@@ -22,10 +21,9 @@ describe('evaluateConditions', () => {
   });
 
   const cases: [string, Partial<MiningInput>, (typeof CONDITION_KEYS)[number]][] = [
-    ['on the surface', { exploring: false }, 'exploring'],
-    ['scrolled just now', { msSinceLastScroll: 2999 }, 'stopped'],
+    ['scrolled just now', { msSinceLastScroll: 999 }, 'stopped'],
     ['tab hidden', { visible: false }, 'visible'],
-    ['daily cap reached', { minesToday: 60 }, 'underDailyCap'],
+    ['daily cap reached', { findsToday: 300 }, 'underDailyCap'],
   ];
   for (const [name, patch, key] of cases) {
     it(`fails only "${key}" when ${name}`, () => {

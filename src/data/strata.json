@@ -1,8 +1,8 @@
 [
-  { "id": "topsoil", "name": "表土", "startDepthM": 0, "color": "#8b6b4a" },
-  { "id": "quaternary", "name": "第四紀", "startDepthM": 50, "color": "#a3845a" },
-  { "id": "neogene", "name": "新第三紀", "startDepthM": 150, "color": "#7a7f5c" },
-  { "id": "cretaceous", "name": "白亜紀", "startDepthM": 400, "color": "#5f7a74" },
-  { "id": "jurassic", "name": "ジュラ紀", "startDepthM": 800, "color": "#4f6272" },
-  { "id": "paleozoic", "name": "古生代", "startDepthM": 1500, "color": "#4a3f6b" }
+  { "id": "cave", "name": "はじまりの洞窟", "startDepthM": 0, "color": "#8b6b4a", "weights": [70, 25, 5] },
+  { "id": "waterway", "name": "地下水路", "startDepthM": 50, "color": "#a3845a", "weights": [64, 28, 8] },
+  { "id": "mine", "name": "古の坑道", "startDepthM": 150, "color": "#7a7f5c", "weights": [57, 32, 11] },
+  { "id": "crystal", "name": "水晶の回廊", "startDepthM": 400, "color": "#5f7a74", "weights": [50, 36, 14] },
+  { "id": "magma", "name": "溶岩の間", "startDepthM": 800, "color": "#4f6272", "weights": [43, 39, 18] },
+  { "id": "abyss", "name": "奈落の底", "startDepthM": 1500, "color": "#4a3f6b", "weights": [36, 41, 23] }
 ]

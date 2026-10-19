@@ -1,4 +1,5 @@
 import { pxToMeters } from './depth.ts';
+import type { GenreDef } from './catalog.ts';
 import type { DayStats } from './state.ts';
 import { isoWeekId } from './week.ts';
 
@@ -6,20 +7,19 @@ import { isoWeekId } from './week.ts';
 export interface StatsRow {
   /** 日付 (YYYY-MM-DD) または週ID (YYYY-Www) */
   label: string;
-  mines: number;
+  finds: number;
   points: number;
-  selfReturns: number;
-  forcedReturns: number;
   scrollPx: number;
+  /** 部屋ごとの発見数 */
+  genreFinds: Record<string, number>;
 }
 
 const rowOf = (label: string, d: DayStats): StatsRow => ({
   label,
-  mines: d.mines,
+  finds: d.finds,
   points: d.points,
-  selfReturns: d.selfReturns,
-  forcedReturns: d.forcedReturns,
   scrollPx: d.scrollPx,
+  genreFinds: { ...d.genreFinds },
 });
 
 /** 日ごとの記録。古い順。 */
@@ -40,36 +40,33 @@ export function weeklyRows(days: Record<string, DayStats>): StatsRow[] {
     if (!cur) {
       byWeek.set(week, rowOf(week, d));
     } else {
-      cur.mines += d.mines;
+      cur.finds += d.finds;
       cur.points += d.points;
-      cur.selfReturns += d.selfReturns;
-      cur.forcedReturns += d.forcedReturns;
       cur.scrollPx += d.scrollPx;
+      for (const [g, n] of Object.entries(d.genreFinds)) cur.genreFinds[g] = (cur.genreFinds[g] ?? 0) + n;
     }
   }
   return [...byWeek.values()].sort((a, b) => a.label.localeCompare(b.label));
 }
-
-const HEADER = ['期間', '採掘回数', '獲得ポイント', '自分で戻った回数', '強制帰還の回数', '総スクロール距離(px)', '実距離(m)'];
 
 const csvCell = (v: string | number): string => {
   const s = String(v);
   return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 
-/** CSV本文（先頭の BOM は付けない。Excel向けの BOM は書き出し側で足す）。 */
-export function toCsv(rows: StatsRow[]): string {
-  const lines = [HEADER.join(',')];
+/** CSV本文（先頭の BOM は付けない。Excel向けの BOM は書き出し側で足す）。部屋ごとの発見数も列にする。 */
+export function toCsv(rows: StatsRow[], genres: GenreDef[]): string {
+  const header = ['期間', '発見数', '獲得ポイント', '総スクロール距離(px)', '実距離(m)', ...genres.map((g) => g.name)];
+  const lines = [header.map(csvCell).join(',')];
   for (const r of rows) {
     lines.push(
       [
         r.label,
-        r.mines,
+        r.finds,
         r.points,
-        r.selfReturns,
-        r.forcedReturns,
         Math.round(r.scrollPx),
         pxToMeters(r.scrollPx).toFixed(2),
+        ...genres.map((g) => r.genreFinds[g.id] ?? 0),
       ]
         .map(csvCell)
         .join(','),

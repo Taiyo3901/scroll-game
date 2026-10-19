@@ -91,3 +91,10 @@ th { font-size: 12px; color: var(--muted); font-weight: 600; }
 .actions { margin-top: 18px; max-width: 320px; }
 .done { color: var(--ok); font-weight: 700; }
 @media (prefers-reduced-motion: no-preference) { button { transition: border-color .15s; } }
+
+/* 職業・部屋の分布 */
+.job { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 4px 0; }
+.job-label { font-size: 12px; color: var(--muted); min-width: 3.5em; }
+.genre-bar { display: flex; height: 14px; border-radius: 7px; overflow: hidden; background: var(--line); }
+.legend { list-style: none; display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 8px 0 0; padding: 0; font-size: 12px; }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; }

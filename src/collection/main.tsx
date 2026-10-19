@@ -1,63 +1,107 @@
 import { useMemo, useState } from 'react';
+import { findItem, itemsOfGenre, type ItemDef } from '../core/catalog';
+import { pxToMeters } from '../core/depth';
+import { JOB_MIN_FINDS, diagnoseJob, sumGenreFinds } from '../core/job';
 import { SHOWCASE_MAX, toggleShowcase } from '../core/profile';
 import { dailyRows, toCsv, weeklyRows, type StatsRow } from '../core/stats';
-import { findOre, oresOf } from '../core/strata';
-import { pxToMeters } from '../core/depth';
+import type { DayStats } from '../core/state';
+import { isoWeekId } from '../core/week';
 import { CATALOG } from '../data';
 import { saveProfile } from '../storage';
 import { mount } from '../ui/mount';
-import { OreCard } from '../ui/parts';
+import { GenreBar, ItemCard, JobBadge } from '../ui/parts';
 import { useView } from '../ui/store';
 
 type Tab = 'book' | 'showcase' | 'stats';
 
-const colorOf = (stratumId: string) => CATALOG.strata.find((s) => s.id === stratumId)?.color ?? '#888';
+const SECRET_COLOR = '#c9a227';
+const genreColor = (id?: string) => CATALOG.genres.find((g) => g.id === id)?.color ?? SECRET_COLOR;
+const colorOf = (item: ItemDef) => (item.areaId ? SECRET_COLOR : genreColor(item.genreId));
 
-function Book({ collection }: { collection: Record<string, number> }) {
-  const found = CATALOG.ores.filter((o) => (collection[o.id] ?? 0) > 0).length;
+function weekDays(days: Record<string, DayStats>, now: number): DayStats[] {
+  const thisWeek = isoWeekId(new Date(now));
+  return Object.entries(days)
+    .filter(([k]) => {
+      const [y, m, d] = k.split('-').map(Number);
+      return !!y && !!m && !!d && isoWeekId(new Date(y, m - 1, d)) === thisWeek;
+    })
+    .map(([, v]) => v);
+}
+
+function Book(props: { collection: Record<string, number>; days: Record<string, DayStats>; now: number }) {
+  const { collection, days, now } = props;
+  const found = CATALOG.items.filter((i) => (collection[i.id] ?? 0) > 0).length;
+  const all = sumGenreFinds(Object.values(days));
+  const week = sumGenreFinds(weekDays(days, now));
+  const sum = (f: Record<string, number>) => Object.values(f).reduce((a, b) => a + b, 0);
+  const secrets = CATALOG.items.filter((i) => i.areaId);
+
   return (
     <>
       <p className="lead">
-        発見 <strong>{found}</strong> / {CATALOG.ores.length}
+        発見 <strong>{found}</strong> / {CATALOG.items.length}
       </p>
-      {CATALOG.strata.map((s) => {
-        const ores = oresOf(CATALOG, s.id);
-        const n = ores.filter((o) => (collection[o.id] ?? 0) > 0).length;
+
+      <section className="card">
+        <h2>あなたの職業</h2>
+        <JobBadge job={diagnoseJob(all, CATALOG.genres)} genres={CATALOG.genres} label="これまで" need={Math.max(0, JOB_MIN_FINDS - sum(all))} />
+        <JobBadge job={diagnoseJob(week, CATALOG.genres)} genres={CATALOG.genres} label="今週" need={Math.max(0, JOB_MIN_FINDS - sum(week))} />
+        <h2>どの部屋でよく見つけたか</h2>
+        <GenreBar finds={all} genres={CATALOG.genres} />
+      </section>
+
+      {CATALOG.genres.map((g) => {
+        const items = itemsOfGenre(CATALOG, g.id);
+        const n = items.filter((i) => (collection[i.id] ?? 0) > 0).length;
         return (
-          <section key={s.id} className="stratum" style={{ borderLeftColor: s.color }}>
+          <section key={g.id} className="stratum" style={{ borderLeftColor: g.color }}>
             <h2>
-              <span className="chip" style={{ background: s.color }}>
-                {s.name}
+              <span className="chip" style={{ background: g.color }}>
+                {g.name}
               </span>
               <small>
-                {s.startDepthM}m〜　{n} / {ores.length}
+                {g.about}　{n} / {items.length}
               </small>
             </h2>
             <div className="ore-grid">
-              {ores.map((o) => (
-                <OreCard key={o.id} ore={o} count={collection[o.id] ?? 0} color={s.color} />
+              {items.map((i) => (
+                <ItemCard key={i.id} item={i} count={collection[i.id] ?? 0} color={g.color} />
               ))}
             </div>
           </section>
         );
       })}
+
+      <section className="stratum" style={{ borderLeftColor: SECRET_COLOR }}>
+        <h2>
+          <span className="chip" style={{ background: SECRET_COLOR }}>
+            階層の秘宝
+          </span>
+          <small>各階層で、まれに見つかる</small>
+        </h2>
+        <div className="ore-grid">
+          {secrets.map((i) => (
+            <ItemCard key={i.id} item={i} count={collection[i.id] ?? 0} color={SECRET_COLOR} />
+          ))}
+        </div>
+      </section>
     </>
   );
 }
 
 function Showcase(props: { collection: Record<string, number>; showcase: string[]; onToggle: (id: string) => void }) {
-  const owned = CATALOG.ores.filter((o) => (props.collection[o.id] ?? 0) > 0);
+  const owned = CATALOG.items.filter((i) => (props.collection[i.id] ?? 0) > 0);
   const slots = Array.from({ length: SHOWCASE_MAX }, (_, i) => props.showcase[i]);
   return (
     <>
-      <p className="lead">お気に入りの鉱石を{SHOWCASE_MAX}つまで飾れます。（フレンド機能を入れると、フレンドから見られるようになります）</p>
-      <div className="shelf" aria-label="標本棚">
+      <p className="lead">お気に入りの品を{SHOWCASE_MAX}つまで飾れます。</p>
+      <div className="shelf" aria-label="飾り棚">
         {slots.map((id, i) => {
-          const ore = id ? findOre(CATALOG, id) : undefined;
+          const item = id ? findItem(CATALOG, id) : undefined;
           return (
-            <div key={i} className={`slot ${ore ? 'filled' : ''}`}>
-              {ore ? (
-                <OreCard ore={ore} count={props.collection[ore.id] ?? 0} color={colorOf(ore.stratumId)} compact />
+            <div key={i} className={`slot ${item ? 'filled' : ''}`}>
+              {item ? (
+                <ItemCard item={item} count={props.collection[item.id] ?? 0} color={colorOf(item)} compact />
               ) : (
                 <span className="muted">空き</span>
               )}
@@ -65,28 +109,27 @@ function Showcase(props: { collection: Record<string, number>; showcase: string[
           );
         })}
       </div>
-      <h2>飾る鉱石を選ぶ</h2>
+      <h2>飾る品を選ぶ</h2>
       {owned.length === 0 ? (
-        <p className="muted">鉱石を掘って地上に戻ると、ここから選べます。</p>
+        <p className="muted">品を見つけると、ここから選べます。</p>
       ) : (
         <div className="ore-grid">
-          {owned.map((o) => {
-            const on = props.showcase.includes(o.id);
-            return (
-              <OreCard
-                key={o.id}
-                ore={o}
-                count={props.collection[o.id] ?? 0}
-                color={colorOf(o.stratumId)}
-                selected={on}
-                compact
-                onClick={() => props.onToggle(o.id)}
-              />
-            );
-          })}
+          {owned.map((i) => (
+            <ItemCard
+              key={i.id}
+              item={i}
+              count={props.collection[i.id] ?? 0}
+              color={colorOf(i)}
+              selected={props.showcase.includes(i.id)}
+              compact
+              onClick={() => props.onToggle(i.id)}
+            />
+          ))}
         </div>
       )}
-      <p className="muted small">もう一度押すと外せます。{props.showcase.length >= SHOWCASE_MAX && 'いっぱいのときは、先に1つ外してください。'}</p>
+      <p className="muted small">
+        もう一度押すと外せます。{props.showcase.length >= SHOWCASE_MAX && 'いっぱいのときは、先に1つ外してください。'}
+      </p>
     </>
   );
 }
@@ -117,10 +160,8 @@ function StatsTable({ rows }: { rows: StatsRow[] }) {
       <thead>
         <tr>
           <th>期間</th>
-          <th>採掘</th>
+          <th>発見数</th>
           <th>ポイント</th>
-          <th>自分で戻った</th>
-          <th>強制帰還</th>
           <th>スクロール(m)</th>
         </tr>
       </thead>
@@ -128,10 +169,8 @@ function StatsTable({ rows }: { rows: StatsRow[] }) {
         {[...rows].reverse().map((r) => (
           <tr key={r.label}>
             <td>{r.label}</td>
-            <td>{r.mines}</td>
+            <td>{r.finds}</td>
             <td>{r.points}</td>
-            <td>{r.selfReturns}</td>
-            <td>{r.forcedReturns}</td>
             <td>{pxToMeters(r.scrollPx).toFixed(2)}</td>
           </tr>
         ))}
@@ -150,7 +189,7 @@ function download(name: string, csv: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-function Stats({ days }: { days: Parameters<typeof dailyRows>[0] }) {
+function Stats({ days }: { days: Record<string, DayStats> }) {
   const [unit, setUnit] = useState<'day' | 'week'>('day');
   const rows = useMemo(() => (unit === 'day' ? dailyRows(days) : weeklyRows(days)), [days, unit]);
   return (
@@ -167,36 +206,40 @@ function Stats({ days }: { days: Parameters<typeof dailyRows>[0] }) {
         <button
           type="button"
           disabled={rows.length === 0}
-          onClick={() => download(`scroll-game-${unit === 'day' ? 'daily' : 'weekly'}.csv`, toCsv(rows))}
+          onClick={() =>
+            download(`scroll-game-${unit === 'day' ? 'daily' : 'weekly'}.csv`, toCsv(rows, CATALOG.genres))
+          }
         >
           CSVで書き出す
         </button>
       </div>
       {rows.length === 0 ? (
-        <p className="muted">まだ記録がありません。スクロールして掘ると、ここに推移が出ます。</p>
+        <p className="muted">まだ記録がありません。スクロールして止めると、ここに推移が出ます。</p>
       ) : (
         <>
           <div className="charts">
-            <BarChart rows={rows} pick={(r) => r.mines} label="採掘回数" />
+            <BarChart rows={rows} pick={(r) => r.finds} label="発見数" />
             <BarChart rows={rows} pick={(r) => r.points} label="獲得ポイント" />
             <BarChart rows={rows} pick={(r) => pxToMeters(r.scrollPx)} label="スクロール距離(m)" />
           </div>
           <StatsTable rows={rows} />
         </>
       )}
-      <p className="muted small">URL・ページのタイトル・本文は記録していません。ここにあるのは回数と距離だけです。</p>
+      <p className="muted small">
+        URL・ページのタイトル・本文は記録していません。ここにあるのは、回数・距離・部屋ごとの発見数だけです（CSVには部屋ごとの発見数も入ります）。
+      </p>
     </>
   );
 }
 
 function Collection() {
-  const { loaded, state, profile } = useView();
+  const { loaded, state, profile, now } = useView();
   const [tab, setTab] = useState<Tab>('book');
   if (!loaded) return <main aria-busy="true" />;
 
   const tabs: [Tab, string][] = [
-    ['book', '図鑑'],
-    ['showcase', '標本棚'],
+    ['book', 'アイテム図鑑'],
+    ['showcase', '飾り棚'],
     ['stats', '記録'],
   ];
   return (
@@ -211,7 +254,7 @@ function Collection() {
           ))}
         </div>
       </header>
-      {tab === 'book' && <Book collection={state.collection} />}
+      {tab === 'book' && <Book collection={state.collection} days={state.days} now={now} />}
       {tab === 'showcase' && (
         <Showcase
           collection={state.collection}

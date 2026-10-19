@@ -1,59 +1,91 @@
 import { describe, expect, it } from 'vitest';
 import { CATALOG } from '../src/data';
-import { oresOf, stratumAt } from '../src/core/strata';
+import { areaAt, itemsOfGenre, OTHER_GENRE, secretOf } from '../src/core/catalog';
 
-describe('data/strata.json and ores.json', () => {
-  it('strata are sorted by depth, start at 0, with unique ids and colors', () => {
-    const { strata } = CATALOG;
-    expect(strata[0]?.startDepthM).toBe(0);
-    for (let i = 1; i < strata.length; i++) {
-      expect(strata[i]!.startDepthM).toBeGreaterThan(strata[i - 1]!.startDepthM);
+describe('data/strata.json (areas)', () => {
+  it('are sorted by depth, start at 0, with unique ids, valid colors and positive weights', () => {
+    const { areas } = CATALOG;
+    expect(areas[0]?.startDepthM).toBe(0);
+    for (let i = 1; i < areas.length; i++) {
+      expect(areas[i]!.startDepthM).toBeGreaterThan(areas[i - 1]!.startDepthM);
     }
-    expect(new Set(strata.map((s) => s.id)).size).toBe(strata.length);
-    for (const s of strata) expect(s.color).toMatch(/^#[0-9a-f]{6}$/i);
-  });
-
-  it('every stratum has exactly one ore of each rarity 1-3', () => {
-    for (const s of CATALOG.strata) {
-      const rarities = oresOf(CATALOG, s.id)
-        .map((o) => o.rarity)
-        .sort();
-      expect(rarities, s.name).toEqual([1, 2, 3]);
+    expect(new Set(areas.map((a) => a.id)).size).toBe(areas.length);
+    for (const a of areas) {
+      expect(a.color).toMatch(/^#[0-9a-f]{6}$/i);
+      expect(a.weights.every((w) => w > 0)).toBe(true);
     }
   });
 
-  it('ore ids are unique, every ore points to a real stratum, and has a description', () => {
-    const ids = CATALOG.ores.map((o) => o.id);
-    expect(new Set(ids).size).toBe(ids.length);
-    const strataIds = new Set(CATALOG.strata.map((s) => s.id));
-    for (const o of CATALOG.ores) {
-      expect(strataIds.has(o.stratumId), o.id).toBe(true);
-      expect(o.name.length).toBeGreaterThan(0);
-      // 解説文は2〜3文
-      const sentences = o.description.split('。').filter((x) => x.length > 0);
-      expect(sentences.length, o.id).toBeGreaterThanOrEqual(2);
-      expect(sentences.length, o.id).toBeLessThanOrEqual(3);
-    }
+  it('deeper areas never make 3-star items rarer', () => {
+    const w3 = CATALOG.areas.map((a) => a.weights[2] / a.weights.reduce((x, y) => x + y, 0));
+    for (let i = 1; i < w3.length; i++) expect(w3[i]!).toBeGreaterThanOrEqual(w3[i - 1]!);
   });
 
-  it('matches the SPEC table: 18 ores in 6 strata', () => {
-    expect(CATALOG.strata).toHaveLength(6);
-    expect(CATALOG.ores).toHaveLength(18);
+  it('areaAt picks the deepest area whose start is not past the depth', () => {
+    expect(areaAt(CATALOG.areas, 0).id).toBe('cave');
+    expect(areaAt(CATALOG.areas, 49.9).id).toBe('cave');
+    expect(areaAt(CATALOG.areas, 50).id).toBe('waterway');
+    expect(areaAt(CATALOG.areas, 99999).id).toBe('abyss');
+    expect(areaAt(CATALOG.areas, Number.NaN).id).toBe('cave');
   });
 });
 
-describe('stratumAt', () => {
-  const { strata } = CATALOG;
-  it('uses the boundary depth as the start of the next stratum', () => {
-    expect(stratumAt(strata, 0).id).toBe('topsoil');
-    expect(stratumAt(strata, 49.9).id).toBe('topsoil');
-    expect(stratumAt(strata, 50).id).toBe('quaternary');
-    expect(stratumAt(strata, 1499).id).toBe('jurassic');
-    expect(stratumAt(strata, 1500).id).toBe('paleozoic');
-    expect(stratumAt(strata, 99999).id).toBe('paleozoic');
+describe('data/genres.json (rooms)', () => {
+  it('has unique ids and names, a job and a color each, and includes the fallback room', () => {
+    const { genres } = CATALOG;
+    expect(new Set(genres.map((g) => g.id)).size).toBe(genres.length);
+    expect(new Set(genres.map((g) => g.name)).size).toBe(genres.length);
+    expect(new Set(genres.map((g) => g.job)).size).toBe(genres.length);
+    for (const g of genres) {
+      expect(g.job.length).toBeGreaterThan(0);
+      expect(g.color).toMatch(/^#[0-9a-f]{6}$/i);
+    }
+    expect(genres.some((g) => g.id === OTHER_GENRE)).toBe(true);
   });
-  it('treats negative / NaN depth as the surface layer', () => {
-    expect(stratumAt(strata, -5).id).toBe('topsoil');
-    expect(stratumAt(strata, Number.NaN).id).toBe('topsoil');
+
+  it('the dictionary has no duplicate domains, and only lowercase hosts', () => {
+    const all = CATALOG.genres.flatMap((g) => g.domains);
+    expect(new Set(all).size).toBe(all.length);
+    for (const d of all) expect(d).toBe(d.toLowerCase());
+  });
+
+  it('the fallback room has no domains of its own', () => {
+    expect(CATALOG.genres.find((g) => g.id === OTHER_GENRE)?.domains).toEqual([]);
+  });
+});
+
+describe('data/items.json', () => {
+  it('every room has exactly three 1-star, two 2-star and one 3-star items', () => {
+    for (const g of CATALOG.genres) {
+      const r = itemsOfGenre(CATALOG, g.id).map((i) => i.rarity).sort();
+      expect(r, g.name).toEqual([1, 1, 1, 2, 2, 3]);
+    }
+  });
+
+  it('every area has exactly one secret item', () => {
+    for (const a of CATALOG.areas) {
+      expect(CATALOG.items.filter((i) => i.areaId === a.id)).toHaveLength(1);
+      expect(secretOf(CATALOG, a.id)).toBeDefined();
+    }
+  });
+
+  it('ids are unique, each item belongs to exactly one of a room or an area, and has text', () => {
+    const ids = CATALOG.items.map((i) => i.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    const genreIds = new Set(CATALOG.genres.map((g) => g.id));
+    const areaIds = new Set(CATALOG.areas.map((a) => a.id));
+    for (const i of CATALOG.items) {
+      expect(Boolean(i.genreId) !== Boolean(i.areaId), i.id).toBe(true);
+      if (i.genreId) expect(genreIds.has(i.genreId), i.id).toBe(true);
+      if (i.areaId) expect(areaIds.has(i.areaId), i.id).toBe(true);
+      expect(i.name.length).toBeGreaterThan(0);
+      expect(i.description.length).toBeGreaterThan(15);
+    }
+    const names = CATALOG.items.map((i) => i.name);
+    expect(new Set(names).size).toBe(names.length);
+  });
+
+  it('the total matches the design (11 rooms x 6 + 6 secrets)', () => {
+    expect(CATALOG.items).toHaveLength(CATALOG.genres.length * 6 + CATALOG.areas.length);
   });
 });

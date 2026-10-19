@@ -4,9 +4,9 @@ import { GAME_NAME } from './src/gameName.ts';
 export default defineManifest({
   manifest_version: 3,
   name: GAME_NAME,
-  version: '0.3.0',
-  description: '下にスクロールして地面を掘り進み、読み終えて手を止めると鉱石が掘れるゲーム。',
-  permissions: ['storage', 'alarms', 'idle'],
+  version: '0.4.0',
+  description: '下にスクロールして迷宮を降り、手を止めると、見ているサイトにまつわる品が見つかるゲーム。',
+  permissions: ['storage'],
   background: {
     service_worker: 'src/background/index.ts',
     type: 'module',

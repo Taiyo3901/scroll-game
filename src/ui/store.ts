@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { defaultProfile, type Profile } from '../core/profile';
 import { initialGameState, type GameState } from '../core/state';
-import { CONFIG } from '../config';
 import {
   defaultSettings,
   loadProfile,
@@ -18,7 +17,7 @@ export interface View {
   state: GameState;
   settings: Settings;
   profile: Profile;
-  /** 油の回復など、時間で変わる表示のための現在時刻(ms) */
+  /** 「今日」「今週」の判定に使う現在時刻(ms) */
   now: number;
 }
 
@@ -26,7 +25,7 @@ export interface View {
 export function useView(): View {
   const [v, setV] = useState<View>(() => ({
     loaded: false,
-    state: initialGameState(Date.now(), CONFIG.OIL_MAX),
+    state: initialGameState(),
     settings: defaultSettings(),
     profile: defaultProfile(),
     now: Date.now(),

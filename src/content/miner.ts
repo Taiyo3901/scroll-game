@@ -1,13 +1,16 @@
 import { CONFIG } from '../config';
-import { minesToday } from '../core/game';
+import { classifyHost } from '../core/genre';
+import { findsToday } from '../core/game';
 import { evaluateConditions, type ConditionResult } from '../core/mining';
 import { localDayKey } from '../core/week';
-import type { MineCompleteMessage } from '../messages';
+import { CATALOG } from '../data';
+import type { FindCompleteMessage } from '../messages';
 import { sendToBackground } from './send';
 import { getView } from './store';
 import type { TrackerSnapshot } from './tracker';
 
 export interface MinerSnapshot {
+  /** ゲージがたまっている最中 */
   mining: boolean;
   /** 0〜1 */
   gauge: number;
@@ -17,9 +20,10 @@ export interface MinerSnapshot {
 const STALE_STEP_MS = 2000;
 
 /**
- * 採掘ゲージ。スクロールが止まって MINING_START_DELAY_SEC たつとゲージがたまり始め、
- * MINING_DURATION_SEC で満タンになる。途中でスクロールしたり条件を外れたら中断してリセットする。
- * 満タンになったら service worker に報告する（抽選は service worker が行う）。
+ * 発見ゲージ。スクロールが止まって FIND_START_DELAY_SEC たつとゲージがたまり始め、
+ * FIND_DURATION_SEC で満タンになる。途中でスクロールしたり条件を外れたら中断してリセットする。
+ * 満タンになったら、閲覧中のサイトの種類（部屋のID）だけを service worker に報告する。
+ * ホスト名はここで部屋の判定に使うだけで、送らず、保存もしない。
  */
 export class Miner {
   private startedAt: number | null = null;
@@ -27,7 +31,7 @@ export class Miner {
   private last: MinerSnapshot = {
     mining: false,
     gauge: 0,
-    checks: { exploring: false, stopped: false, visible: false, underDailyCap: true },
+    checks: { stopped: false, visible: false, underDailyCap: true },
   };
 
   get snapshot(): MinerSnapshot {
@@ -41,10 +45,10 @@ export class Miner {
     if (now - this.lastStepAt > STALE_STEP_MS) this.startedAt = null;
     this.lastStepAt = now;
     const wasMining = this.startedAt !== null;
-    const delayMs = CONFIG.MINING_START_DELAY_SEC * 1000;
-    const durationMs = CONFIG.MINING_DURATION_SEC * 1000;
+    const delayMs = CONFIG.FIND_START_DELAY_SEC * 1000;
+    const durationMs = CONFIG.FIND_DURATION_SEC * 1000;
 
-    // 採掘中は「始めてからスクロールしていない」ことを条件にする
+    // ゲージがたまっている間は「始めてからスクロールしていない」ことを条件にする
     const msSinceScroll = wasMining
       ? snap.msSinceLastScroll >= now - (this.startedAt as number)
         ? Infinity
@@ -52,12 +56,11 @@ export class Miner {
       : snap.msSinceLastScroll;
 
     const result = evaluateConditions({
-      exploring: state.mode === 'exploring',
       msSinceLastScroll: msSinceScroll,
       startDelayMs: wasMining ? 0 : delayMs,
       visible: document.visibilityState === 'visible',
-      minesToday: minesToday(state, localDayKey(new Date())),
-      maxMinesPerDay: CONFIG.MAX_MINES_PER_DAY,
+      findsToday: findsToday(state, localDayKey(new Date())),
+      maxFindsPerDay: CONFIG.MAX_FINDS_PER_DAY,
     });
 
     if (!result.ok) {
@@ -73,7 +76,10 @@ export class Miner {
       this.startedAt = null;
       mining = false;
       gauge = 0;
-      const msg: MineCompleteMessage = { type: 'mine-complete' };
+      const msg: FindCompleteMessage = {
+        type: 'find-complete',
+        genreId: classifyHost(location.hostname, CATALOG.genres),
+      };
       void sendToBackground(msg);
     }
 
@@ -81,7 +87,7 @@ export class Miner {
     return this.last;
   }
 
-  /** ページが見えなくなったときなど、進行中の採掘を捨てる */
+  /** ページが見えなくなったときなど、進行中の発見を捨てる */
   reset(): void {
     this.startedAt = null;
   }

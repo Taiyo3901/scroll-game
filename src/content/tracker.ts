@@ -14,24 +14,17 @@ export interface Tracker {
   snapshot: () => TrackerSnapshot;
 }
 
-export interface TrackerOptions {
-  /** true を返す間は、数えたスクロールをすぐ送る（地上からの再開を素早く反映するため） */
-  flushImmediately?: () => boolean;
-}
-
 const USER_INPUT_EVENTS = ['wheel', 'touchmove', 'keydown', 'pointerdown'] as const;
-const IMMEDIATE_FLUSH_MIN_GAP_MS = 1000;
 
 /**
  * スクロール量の計測。ページ全体と、ページ内の枠(Gmailなど)の両方を拾う。
  * イベント内では足し算だけ行い、数秒ごとにまとめて送る。
  */
-export function startTracker(opts: TrackerOptions = {}): Tracker {
+export function startTracker(): Tracker {
   const lastTop = new WeakMap<Element, number>();
   let lastInputAt: number | null = null;
   let pointerDown = false;
   let lastAnyScrollAt: number | null = null;
-  let lastFlushAt = -Infinity;
   let pendingPx = 0;
   let flushTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -68,7 +61,6 @@ export function startTracker(opts: TrackerOptions = {}): Tracker {
       flushTimer = null;
     }
     if (pendingPx === 0) return;
-    lastFlushAt = performance.now();
     const msg: ScrollBatchMessage = { type: 'scroll-batch', px: pendingPx };
     pendingPx = 0;
     // 届かなかった分は、次の送信にまわす（拡張機能の再読み込み後などは捨てる）
@@ -109,8 +101,7 @@ export function startTracker(opts: TrackerOptions = {}): Tracker {
 
       pendingPx += delta;
 
-      if (opts.flushImmediately?.() && now - lastFlushAt >= IMMEDIATE_FLUSH_MIN_GAP_MS) flush();
-      else scheduleFlush();
+      scheduleFlush();
     },
     { capture: true, passive: true },
   );

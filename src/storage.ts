@@ -4,7 +4,7 @@ import { normalizeState, type GameState } from './core/state';
 
 export const STATE_KEY = 'state';
 export const SETTINGS_KEY = 'settings';
-export const RUNTIME_KEY = 'runtime';
+export const PROFILE_KEY = 'profile';
 
 export interface Settings {
   debugOverlay: boolean;
@@ -20,16 +20,9 @@ export const defaultSettings = (): Settings => ({
   reserveSpace: true,
 });
 
-/** 保存しない方がよい一時的な状態。service worker が chrome.idle から書き、content が読む。 */
-export interface Runtime {
-  idleState: 'active' | 'idle' | 'locked';
-}
-
-export const defaultRuntime = (): Runtime => ({ idleState: 'active' });
-
 export async function loadState(): Promise<GameState> {
   const got = await chrome.storage.local.get(STATE_KEY);
-  return normalizeState(got[STATE_KEY], Date.now(), CONFIG.OIL_MAX);
+  return normalizeState(got[STATE_KEY]);
 }
 
 export async function saveState(state: GameState): Promise<void> {
@@ -41,24 +34,16 @@ export async function loadSettings(): Promise<Settings> {
   return { ...defaultSettings(), ...(got[SETTINGS_KEY] as Partial<Settings> | undefined) };
 }
 
-export async function loadRuntime(): Promise<Runtime> {
-  const got = await chrome.storage.local.get(RUNTIME_KEY);
-  return { ...defaultRuntime(), ...(got[RUNTIME_KEY] as Partial<Runtime> | undefined) };
+export async function saveSettings(patch: Partial<Settings>): Promise<void> {
+  await chrome.storage.local.set({ [SETTINGS_KEY]: { ...(await loadSettings()), ...patch } });
 }
 
-export const PROFILE_KEY = 'profile';
-
-/** 標本棚と初回確認。標本棚は図鑑にある鉱石だけに整える。 */
+/** 飾り棚と初回確認。飾り棚は図鑑にある発見品だけに整える。 */
 export async function loadProfile(): Promise<Profile> {
   const got = await chrome.storage.local.get([PROFILE_KEY, STATE_KEY]);
-  const state = normalizeState(got[STATE_KEY], Date.now(), CONFIG.OIL_MAX);
-  return normalizeProfile(got[PROFILE_KEY], state.collection);
+  return normalizeProfile(got[PROFILE_KEY], normalizeState(got[STATE_KEY]).collection);
 }
 
 export async function saveProfile(profile: Profile): Promise<void> {
   await chrome.storage.local.set({ [PROFILE_KEY]: profile });
-}
-
-export async function saveSettings(patch: Partial<Settings>): Promise<void> {
-  await chrome.storage.local.set({ [SETTINGS_KEY]: { ...(await loadSettings()), ...patch } });
 }
