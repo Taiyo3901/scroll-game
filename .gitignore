@@ -6,3 +6,6 @@ dist
 
 desktop.ini
 スクリーンショット*.png
+
+__pycache__/
+*.pyc
