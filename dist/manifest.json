@@ -1,0 +1,56 @@
+{
+  "manifest_version": 3,
+  "name": "迷宮スクロール（仮称）",
+  "version": "0.5.0",
+  "description": "スクロールで迷宮を降り、立ち止まって入れ物を物色すると、見ているサイトの種類にまつわる品が見つかる。いつものブラウジングにプラスαの探索ゲーム。",
+  "icons": {
+    "16": "src/icons/icon16.png",
+    "32": "src/icons/icon32.png",
+    "48": "src/icons/icon48.png",
+    "128": "src/icons/icon128.png"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "background": {
+    "service_worker": "service-worker-loader.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "js": [
+        "assets/index.ts-loader-3MoxFkUB.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "action": {
+    "default_title": "迷宮スクロール（仮称）",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "src/icons/icon16.png",
+      "32": "src/icons/icon32.png"
+    }
+  },
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "resources": [
+        "assets/data-rVYdvnow.js",
+        "assets/job-BqugL3iW.js",
+        "assets/storage-Dv4k8DCW.js",
+        "assets/wall-DPDOReib.js",
+        "assets/game-CeOiGZCP.js",
+        "assets/rules-kkr3NrOC.js",
+        "assets/src-content-index.ts-Dfj8CP2r.js"
+      ],
+      "use_dynamic_url": false
+    }
+  ]
+}

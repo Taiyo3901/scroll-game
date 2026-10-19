@@ -1,5 +1,5 @@
 node_modules
-dist
+# dist はコミットする（ダウンロードして、そのまま Chrome に読み込めるようにするため）
 .env
 .env.local
 *.local
