@@ -60,8 +60,8 @@ export const OVERLAY_CSS = `
 }
 
 .torch { position: absolute; left: 0; width: 14px; height: 14px; }
-.torch.t1 { top: 24%; }
-.torch.t2 { top: 76%; }
+.torch.t1 { top: 30%; }
+.torch.t2 { top: 70%; }
 .torch svg { width: 14px; height: 14px; image-rendering: pixelated; display: block; }
 .torch svg .f1 { animation: flameA .6s steps(1, end) infinite; }
 .torch svg .f2 { animation: flameB .6s steps(1, end) infinite; opacity: 0; }
@@ -72,18 +72,31 @@ export const OVERLAY_CSS = `
 }
 
 .col {
-  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center;
+  position: absolute; left: 0; right: 0; top: 0; display: flex; flex-direction: column; align-items: center;
   /* 左は階段状の縁（最大12px）と枠の影を避けて、右寄りに置く */
-  padding: 12px 3px 14px 13px; gap: 6px;
+  padding: 12px 3px 0 13px;
 }
 .panel { background: #1b1410; box-shadow: 0 0 0 2px #2a1f1a, 0 0 0 3px #7a6040; }
 .depth { font-size: 10px; letter-spacing: -0.05em; padding: 2px 2px; white-space: nowrap; }
 .strata-name { writing-mode: vertical-rl; font-size: 11px; letter-spacing: .08em; }
+.foot { position: absolute; left: 13px; right: 3px; bottom: 14px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
 
-.mid { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+/* 帯の長さ = ページの長さ。探索者は、読み進めるほど上から下へ降りていく */
+.track { position: absolute; left: 12px; right: 7px; top: 46px; bottom: 150px; }
+/* 10% ごとの目盛り（スクロールバーのすぐ内側） */
+.ruler {
+  position: absolute; right: -6px; top: 0; bottom: 0; width: 3px;
+  background: repeating-linear-gradient(180deg, rgba(245,240,230,.55) 0 2px, transparent 2px 10%);
+}
+.stage { position: absolute; left: 0; top: 0; width: 41px; height: 86px; transition: transform .25s steps(5, end); will-change: transform; }
+.scene { position: relative; width: 41px; height: 62px; }
+.marks { position: absolute; inset: 0; }
+.mark { position: absolute; right: -3px; top: 0; width: 18px; height: 18px; opacity: .85; }
+.mark img { width: 18px; height: 18px; image-rendering: pixelated; display: block; filter: drop-shadow(1px 1px 0 #2a1f1a); }
+.mark.r2 img { filter: drop-shadow(0 0 2px rgba(80,160,220,.9)); }
+.mark.r3 img { filter: drop-shadow(0 0 3px rgba(255,210,70,1)); }
 
 /* 場面: 左下に探索者、右上に入れ物（ドット絵 14マス x 2px = 28px） */
-.stage { position: relative; width: 44px; height: 62px; }
 .hero {
   position: absolute; left: 0; bottom: 0; width: 28px; height: 28px;
   background-repeat: no-repeat; image-rendering: pixelated; filter: drop-shadow(1px 1px 0 #2a1f1a);
@@ -104,7 +117,7 @@ export const OVERLAY_CSS = `
 .fly.r2 { filter: drop-shadow(0 0 3px rgba(80,160,220,.9)); }
 .fly.r3 { filter: drop-shadow(0 0 5px rgba(255,210,70,1)); }
 
-.gauge { width: 44px; height: 12px; padding: 2px; }
+.gauge { width: 41px; height: 12px; padding: 2px; margin-top: 8px; }
 .gauge-inner { width: 100%; height: 100%; overflow: hidden; background: #3a2c20; }
 .gauge-fill {
   width: 100%; height: 100%; transform-origin: left; transform: scaleX(0);
@@ -164,6 +177,7 @@ export const OVERLAY_CSS = `
 
 /* 動きを控えめにする: 振り・炎のちらつきをやめ、ゲージは即時に動かす */
 @media (prefers-reduced-motion: reduce) {
+  .stage { transition: none; }
   .hero.walk, .hero.search, .hero.scared, .cont.enter, .cont.searching, .cont.mimic-reveal, .fly, .torch svg .f1, .torch svg .f2, .torch .halo { animation: none; }
   .fly { opacity: 0; }
   .torch svg .f1 { opacity: 1; }

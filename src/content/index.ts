@@ -10,7 +10,7 @@ import { spriteUri } from '../core/sprites';
 import { CATALOG } from '../data';
 import { createDebug } from './debug';
 import { Miner } from './miner';
-import { createOverlay, type Overlay } from './overlay/overlay';
+import { createOverlay, openedContainerUri, type Overlay } from './overlay/overlay';
 import { createSpaceReserver } from './overlay/reserve';
 import { getView, initStore, onViewChange } from './store';
 import { startTracker } from './tracker';
@@ -96,6 +96,7 @@ function main(): void {
         container: m.container,
         skin: m.skin,
         job: currentJob(),
+        progress: t.progress,
       });
     }
     debug.update(t, m);
@@ -112,6 +113,10 @@ function main(): void {
         const item = findItem(CATALOG, e.itemId);
         if (pop) overlay?.pop(pop);
         if (pop?.iconUri && item) overlay?.reveal(pop.iconUri, item.rarity);
+        // 見つけた場所（ページ内の位置）に、開けた入れ物の目印を残す。メモリだけで、保存しない
+        const box = miner.snapshot;
+        const markUri = box.container ? openedContainerUri(box.container, box.skin) : null;
+        if (item && markUri) overlay?.mark(tracker.snapshot().progress, markUri, item.rarity);
       }
     }
     lastSeenSeq = events[events.length - 1]?.seq ?? lastSeenSeq;

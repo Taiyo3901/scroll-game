@@ -25,6 +25,8 @@ export interface OverlayView {
   skin: string;
   /** 探索者の見た目を決める職業名（診断前は 'default'） */
   job: string;
+  /** ページ（スクロールしている枠）の中での位置 0〜1。帯の中の探索者の高さになる */
+  progress: number;
 }
 
 export interface PopSpec {
@@ -42,6 +44,8 @@ export interface Overlay {
   pop(p: PopSpec): void;
   /** 入れ物から品が跳び出す演出 */
   reveal(iconUri: string, rarity: 1 | 2 | 3): void;
+  /** 品を見つけた場所（ページ内の位置）に、開けた入れ物の目印を残す。このページを開いている間だけ（保存しない） */
+  mark(progress: number, iconUri: string, rarity: 1 | 2 | 3): void;
   destroy(): void;
 }
 
@@ -52,6 +56,8 @@ const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls: string): HTMLEle
 };
 
 const CELL = 2;
+/** 帯に残す目印の数の上限 */
+const MAX_MARKS = 40;
 
 /** 物色の進み具合から、入れ物の何コマ目を見せるか。ミミックは、最後に正体を現す。 */
 function containerSprite(kind: ContainerKind, skin: string, phase: Phase, gauge: number): string | null {
@@ -62,6 +68,11 @@ function containerSprite(kind: ContainerKind, skin: string, phase: Phase, gauge:
     return containerFrameUri(`chest:${skin}`, gauge < 0.4 ? 0 : 1);
   }
   return containerFrameUri(`${kind}:${skin}`, Math.min(step(3), 2));
+}
+
+/** 開けた入れ物の絵（目印用）。 */
+export function openedContainerUri(kind: ContainerKind, skin: string): string | null {
+  return containerSprite(kind, skin, 'done', 1);
 }
 
 /**
@@ -77,23 +88,29 @@ export function createOverlay(): Overlay {
   const band = el('div', 'band');
   const depth = el('div', 'depth panel');
   const strataName = el('div', 'strata-name');
-  const mid = el('div', 'mid');
+  const track = el('div', 'track');
+  const ruler = el('div', 'ruler');
+  const marks = el('div', 'marks');
   const stage = el('div', 'stage');
+  const scene = el('div', 'scene');
   const cont = el('div', 'cont');
   const contImg = document.createElement('img');
   contImg.alt = '';
   cont.append(contImg);
   const hero = el('div', 'hero');
-  stage.append(cont, hero);
+  scene.append(cont, hero);
   const gauge = el('div', 'gauge panel');
   const gaugeInner = el('div', 'gauge-inner');
   const gaugeFill = el('div', 'gauge-fill');
   gaugeInner.append(gaugeFill);
   gauge.append(gaugeInner);
-  mid.append(stage, gauge);
+  stage.append(scene, gauge);
+  track.append(ruler, marks, stage);
   const today = el('div', 'today panel');
+  const foot = el('div', 'foot');
+  foot.append(strataName, today);
   const col = el('div', 'col');
-  col.append(depth, strataName, mid, today);
+  col.append(depth);
   const rock = el('div', 'rock');
   const shade = el('div', 'shade');
   const tint = el('div', 'tint');
@@ -108,7 +125,7 @@ export function createOverlay(): Overlay {
     torch.append(halo, holder);
     band.append(torch);
   }
-  band.append(col);
+  band.append(track, foot, col);
   const pops = el('div', 'pops');
   root.append(style, band, pops);
   document.documentElement.append(host);
@@ -119,6 +136,23 @@ export function createOverlay(): Overlay {
     cache[key] = value;
     apply();
   };
+
+  // 帯の長さ（探索者が動ける高さ）。大きさが変わったときだけ測り直す
+  const STAGE_H = 86;
+  const MARK_H = 18;
+  let trackH = 0;
+  let progress = 0;
+  const placed: { el: HTMLElement; p: number }[] = [];
+  const yOf = (p: number, h: number) => Math.round(Math.max(0, trackH - h) * Math.max(0, Math.min(1, p)));
+  const layout = () => {
+    stage.style.transform = `translateY(${yOf(progress, STAGE_H)}px)`;
+    for (const m of placed) m.el.style.transform = `translateY(${yOf(m.p, MARK_H)}px)`;
+  };
+  const resizer = new ResizeObserver(() => {
+    trackH = track.clientHeight;
+    layout();
+  });
+  resizer.observe(track);
 
   /** 探索者の姿勢。物色中は入れ物をあさり、ミミックだったときは見つけたあとも身構えたまま。 */
   const poseOf = (v: OverlayView): HeroPose => {
@@ -139,6 +173,12 @@ export function createOverlay(): Overlay {
       // 深く進むほど石壁が上へ流れる（1mあたり3px。タイル1枚ぶんでひと回り）
       const shift = Math.floor(v.depthM * 3) % TILE_HEIGHT_PX;
       set('rock', String(shift), () => (rock.style.transform = `translateY(${-shift}px)`));
+
+      // 探索者は、ページの読み進み具合に合わせて、帯を上から下へ進む
+      if (Math.abs(v.progress - progress) > 0.001) {
+        progress = v.progress;
+        stage.style.transform = `translateY(${yOf(progress, STAGE_H)}px)`;
+      }
 
       // 探索者
       const pose = poseOf(v);
@@ -178,6 +218,18 @@ export function createOverlay(): Overlay {
       const glowOpacity = (0.25 + 0.6 * g).toFixed(2);
       set('glow', glowOpacity, () => (glow.style.opacity = glowOpacity));
       set('today', String(v.todayFinds), () => (today.textContent = `今日\n${v.todayFinds}`));
+    },
+
+    mark(p, iconUri, rarity) {
+      const m = el('div', `mark r${rarity}`);
+      const img = document.createElement('img');
+      img.src = iconUri;
+      img.alt = '';
+      m.append(img);
+      marks.append(m);
+      placed.push({ el: m, p });
+      while (placed.length > MAX_MARKS) placed.shift()?.el.remove();
+      m.style.transform = `translateY(${yOf(p, MARK_H)}px)`;
     },
 
     reveal(iconUri, rarity) {
@@ -220,6 +272,7 @@ export function createOverlay(): Overlay {
     },
 
     destroy() {
+      resizer.disconnect();
       host.remove();
     },
   };

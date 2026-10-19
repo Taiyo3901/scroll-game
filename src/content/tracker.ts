@@ -8,6 +8,8 @@ export interface TrackerSnapshot {
   msSinceLastScroll: number;
   /** 最後の縦スクロールの時刻(performance.now)。まだなければ null。新しいスクロールがあったかの判定に使う */
   lastScrollAt: number | null;
+  /** 今スクロールしている枠の中での位置 0（先頭）〜1（末尾）。帯の中の探索者の位置になる */
+  progress: number;
   /** まだ service worker に送っていない距離 */
   pendingPx: number;
 }
@@ -22,11 +24,18 @@ const USER_INPUT_EVENTS = ['wheel', 'touchmove', 'keydown', 'pointerdown'] as co
  * スクロール量の計測。ページ全体と、ページ内の枠(Gmailなど)の両方を拾う。
  * イベント内では足し算だけ行い、数秒ごとにまとめて送る。
  */
+/** 枠の中でどこまで進んだか（0〜1）。スクロールできない枠は 0。 */
+function progressOf(el: Element): number {
+  const max = el.scrollHeight - el.clientHeight;
+  return max > 0 ? Math.max(0, Math.min(1, el.scrollTop / max)) : 0;
+}
+
 export function startTracker(): Tracker {
   const lastTop = new WeakMap<Element, number>();
   let lastInputAt: number | null = null;
   let pointerDown = false;
   let lastAnyScrollAt: number | null = null;
+  let lastScroller: Element | null = null;
   let pendingPx = 0;
   let flushTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -95,6 +104,7 @@ export function startTracker(): Tracker {
 
       // 「最後のスクロール」は、縦に動いたものなら向きや原因を問わない
       lastAnyScrollAt = now;
+      lastScroller = el;
       if (prev === undefined) return; // 初回は基準位置を覚えるだけ
 
       const delta = downwardDelta(prev, cur);
@@ -118,6 +128,7 @@ export function startTracker(): Tracker {
     snapshot: () => ({
       msSinceLastScroll: lastAnyScrollAt === null ? Infinity : performance.now() - lastAnyScrollAt,
       lastScrollAt: lastAnyScrollAt,
+      progress: progressOf(lastScroller ?? rootEl()),
       pendingPx,
     }),
   };
