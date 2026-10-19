@@ -1,6 +1,12 @@
 import type { GenreDef, ItemDef } from '../core/catalog';
 import type { Job } from '../core/job';
+import { TORCH_SVG } from '../content/overlay/wall';
 import { spriteUri } from '../core/sprites';
+
+/** 見出しの横に置く松明（飾り）。SVG は自前の固定文字列。 */
+export function Torch() {
+  return <span className="torch-deco" aria-hidden="true" dangerouslySetInnerHTML={{ __html: TORCH_SVG }} />;
+}
 
 /** 発見品のドットアイコン。未発見のときは黒いシルエットにする。 */
 export function ItemIcon(props: {

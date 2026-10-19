@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { GAME_NAME } from '../gameName';
 import { loadProfile, saveProfile } from '../storage';
 import { mount } from '../ui/mount';
+import { Torch } from '../ui/parts';
 
 function Welcome() {
   const [done, setDone] = useState(false);
@@ -14,7 +15,11 @@ function Welcome() {
 
   return (
     <main className="page narrow">
-      <h1>{GAME_NAME}へようこそ</h1>
+      <h1>
+        <Torch />
+        {GAME_NAME}へようこそ
+        <Torch />
+      </h1>
       <p className="lead">
         いつものようにWebページを下へスクロールすると迷宮を降り、スクロールを止めると、いま見ているサイトにまつわる品が見つかるゲームです。操作や管理は要りません。
       </p>

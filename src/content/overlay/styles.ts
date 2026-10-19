@@ -71,10 +71,11 @@ export const OVERLAY_CSS = `
 
 .col {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center;
-  padding: 12px 0 14px; gap: 6px;
+  /* 左は階段状の縁（最大12px）と枠の影を避けて、右寄りに置く */
+  padding: 12px 3px 14px 13px; gap: 6px;
 }
 .panel { background: #1b1410; box-shadow: 0 0 0 2px #2a1f1a, 0 0 0 3px #7a6040; }
-.depth { font-size: 12px; letter-spacing: -0.02em; padding: 2px 3px; }
+.depth { font-size: 10px; letter-spacing: -0.05em; padding: 2px 2px; white-space: nowrap; }
 .strata-name { writing-mode: vertical-rl; font-size: 11px; letter-spacing: .08em; }
 
 .mid { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
@@ -89,7 +90,7 @@ export const OVERLAY_CSS = `
   transition: transform .25s linear;
 }
 
-.today { white-space: pre; text-align: center; font-size: 10px; line-height: 1.3; padding: 3px 4px; }
+.today { white-space: pre; text-align: center; font-size: 10px; line-height: 1.3; padding: 3px 3px; }
 
 .pops { position: fixed; top: 38%; right: ${CONFIG.OVERLAY_WIDTH_PX + 10}px; z-index: 2147483647; pointer-events: none; }
 .pop {
