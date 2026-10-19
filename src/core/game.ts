@@ -1,5 +1,6 @@
 import { pxToDepth } from './depth.ts';
 import { areaAt, isGenreId, OTHER_GENRE, type Catalog, type Rarity } from './catalog.ts';
+import { isContainerKind, type ContainerKind, type ContainerRules } from './containers.ts';
 import { drawItem } from './loot.ts';
 import { MAX_EVENTS, emptyDay, type DayStats, type GameEvent, type GameState } from './state.ts';
 
@@ -9,6 +10,7 @@ export interface Rules {
   /** この間隔(ms)より短い発見の報告は受け付けない（連続送信対策） */
   minFindIntervalMs: number;
   rarityPoints: Record<Rarity, number>;
+  containers: ContainerRules;
 }
 
 export interface Env {
@@ -43,7 +45,8 @@ export function applyScroll(state: GameState, batch: { px: number }, dayKey: str
 
 /**
  * 発見の報告を反映する。上限を超えた報告や、間隔が短すぎる報告は無視する。
- * genreId が不明な値のときは「未踏の地」として扱う。見つけた品は、そのまま図鑑に入る。
+ * genreId が不明な値のときは「未踏の地」、container が不明な値のときは「箱」として扱う。
+ * 見つけた品は、そのまま図鑑に入る。
  */
 export function applyFind(
   state: GameState,
@@ -51,13 +54,15 @@ export function applyFind(
   now: number,
   dayKey: string,
   env: Env,
+  container: unknown = 'box',
 ): GameState {
   const { rules, catalog } = env;
   if (findsToday(state, dayKey) >= rules.maxFindsPerDay) return state;
   if (now - state.lastFindAt < rules.minFindIntervalMs) return state;
 
   const genre = isGenreId(catalog, genreId) ? genreId : OTHER_GENRE;
-  const item = drawItem(catalog, genre, areaAt(catalog.areas, state.depthM), env.rng);
+  const kind: ContainerKind = isContainerKind(container) ? container : 'box';
+  const item = drawItem(catalog, genre, areaAt(catalog.areas, state.depthM), env.rng, kind, rules.containers);
   if (!item) return state;
 
   const points = rules.rarityPoints[item.rarity] ?? 0;
@@ -72,6 +77,7 @@ export function applyFind(
     points: d.points + points,
     // 階層の秘宝は部屋に属さないので、閲覧中の部屋で数える
     genreFinds: { ...d.genreFinds, [genre]: (d.genreFinds[genre] ?? 0) + 1 },
+    containers: { ...d.containers, [kind]: (d.containers[kind] ?? 0) + 1 },
   }));
   return pushEvent(s, { at: now, kind: 'found', itemId: item.id });
 }

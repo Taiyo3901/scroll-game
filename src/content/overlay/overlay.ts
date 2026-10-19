@@ -1,5 +1,8 @@
+import { ACTOR_SIZE, containerFrameUri, heroSheet, type HeroPose } from '../../core/actors';
+import type { ContainerKind } from '../../core/containers';
+import type { Phase } from '../miner';
 import { OVERLAY_CSS, TILE_HEIGHT_PX } from './styles';
-import { PICK_URI, TORCH_SVG, wallUri } from './wall';
+import { TORCH_SVG, wallUri } from './wall';
 
 export interface OverlayView {
   depthText: string;
@@ -11,16 +14,21 @@ export interface OverlayView {
   strataColor: string;
   /** 今日見つけた数 */
   todayFinds: number;
-  /** ゲージがたまっている最中（ツルハシが動く） */
-  mining: boolean;
-  /** 0〜1 */
+  /** 場面: 歩く / 立ち止まり / 物色中 / 見つけ終わった */
+  phase: Phase;
+  /** 物色の進み具合 0〜1 */
   gauge: number;
+  /** 現れている入れ物（なければ null）と、その見た目を決める名前 */
+  container: ContainerKind | null;
+  skin: string;
+  /** 探索者の見た目を決める職業名（診断前は 'default'） */
+  job: string;
 }
 
 export interface PopSpec {
   text: string;
   sub?: string;
-  /** レア度 1〜3 の鉱石、または一般のお知らせ / 警告 */
+  /** レア度 1〜3 の品、または一般のお知らせ / 警告 */
   tone: 'r1' | 'r2' | 'r3' | 'info' | 'warn';
   stars?: number;
   /** 発見品のドットアイコン（data URI） */
@@ -30,6 +38,8 @@ export interface PopSpec {
 export interface Overlay {
   update(v: OverlayView): void;
   pop(p: PopSpec): void;
+  /** 入れ物から品が跳び出す演出 */
+  reveal(iconUri: string, rarity: 1 | 2 | 3): void;
   destroy(): void;
 }
 
@@ -39,8 +49,21 @@ const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls: string): HTMLEle
   return e;
 };
 
+const CELL = 2;
+
+/** 物色の進み具合から、入れ物の何コマ目を見せるか。ミミックは、最後に正体を現す。 */
+function containerSprite(kind: ContainerKind, skin: string, phase: Phase, gauge: number): string | null {
+  const step = (frames: number) => (phase === 'done' ? frames - 1 : gauge < 0.34 ? 0 : gauge < 0.67 ? 1 : 2);
+  if (kind === 'mimic') {
+    if (phase === 'done') return containerFrameUri(`mimic:${skin}`, 1);
+    if (gauge >= 0.8) return containerFrameUri(`mimic:${skin}`, 0);
+    return containerFrameUri(`chest:${skin}`, gauge < 0.4 ? 0 : 1);
+  }
+  return containerFrameUri(`${kind}:${skin}`, Math.min(step(3), 2));
+}
+
 /**
- * 画面右端の細い帯。Shadow DOM で包み、pointer-events: none でページの操作を邪魔しない。
+ * 画面右端の帯。Shadow DOM で包み、pointer-events: none でページの操作を邪魔しない。
  * 値が変わったところだけを書き換える。
  */
 export function createOverlay(): Overlay {
@@ -53,17 +76,19 @@ export function createOverlay(): Overlay {
   const depth = el('div', 'depth panel');
   const strataName = el('div', 'strata-name');
   const mid = el('div', 'mid');
-  const pick = el('span', 'pick');
-  const pickImg = document.createElement('img');
-  pickImg.src = PICK_URI;
-  pickImg.alt = '';
-  pick.append(pickImg);
+  const stage = el('div', 'stage');
+  const cont = el('div', 'cont');
+  const contImg = document.createElement('img');
+  contImg.alt = '';
+  cont.append(contImg);
+  const hero = el('div', 'hero');
+  stage.append(cont, hero);
   const gauge = el('div', 'gauge panel');
   const gaugeInner = el('div', 'gauge-inner');
   const gaugeFill = el('div', 'gauge-fill');
   gaugeInner.append(gaugeFill);
   gauge.append(gaugeInner);
-  mid.append(pick, gauge);
+  mid.append(stage, gauge);
   const today = el('div', 'today panel');
   const col = el('div', 'col');
   col.append(depth, strataName, mid, today);
@@ -92,6 +117,14 @@ export function createOverlay(): Overlay {
     apply();
   };
 
+  /** 探索者の姿勢。物色中は入れ物をあさり、ミミックだったときは見つけたあとも身構えたまま。 */
+  const poseOf = (v: OverlayView): HeroPose => {
+    if (v.phase === 'walk') return 'walk';
+    if (v.phase === 'search') return 'search';
+    if (v.phase === 'done') return v.container === 'mimic' ? 'idle' : 'cheer';
+    return 'idle';
+  };
+
   return {
     update(v) {
       set('depth', v.depthText, () => (depth.textContent = v.depthText));
@@ -102,12 +135,53 @@ export function createOverlay(): Overlay {
       // 深く進むほど石壁が上へ流れる（1mあたり3px。タイル1枚ぶんでひと回り）
       const shift = Math.floor(v.depthM * 3) % TILE_HEIGHT_PX;
       set('rock', String(shift), () => (rock.style.transform = `translateY(${-shift}px)`));
-      // ゲージがたまるほど、ツルハシの周りが明るくなる
-      const glowOpacity = (0.25 + 0.6 * v.gauge).toFixed(2);
+
+      // 探索者
+      const pose = poseOf(v);
+      set('hero', `${v.job}|${pose}`, () => {
+        const sheet = heroSheet(v.job, pose);
+        hero.style.backgroundImage = `url("${sheet.uri}")`;
+        hero.style.backgroundSize = `${sheet.frames * ACTOR_SIZE * CELL}px ${ACTOR_SIZE * CELL}px`;
+        hero.className = `hero ${pose}`;
+      });
+      set('shake', String(v.phase === 'done' && v.container === 'mimic'), () =>
+        hero.classList.toggle('scared', v.phase === 'done' && v.container === 'mimic'),
+      );
+
+      // 入れ物
+      const sprite = v.container ? containerSprite(v.container, v.skin, v.phase, v.gauge) : null;
+      set('cont', sprite ?? '', () => {
+        if (sprite) contImg.src = sprite;
+      });
+      const shown = v.container !== null && sprite !== null;
+      set('contShown', String(shown), () => {
+        cont.classList.toggle('on', shown);
+        if (shown) {
+          // 現れるたびに、ぽんと出る動きをやり直す
+          cont.classList.remove('enter');
+          void cont.offsetWidth;
+          cont.classList.add('enter');
+        }
+      });
+      set('contPhase', `${v.phase}|${v.container}`, () => {
+        cont.classList.toggle('searching', v.phase === 'search');
+        cont.classList.toggle('mimic-reveal', v.container === 'mimic' && (v.phase === 'done' || v.gauge >= 0.8));
+      });
+
+      // 物色の進み具合と、まわりの明るさ
+      const g = v.phase === 'search' ? v.gauge : 0;
+      set('gauge', g.toFixed(3), () => (gaugeFill.style.transform = `scaleX(${g})`));
+      const glowOpacity = (0.25 + 0.6 * g).toFixed(2);
       set('glow', glowOpacity, () => (glow.style.opacity = glowOpacity));
-      set('gauge', v.gauge.toFixed(3), () => (gaugeFill.style.transform = `scaleY(${v.gauge})`));
-      set('pick', String(v.mining), () => (pick.className = v.mining ? 'pick mining' : 'pick'));
       set('today', String(v.todayFinds), () => (today.textContent = `今日\n${v.todayFinds}`));
+    },
+
+    reveal(iconUri, rarity) {
+      const fly = el('img', `fly r${rarity}`);
+      fly.src = iconUri;
+      fly.alt = '';
+      fly.addEventListener('animationend', () => fly.remove());
+      stage.append(fly);
     },
 
     pop(p) {

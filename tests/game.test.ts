@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { applyFind, applyScroll, findsToday, type Env, type Rules } from '../src/core/game';
 import { drawItem, SECRET_CHANCE } from '../src/core/loot';
+import { rollContainer } from '../src/core/containers';
 import { initialGameState, normalizeState, MAX_EVENTS, type GameState } from '../src/core/state';
 import { areaAt, findItem } from '../src/core/catalog';
 import { CATALOG } from '../src/data';
@@ -10,6 +11,11 @@ const RULES: Rules = {
   maxFindsPerDay: 5,
   minFindIntervalMs: 2000,
   rarityPoints: { 1: 1, 2: 3, 3: 10 },
+  containers: {
+    weights: { pot: 45, box: 40, chest: 15 },
+    rarityMult: { pot: [1.2, 0.7, 0.3], box: [1, 1, 1], chest: [0.6, 1.5, 2.5] },
+    mimicInChest: 0.12,
+  },
 };
 const env = (rng: () => number = () => 0.5): Env => ({ rules: RULES, catalog: CATALOG, rng });
 const DAY = '2026-10-19';
@@ -79,6 +85,23 @@ describe('applyFind', () => {
   });
 });
 
+describe('applyFind with containers', () => {
+  it('records the container kind, and unknown kinds count as a box', () => {
+    const a = applyFind(initialGameState(), 'dev', T0, DAY, env(seq(0.5, 0)), 'chest');
+    expect(a.days[DAY]?.containers).toEqual({ chest: 1 });
+    for (const bad of ['nope', 7, null, '__proto__']) {
+      const s = applyFind(initialGameState(), 'dev', T0, DAY, env(seq(0.5, 0)), bad);
+      expect(s.days[DAY]?.containers).toEqual({ box: 1 });
+    }
+  });
+  it('a mimic gives mimic loot, which is not tied to the room', () => {
+    const s = applyFind(initialGameState(), 'video', T0, DAY, env(seq(0.5, 0)), 'mimic');
+    const id = Object.keys(s.collection)[0]!;
+    expect(findItem(CATALOG, id)?.mimic).toBe(true);
+    expect(s.days[DAY]).toMatchObject({ containers: { mimic: 1 }, genreFinds: { video: 1 } });
+  });
+});
+
 describe('drawItem', () => {
   const cave = areaAt(CATALOG.areas, 0);
   const abyss = areaAt(CATALOG.areas, 5000);
@@ -114,6 +137,33 @@ describe('drawItem', () => {
     expect(share(abyss)).toBeGreaterThan(share(cave) + 0.1);
   });
 
+  it('mimic loot never includes the area secret (even when the secret roll would hit)', () => {
+    const item = drawItem(CATALOG, 'video', cave, seq(0), 'mimic', RULES.containers)!;
+    expect(item.mimic).toBe(true);
+  });
+
+  it('a chest favours 3-star and a pot favours 1-star (same rolls, same room)', () => {
+    const roll = () => seq(0.99, 0.9, 0); // 重みの合計の 90% 地点
+    const chest = drawItem(CATALOG, 'dev', cave, roll(), 'chest', RULES.containers)!;
+    const pot = drawItem(CATALOG, 'dev', cave, roll(), 'pot', RULES.containers)!;
+    expect(chest.rarity).toBeGreaterThan(pot.rarity);
+  });
+
+  it('container multipliers keep the overall 3-star rate close to the plain rate (balance check)', () => {
+    let x = 99;
+    const rng = () => ((x = (x * 1664525 + 1013904223) % 4294967296) / 4294967296);
+    const N = 20000;
+    let plain = 0;
+    let mixed = 0;
+    for (let i = 0; i < N; i++) if (drawItem(CATALOG, 'dev', cave, rng, 'box', RULES.containers)!.rarity === 3) plain++;
+    for (let i = 0; i < N; i++) {
+      const kind = rollContainer(RULES.containers, rng);
+      const it = drawItem(CATALOG, 'dev', cave, rng, kind, RULES.containers)!;
+      if (it.rarity === 3) mixed++;
+    }
+    expect(Math.abs(mixed / N - plain / N)).toBeLessThan(0.02);
+  });
+
   it('returns null for a room with no items', () => {
     expect(drawItem({ ...CATALOG, items: [] }, 'dev', cave, seq(0.99, 0.5))).toBeNull();
   });
@@ -134,7 +184,7 @@ describe('normalizeState', () => {
     expect(s.version).toBe(3);
     expect(s.depthM).toBe(12.5);
     expect(s.collection).toEqual({});
-    expect(s.days[DAY]).toEqual({ scrollPx: 100, finds: 0, points: 0, genreFinds: {} });
+    expect(s.days[DAY]).toEqual({ scrollPx: 100, finds: 0, points: 0, genreFinds: {}, containers: {} });
     expect(s).not.toHaveProperty('oil');
     expect(s).not.toHaveProperty('bag');
   });
@@ -150,7 +200,7 @@ describe('normalizeState', () => {
     const s = normalizeState(cur);
     expect(s.depthM).toBe(0);
     expect(s.collection).toEqual({ a: 2, d: 1 });
-    expect(s.days[DAY]).toEqual({ scrollPx: 10, finds: 2, points: 3, genreFinds: { video: 2 } });
+    expect(s.days[DAY]).toEqual({ scrollPx: 10, finds: 2, points: 3, genreFinds: { video: 2 }, containers: {} });
     expect(s.events).toHaveLength(1);
     expect(normalizeState(null)).toEqual(initialGameState());
     expect(normalizeState('junk')).toEqual(initialGameState());

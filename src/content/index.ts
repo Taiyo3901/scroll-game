@@ -2,6 +2,7 @@ import { CONFIG } from '../config';
 import { areaAt, findItem } from '../core/catalog';
 import { formatBadge } from '../core/format';
 import { findsToday } from '../core/game';
+import { diagnoseJob, sumGenreFinds } from '../core/job';
 import type { GameEvent } from '../core/state';
 import { localDayKey } from '../core/week';
 import { spriteUri } from '../core/sprites';
@@ -20,6 +21,15 @@ function describeEvent(e: GameEvent): Parameters<Overlay['pop']>[0] | null {
   const item = findItem(CATALOG, e.itemId);
   if (!item) return null;
   const count = getView().state.collection[item.id] ?? 0;
+  if (item.mimic) {
+    return {
+      text: 'ミミックだ！',
+      sub: count <= 1 ? `${item.name}を手に入れた（新発見）` : `${item.name}を手に入れた`,
+      tone: `r${item.rarity}` as 'r1' | 'r2' | 'r3',
+      stars: item.rarity,
+      iconUri: spriteUri(item.id) ?? undefined,
+    };
+  }
   return {
     text: item.name,
     tone: `r${item.rarity}` as 'r1' | 'r2' | 'r3',
@@ -27,6 +37,17 @@ function describeEvent(e: GameEvent): Parameters<Overlay['pop']>[0] | null {
     iconUri: spriteUri(item.id) ?? undefined,
     sub: count <= 1 ? '新発見！ 図鑑に追加' : `図鑑 ${count}個目`,
   };
+}
+
+/** 診断した職業（探索者の見た目になる）。保存データが変わったときだけ計算し直す。 */
+let jobCache: { state: unknown; job: string } | null = null;
+function currentJob(): string {
+  const { state } = getView();
+  if (jobCache?.state !== state) {
+    const job = diagnoseJob(sumGenreFinds(Object.values(state.days)), CATALOG.genres);
+    jobCache = { state, job: job?.name ?? 'default' };
+  }
+  return jobCache.job;
 }
 
 function main(): void {
@@ -65,8 +86,11 @@ function main(): void {
         strataName: area.name,
         strataColor: area.color,
         todayFinds: findsToday(state, localDayKey(new Date())),
-        mining: m.mining,
+        phase: m.phase,
         gauge: m.gauge,
+        container: m.container,
+        skin: m.skin,
+        job: currentJob(),
       });
     }
     debug.update(t, m);
@@ -80,7 +104,9 @@ function main(): void {
       if (e.seq <= lastSeenSeq) continue;
       if (now - e.at < EVENT_MAX_AGE_MS && document.visibilityState === 'visible') {
         const pop = describeEvent(e);
+        const item = findItem(CATALOG, e.itemId);
         if (pop) overlay?.pop(pop);
+        if (pop?.iconUri && item) overlay?.reveal(pop.iconUri, item.rarity);
       }
     }
     lastSeenSeq = events[events.length - 1]?.seq ?? lastSeenSeq;

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { findItem, itemsOfGenre, type ItemDef } from '../core/catalog';
+import { findItem, itemsOfGenre, mimicItems, type ItemDef } from '../core/catalog';
+import { CONTAINER_KINDS, CONTAINER_LABELS } from '../core/containers';
 import { pxToMeters } from '../core/depth';
 import { JOB_MIN_FINDS, diagnoseJob, sumGenreFinds } from '../core/job';
 import { SHOWCASE_MAX, toggleShowcase } from '../core/profile';
@@ -15,8 +16,9 @@ import { useView } from '../ui/store';
 type Tab = 'book' | 'showcase' | 'stats';
 
 const SECRET_COLOR = '#c9a227';
+const MIMIC_COLOR = '#b04a6a';
 const genreColor = (id?: string) => CATALOG.genres.find((g) => g.id === id)?.color ?? SECRET_COLOR;
-const colorOf = (item: ItemDef) => (item.areaId ? SECRET_COLOR : genreColor(item.genreId));
+const colorOf = (item: ItemDef) => (item.mimic ? MIMIC_COLOR : item.areaId ? SECRET_COLOR : genreColor(item.genreId));
 
 function weekDays(days: Record<string, DayStats>, now: number): DayStats[] {
   const thisWeek = isoWeekId(new Date(now));
@@ -35,6 +37,7 @@ function Book(props: { collection: Record<string, number>; days: Record<string, 
   const week = sumGenreFinds(weekDays(days, now));
   const sum = (f: Record<string, number>) => Object.values(f).reduce((a, b) => a + b, 0);
   const secrets = CATALOG.items.filter((i) => i.areaId);
+  const mimics = mimicItems(CATALOG);
 
   return (
     <>
@@ -82,6 +85,20 @@ function Book(props: { collection: Record<string, number>; days: Record<string, 
         <div className="ore-grid">
           {secrets.map((i) => (
             <ItemCard key={i.id} item={i} count={collection[i.id] ?? 0} color={SECRET_COLOR} />
+          ))}
+        </div>
+      </section>
+
+      <section className="stratum" style={{ borderLeftColor: MIMIC_COLOR }}>
+        <h2>
+          <span className="chip" style={{ background: MIMIC_COLOR }}>
+            ミミックの戦利品
+          </span>
+          <small>宝箱に化けた魔物から、まれに手に入る</small>
+        </h2>
+        <div className="ore-grid">
+          {mimics.map((i) => (
+            <ItemCard key={i.id} item={i} count={collection[i.id] ?? 0} color={MIMIC_COLOR} />
           ))}
         </div>
       </section>
@@ -192,6 +209,11 @@ function download(name: string, csv: string): void {
 function Stats({ days }: { days: Record<string, DayStats> }) {
   const [unit, setUnit] = useState<'day' | 'week'>('day');
   const rows = useMemo(() => (unit === 'day' ? dailyRows(days) : weeklyRows(days)), [days, unit]);
+  const boxes = useMemo(() => {
+    const total: Record<string, number> = {};
+    for (const d of Object.values(days)) for (const [k, n] of Object.entries(d.containers)) total[k] = (total[k] ?? 0) + n;
+    return total;
+  }, [days]);
   return (
     <>
       <div className="row">
@@ -222,6 +244,13 @@ function Stats({ days }: { days: Record<string, DayStats> }) {
             <BarChart rows={rows} pick={(r) => r.points} label="獲得ポイント" />
             <BarChart rows={rows} pick={(r) => pxToMeters(r.scrollPx)} label="スクロール距離(m)" />
           </div>
+          <ul className="legend" aria-label="開けた入れ物の合計">
+            {CONTAINER_KINDS.map((k) => (
+              <li key={k}>
+                {CONTAINER_LABELS[k]} {boxes[k] ?? 0}個
+              </li>
+            ))}
+          </ul>
           <StatsTable rows={rows} />
         </>
       )}

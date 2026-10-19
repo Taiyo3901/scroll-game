@@ -7,9 +7,9 @@ import { CATALOG } from '../src/data';
 const day = (o: Partial<DayStats>): DayStats => ({ ...emptyDay(), ...o });
 
 const days = {
-  '2026-10-19': day({ finds: 3, points: 5, scrollPx: 1000, genreFinds: { video: 2, dev: 1 } }), // 月
-  '2026-10-18': day({ finds: 2, points: 4, scrollPx: 500, genreFinds: { video: 2 } }), // 日（前週）
-  '2026-10-20': day({ finds: 1, points: 1, scrollPx: 200, genreFinds: { dev: 1 } }), // 火
+  '2026-10-19': day({ finds: 3, points: 5, scrollPx: 1000, genreFinds: { video: 2, dev: 1 }, containers: { pot: 2, chest: 1 } }), // 月
+  '2026-10-18': day({ finds: 2, points: 4, scrollPx: 500, genreFinds: { video: 2 }, containers: { box: 2 } }), // 日（前週）
+  '2026-10-20': day({ finds: 1, points: 1, scrollPx: 200, genreFinds: { dev: 1 }, containers: { pot: 1 } }), // 火
 };
 
 describe('stats rows', () => {
@@ -20,7 +20,7 @@ describe('stats rows', () => {
     const w = weeklyRows(days);
     expect(w.map((r) => r.label)).toEqual(['2026-W42', '2026-W43']);
     expect(w[0]).toMatchObject({ finds: 2, points: 4, scrollPx: 500, genreFinds: { video: 2 } });
-    expect(w[1]).toMatchObject({ finds: 4, points: 6, scrollPx: 1200, genreFinds: { video: 2, dev: 2 } });
+    expect(w[1]).toMatchObject({ finds: 4, points: 6, scrollPx: 1200, genreFinds: { video: 2, dev: 2 }, containers: { pot: 3, chest: 1 } });
   });
   it('does not mutate the source days when merging weeks', () => {
     weeklyRows(days);
@@ -39,18 +39,21 @@ describe('toCsv', () => {
     expect(lines).toHaveLength(4);
     const head = lines[0]!.split(',');
     expect(head.slice(0, 5)).toEqual(['期間', '発見数', '獲得ポイント', '総スクロール距離(px)', '実距離(m)']);
-    expect(head.slice(5)).toEqual(CATALOG.genres.map((g) => g.name));
+    expect(head.slice(5, 9)).toEqual(['壺', '箱', '宝箱', 'ミミック']);
+    expect(head.slice(9)).toEqual(CATALOG.genres.map((g) => g.name));
   });
   it('writes room counts in the matching columns', () => {
     const head = lines[0]!.split(',');
     const row = lines[2]!.split(','); // 2026-10-19
     expect(row.slice(0, 5)).toEqual(['2026-10-19', '3', '5', '1000', '0.26']);
+    expect(row[head.indexOf('壺')]).toBe('2');
+    expect(row[head.indexOf('宝箱')]).toBe('1');
     expect(row[head.indexOf('劇場')]).toBe('2');
     expect(row[head.indexOf('工房')]).toBe('1');
     expect(row[head.indexOf('酒場')]).toBe('0');
   });
   it('quotes cells that need it', () => {
-    const q = toCsv([{ label: 'a,"b"', finds: 0, points: 0, scrollPx: 0, genreFinds: {} }], []);
+    const q = toCsv([{ label: 'a,"b"', finds: 0, points: 0, scrollPx: 0, genreFinds: {}, containers: {} }], []);
     expect(q).toContain('"a,""b"""');
   });
 });

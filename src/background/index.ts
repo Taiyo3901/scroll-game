@@ -39,7 +39,7 @@ chrome.runtime.onMessage.addListener((message: unknown) => {
   if (message.type === 'scroll-batch') {
     void update((s, _now, day) => applyScroll(s, { px: message.px }, day, env()));
   } else {
-    void update((s, now, day) => applyFind(s, message.genreId, now, day, env()));
+    void update((s, now, day) => applyFind(s, message.genreId, now, day, env(), message.container));
   }
   return false;
 });

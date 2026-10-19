@@ -57,9 +57,9 @@ export const OVERLAY_CSS = `
   mix-blend-mode: screen; opacity: .3;
 }
 
-.torch { position: absolute; left: 1px; width: 14px; height: 14px; }
-.torch.t1 { top: 30%; }
-.torch.t2 { top: 66%; }
+.torch { position: absolute; left: 0; width: 14px; height: 14px; }
+.torch.t1 { top: 24%; }
+.torch.t2 { top: 76%; }
 .torch svg { width: 14px; height: 14px; image-rendering: pixelated; display: block; }
 .torch svg .f1 { animation: flameA .6s steps(1, end) infinite; }
 .torch svg .f2 { animation: flameB .6s steps(1, end) infinite; opacity: 0; }
@@ -78,15 +78,35 @@ export const OVERLAY_CSS = `
 .depth { font-size: 10px; letter-spacing: -0.05em; padding: 2px 2px; white-space: nowrap; }
 .strata-name { writing-mode: vertical-rl; font-size: 11px; letter-spacing: .08em; }
 
-.mid { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
-.pick { width: 24px; height: 24px; transform-origin: 60% 85%; filter: drop-shadow(1px 1px 0 #2a1f1a); }
-.pick img { width: 24px; height: 24px; image-rendering: pixelated; display: block; }
-.pick.mining { animation: swing .5s steps(3, end) infinite; }
-.gauge { width: 10px; height: 96px; padding: 2px; }
+.mid { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+
+/* 場面: 左下に探索者、右上に入れ物（ドット絵 14マス x 2px = 28px） */
+.stage { position: relative; width: 44px; height: 62px; }
+.hero {
+  position: absolute; left: 0; bottom: 0; width: 28px; height: 28px;
+  background-repeat: no-repeat; image-rendering: pixelated; filter: drop-shadow(1px 1px 0 #2a1f1a);
+}
+.hero.walk { animation: heroWalk .5s steps(4, end) infinite; }
+.hero.search { animation: heroSearch .45s steps(2, end) infinite; }
+.hero.scared { animation: scared .3s steps(2, end) 3; }
+.cont { position: absolute; right: 0; top: 0; width: 28px; height: 28px; opacity: 0; filter: drop-shadow(1px 1px 0 #2a1f1a); }
+.cont.on { opacity: 1; }
+.cont img { width: 28px; height: 28px; image-rendering: pixelated; display: block; }
+.cont.enter { animation: enter .35s steps(5, end); }
+.cont.searching { animation: enter .35s steps(5, end), rummage .5s steps(2, end) .35s infinite; }
+.cont.mimic-reveal { animation: shudder .25s steps(2, end) infinite; }
+.fly {
+  position: absolute; right: 6px; top: 0; width: 28px; height: 28px; image-rendering: pixelated;
+  animation: fly 1.2s steps(10, end) forwards;
+}
+.fly.r2 { filter: drop-shadow(0 0 3px rgba(80,160,220,.9)); }
+.fly.r3 { filter: drop-shadow(0 0 5px rgba(255,210,70,1)); }
+
+.gauge { width: 44px; height: 12px; padding: 2px; }
 .gauge-inner { width: 100%; height: 100%; overflow: hidden; background: #3a2c20; }
 .gauge-fill {
-  width: 100%; height: 100%; transform-origin: bottom; transform: scaleY(0);
-  background: repeating-linear-gradient(0deg, #f6d44c 0 4px, #b8870f 4px 6px);
+  width: 100%; height: 100%; transform-origin: left; transform: scaleX(0);
+  background: repeating-linear-gradient(90deg, #f6d44c 0 4px, #b8870f 4px 6px);
   transition: transform .25s linear;
 }
 
@@ -111,7 +131,18 @@ export const OVERLAY_CSS = `
 .pop.r3 .stars { color: #f6d44c; }
 .pop.r3 .ico img { filter: drop-shadow(0 0 4px rgba(255,210,70,.95)); }
 
-@keyframes swing { 0% { transform: rotate(-30deg); } 50% { transform: rotate(18deg); } 100% { transform: rotate(-30deg); } }
+@keyframes heroWalk { from { background-position-x: 0; } to { background-position-x: -112px; } }
+@keyframes heroSearch { from { background-position-x: 0; } to { background-position-x: -56px; } }
+@keyframes scared { 0% { transform: translateX(0); } 50% { transform: translateX(-3px); } 100% { transform: translateX(0); } }
+@keyframes enter { 0% { transform: translateY(-10px) scale(.4); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+@keyframes rummage { 0% { transform: translateX(0); } 50% { transform: translateX(-1px) rotate(-3deg); } 100% { transform: translateX(1px) rotate(3deg); } }
+@keyframes shudder { 0% { transform: translateX(-2px); } 100% { transform: translateX(2px); } }
+@keyframes fly {
+  0% { transform: translateY(0) scale(.6); opacity: 0; }
+  20% { opacity: 1; }
+  60% { transform: translateY(-22px) scale(1.5); opacity: 1; }
+  100% { transform: translateY(-30px) scale(1.2); opacity: 0; }
+}
 @keyframes flameA { 0% { opacity: 1; } 50% { opacity: 0; } }
 @keyframes flameB { 0% { opacity: 0; } 50% { opacity: 1; } }
 @keyframes halo { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
@@ -131,7 +162,8 @@ export const OVERLAY_CSS = `
 
 /* 動きを控えめにする: 振り・炎のちらつきをやめ、ゲージは即時に動かす */
 @media (prefers-reduced-motion: reduce) {
-  .pick.mining, .torch svg .f1, .torch svg .f2, .torch .halo { animation: none; }
+  .hero.walk, .hero.search, .hero.scared, .cont.enter, .cont.searching, .cont.mimic-reveal, .fly, .torch svg .f1, .torch svg .f2, .torch .halo { animation: none; }
+  .fly { opacity: 0; }
   .torch svg .f1 { opacity: 1; }
   .torch svg .f2 { opacity: 0; }
   .gauge-fill { transition: none; }

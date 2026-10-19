@@ -62,7 +62,7 @@ export function createDebug(): DebugView {
         `今日の総スクロール: ${todayPx.toFixed(0)} px（実距離 ${pxToMeters(todayPx).toFixed(2)} m）`,
         `深度: ${state.depthM.toFixed(1)} m  ${areaAt(CATALOG.areas, state.depthM).name}`,
         `この部屋: ${genre?.name ?? '-'}`,
-        `発見: ${m.mining ? `${Math.round(m.gauge * 100)}%` : '待機'}  今日 ${findsToday(state, dayKey)}/${CONFIG.MAX_FINDS_PER_DAY}回`,
+        `場面: ${m.phase}  入れ物: ${m.container ?? '-'}(${m.skin || '-'})  ${Math.round(m.gauge * 100)}%  今日 ${findsToday(state, dayKey)}/${CONFIG.MAX_FINDS_PER_DAY}回`,
         `条件: ${checks}`,
       ].join('\n');
     },

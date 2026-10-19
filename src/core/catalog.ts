@@ -31,6 +31,8 @@ export interface ItemDef {
   genreId?: string;
   /** 階層の秘宝が出る階層 */
   areaId?: string;
+  /** ミミックの戦利品（宝箱に化けた魔物から、まれに出る） */
+  mimic?: boolean;
   rarity: Rarity;
   name: string;
   description: string;
@@ -60,6 +62,8 @@ export function areaAt(areas: AreaDef[], depthM: number): AreaDef {
 
 export const itemsOfGenre = (c: Catalog, genreId: string): ItemDef[] =>
   c.items.filter((i) => i.genreId === genreId);
+
+export const mimicItems = (c: Catalog): ItemDef[] => c.items.filter((i) => i.mimic);
 
 export const secretOf = (c: Catalog, areaId: string): ItemDef | undefined =>
   c.items.find((i) => i.areaId === areaId);

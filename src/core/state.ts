@@ -7,6 +7,8 @@ export interface DayStats {
   points: number;
   /** 部屋ごとの発見数 */
   genreFinds: Record<string, number>;
+  /** 入れ物ごとの発見数（壺・箱・宝箱・ミミック） */
+  containers: Record<string, number>;
 }
 
 export interface FoundEvent {
@@ -33,7 +35,7 @@ export interface GameState {
 
 export const MAX_EVENTS = 5;
 
-export const emptyDay = (): DayStats => ({ scrollPx: 0, finds: 0, points: 0, genreFinds: {} });
+export const emptyDay = (): DayStats => ({ scrollPx: 0, finds: 0, points: 0, genreFinds: {}, containers: {} });
 
 export function initialGameState(): GameState {
   return { version: 3, depthM: 0, collection: {}, days: {}, lastFindAt: 0, events: [] };
@@ -70,6 +72,7 @@ export function normalizeState(raw: unknown): GameState {
         finds: isCurrent ? num(d.finds, 0) : 0,
         points: isCurrent ? num(d.points, 0) : 0,
         genreFinds: isCurrent ? counts(d.genreFinds) : {},
+        containers: isCurrent ? counts(d.containers) : {},
       };
     }
   }

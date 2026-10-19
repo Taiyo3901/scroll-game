@@ -28,9 +28,21 @@ const BASE = {
   // --- 発見品 ---
   RARITY_POINTS: { 1: 1, 2: 3, 3: 10 } as Record<1 | 2 | 3, number>,
 
+  // --- 入れ物（立ち止まると1つ現れる。1回の立ち止まりで見つかる品は1つだけ） ---
+  /** 入れ物の出やすさ。平均すると、レア度の出方がほぼ変わらないように倍率を決めている */
+  CONTAINER_WEIGHTS: { pot: 45, box: 40, chest: 15 } as Record<'pot' | 'box' | 'chest', number>,
+  /** ★1・★2・★3 の重みに掛ける倍率 */
+  CONTAINER_RARITY_MULT: {
+    pot: [1.2, 0.7, 0.3],
+    box: [1, 1, 1],
+    chest: [0.6, 1.5, 2.5],
+  } as Record<'pot' | 'box' | 'chest', [number, number, number]>,
+  /** 宝箱が、実はミミックだった確率 */
+  MIMIC_IN_CHEST: 0.12,
+
   // --- 画面右端の演出 ---
   /** 帯の幅(px)。ページ側にも同じ幅の余白を取る */
-  OVERLAY_WIDTH_PX: 44,
+  OVERLAY_WIDTH_PX: 60,
 
   // --- デバッグ表示 ---
   DEBUG_OVERLAY_DEFAULT: false,

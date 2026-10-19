@@ -6,6 +6,8 @@ import { sendToBackground } from './send';
 export interface TrackerSnapshot {
   /** 最後のスクロール（向きや原因を問わない）からの経過ms。なければ Infinity */
   msSinceLastScroll: number;
+  /** 最後の縦スクロールの時刻(performance.now)。まだなければ null。新しいスクロールがあったかの判定に使う */
+  lastScrollAt: number | null;
   /** まだ service worker に送っていない距離 */
   pendingPx: number;
 }
@@ -115,6 +117,7 @@ export function startTracker(): Tracker {
   return {
     snapshot: () => ({
       msSinceLastScroll: lastAnyScrollAt === null ? Infinity : performance.now() - lastAnyScrollAt,
+      lastScrollAt: lastAnyScrollAt,
       pendingPx,
     }),
   };

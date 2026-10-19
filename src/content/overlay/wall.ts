@@ -1,8 +1,9 @@
+import { CONFIG } from '../../config';
 import { SPRITE_PALETTE } from '../../core/sprites';
 
-/** ドット絵1マスの大きさ(px)。帯の幅(44px)を 22 マスで描く。 */
+/** ドット絵1マスの大きさ(px)。帯の幅を、このマス数で描く。 */
 export const CELL_PX = 2;
-const W = 22;
+const W = CONFIG.OVERLAY_WIDTH_PX / CELL_PX;
 export const WALL_TILE_PX = 200;
 const H = WALL_TILE_PX / CELL_PX; // 100 マス
 
@@ -127,7 +128,7 @@ export function wallUri(areaId: string): string {
   for (let row = 0; row < H / ROW; row++) {
     const y = row * ROW;
     const shift = row % 2 === 0 ? 0 : 5;
-    for (let col = -1; col < 3; col++) {
+    for (let col = -1; col < Math.ceil(W / 11) + 1; col++) {
       const x = col * 11 + shift;
       const base = theme.bricks[Math.floor(rand() * theme.bricks.length)]!;
       const x0 = Math.max(0, x);

@@ -7,6 +7,7 @@ const good: MiningInput = {
   visible: true,
   findsToday: 0,
   maxFindsPerDay: 300,
+  foundThisStop: false,
 };
 
 describe('evaluateConditions', () => {
@@ -24,6 +25,7 @@ describe('evaluateConditions', () => {
     ['scrolled just now', { msSinceLastScroll: 999 }, 'stopped'],
     ['tab hidden', { visible: false }, 'visible'],
     ['daily cap reached', { findsToday: 300 }, 'underDailyCap'],
+    ['already found at this stop', { foundThisStop: true }, 'oncePerStop'],
   ];
   for (const [name, patch, key] of cases) {
     it(`fails only "${key}" when ${name}`, () => {

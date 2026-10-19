@@ -69,13 +69,13 @@ describe('data/items.json', () => {
     }
   });
 
-  it('ids are unique, each item belongs to exactly one of a room or an area, and has text', () => {
+  it('ids are unique, each item belongs to exactly one of a room, an area or the mimic loot, and has text', () => {
     const ids = CATALOG.items.map((i) => i.id);
     expect(new Set(ids).size).toBe(ids.length);
     const genreIds = new Set(CATALOG.genres.map((g) => g.id));
     const areaIds = new Set(CATALOG.areas.map((a) => a.id));
     for (const i of CATALOG.items) {
-      expect(Boolean(i.genreId) !== Boolean(i.areaId), i.id).toBe(true);
+      expect([i.genreId, i.areaId, i.mimic].filter(Boolean), i.id).toHaveLength(1);
       if (i.genreId) expect(genreIds.has(i.genreId), i.id).toBe(true);
       if (i.areaId) expect(areaIds.has(i.areaId), i.id).toBe(true);
       expect(i.name.length).toBeGreaterThan(0);
@@ -85,7 +85,14 @@ describe('data/items.json', () => {
     expect(new Set(names).size).toBe(names.length);
   });
 
-  it('the total matches the design (11 rooms x 6 + 6 secrets)', () => {
-    expect(CATALOG.items).toHaveLength(CATALOG.genres.length * 6 + CATALOG.areas.length);
+  it('the total matches the design (11 rooms x 6 + 6 secrets + 4 mimic loot)', () => {
+    expect(CATALOG.items).toHaveLength(CATALOG.genres.length * 6 + CATALOG.areas.length + 4);
+  });
+
+  it('mimic loot has a mix of rarities and is not tied to a room or an area', () => {
+    const loot = CATALOG.items.filter((i) => i.mimic);
+    expect(loot).toHaveLength(4);
+    expect(new Set(loot.map((i) => i.rarity))).toEqual(new Set([1, 2, 3]));
+    for (const i of loot) expect(i.genreId ?? i.areaId).toBeUndefined();
   });
 });
