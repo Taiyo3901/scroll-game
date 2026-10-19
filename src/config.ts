@@ -18,8 +18,8 @@ const BASE = {
   BATCH_INTERVAL_SEC: 5,
 
   // --- 採掘（Phase 2 で使用） ---
-  MINING_START_DELAY_SEC: 3,
-  MINING_DURATION_SEC: 8,
+  MINING_START_DELAY_SEC: 1,
+  MINING_DURATION_SEC: 4,
   MAX_MINES_PER_DAY: 60,
 
   // --- 油と帰還（Phase 2 で使用） ---
