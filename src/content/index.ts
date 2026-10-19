@@ -1,5 +1,6 @@
 import { CONFIG } from '../config';
 import { areaAt, findItem } from '../core/catalog';
+import { classifyHost } from '../core/genre';
 import { formatBadge } from '../core/format';
 import { findsToday } from '../core/game';
 import { diagnoseJob, sumGenreFinds } from '../core/job';
@@ -50,6 +51,9 @@ function currentJob(): string {
   return jobCache.job;
 }
 
+/** このタブのサイトの種類（部屋）。ホスト名はここで判定に使うだけで、保存も送信もしない。 */
+const ROOM_ID = classifyHost(location.hostname, CATALOG.genres);
+
 function main(): void {
   const tracker = startTracker();
   const miner = new Miner();
@@ -82,6 +86,7 @@ function main(): void {
       overlay.update({
         depthText: formatBadge(state.depthM),
         areaId: area.id,
+        roomId: ROOM_ID,
         depthM: state.depthM,
         strataName: area.name,
         strataColor: area.color,

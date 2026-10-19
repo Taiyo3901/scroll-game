@@ -43,6 +43,8 @@ export const OVERLAY_CSS = `
   background-image: var(--wall); background-repeat: repeat-y; background-size: 100% ${WALL_TILE_PX}px;
   image-rendering: pixelated; will-change: transform;
 }
+/* 階層の色を、壁に薄くかぶせる（深くなるほど色合いが変わる） */
+.tint { position: absolute; inset: 0; background: var(--area, transparent); opacity: .28; mix-blend-mode: multiply; }
 /* 上下は暗く、左（奥）も暗くして、通路の中にいるように見せる */
 .shade {
   position: absolute; inset: 0;

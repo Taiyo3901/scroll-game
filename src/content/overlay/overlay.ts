@@ -6,8 +6,10 @@ import { TORCH_SVG, wallUri } from './wall';
 
 export interface OverlayView {
   depthText: string;
-  /** 階層のID（石壁の絵を選ぶ） */
+  /** 階層のID（帯の色合いに使う） */
   areaId: string;
+  /** 閲覧中のサイトの種類（部屋）のID。壁の絵を選ぶ */
+  roomId: string;
   /** 背景の岩肌を流す量に使う（m） */
   depthM: number;
   strataName: string;
@@ -94,8 +96,9 @@ export function createOverlay(): Overlay {
   col.append(depth, strataName, mid, today);
   const rock = el('div', 'rock');
   const shade = el('div', 'shade');
+  const tint = el('div', 'tint');
   const glow = el('div', 'glow');
-  band.append(rock, shade, glow);
+  band.append(rock, tint, shade, glow);
   for (const pos of ['t1', 't2']) {
     // 壁の松明（飾り）。SVG は自前の固定文字列で、ページの内容は入らない
     const torch = el('div', `torch ${pos}`);
@@ -130,8 +133,9 @@ export function createOverlay(): Overlay {
       set('depth', v.depthText, () => (depth.textContent = v.depthText));
       set('strata', v.areaId + v.strataName, () => {
         strataName.textContent = v.strataName;
-        band.style.setProperty('--wall', wallUri(v.areaId));
+        band.style.setProperty('--area', v.strataColor); // 階層は、壁にかぶせる色で表す
       });
+      set('room', v.roomId, () => band.style.setProperty('--wall', wallUri(v.roomId)));
       // 深く進むほど石壁が上へ流れる（1mあたり3px。タイル1枚ぶんでひと回り）
       const shift = Math.floor(v.depthM * 3) % TILE_HEIGHT_PX;
       set('rock', String(shift), () => (rock.style.transform = `translateY(${-shift}px)`));

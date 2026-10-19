@@ -8,8 +8,8 @@ import './ui.css';
 export function mount(page: ReactNode, title = GAME_NAME): void {
   document.title = title;
   const style = document.documentElement.style;
-  style.setProperty('--wall-cave', wallUri('cave'));
-  style.setProperty('--wall-mine', wallUri('mine'));
+  style.setProperty('--wall-cave', wallUri('other'));
+  style.setProperty('--wall-mine', wallUri('sns'));
   const root = document.getElementById('root');
   if (root) createRoot(root).render(page);
 }
