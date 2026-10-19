@@ -17,15 +17,9 @@ const BASE = {
   /** content script から service worker へ距離をまとめて送る間隔 */
   BATCH_INTERVAL_SEC: 5,
 
-  // --- 流し読み判定 ---
-  SKIM_WINDOW_SEC: 10,
-  SKIM_SCREENS: 1.5,
-  SKIM_COOLDOWN_SEC: 5,
-
   // --- 採掘（Phase 2 で使用） ---
   MINING_START_DELAY_SEC: 3,
   MINING_DURATION_SEC: 8,
-  MIN_VISIBLE_TEXT_CHARS: 200,
   MAX_MINES_PER_DAY: 60,
 
   // --- 油と帰還（Phase 2 で使用） ---
@@ -52,7 +46,7 @@ const BASE = {
   OVERLAY_WIDTH_PX: 44,
 
   // --- デバッグ表示 ---
-  DEBUG_OVERLAY_DEFAULT: true,
+  DEBUG_OVERLAY_DEFAULT: false,
   DEBUG_REFRESH_MS: 500,
 };
 

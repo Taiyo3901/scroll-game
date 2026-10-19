@@ -3,8 +3,6 @@ export type Mode = 'surface' | 'exploring';
 export interface DayStats {
   /** 深度に数えたスクロール距離(px) */
   scrollPx: number;
-  /** 流し読みと判定された距離(px)。深度には数えない */
-  skimPx: number;
   mines: number;
   /** 地上に戻って図鑑に登録した鉱石のポイント合計 */
   points: number;
@@ -56,7 +54,6 @@ export const MAX_EVENTS = 5;
 
 export const emptyDay = (): DayStats => ({
   scrollPx: 0,
-  skimPx: 0,
   mines: 0,
   points: 0,
   selfReturns: 0,
@@ -103,7 +100,6 @@ export function normalizeState(raw: unknown, now: number, oilMax: number): GameS
       const d = (typeof v === 'object' && v !== null ? v : {}) as Record<string, unknown>;
       days[k] = {
         scrollPx: num(d.scrollPx, 0),
-        skimPx: num(d.skimPx, 0),
         mines: num(d.mines, 0),
         points: num(d.points, 0),
         selfReturns: num(d.selfReturns, 0),

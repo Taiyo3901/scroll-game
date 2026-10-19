@@ -54,40 +54,34 @@ describe('settleOil / currentOil', () => {
 
 describe('applyScroll', () => {
   it('on the surface with enough oil: resumes exploring and counts the scroll', () => {
-    const s = applyScroll(initialGameState(T0, 100), { px: 96, skimPx: 0 }, T0, DAY, env());
+    const s = applyScroll(initialGameState(T0, 100), { px: 96 }, T0, DAY, env());
     expect(s.mode).toBe('exploring');
     expect(s.depthM).toBeCloseTo(0.762, 5);
     expect(s.days[DAY]?.scrollPx).toBe(96);
   });
   it('on the surface with too little oil: nothing happens to depth', () => {
     const s0 = { ...initialGameState(T0, 100), oil: 29 };
-    const s = applyScroll(s0, { px: 960, skimPx: 0 }, T0, DAY, env());
+    const s = applyScroll(s0, { px: 960 }, T0, DAY, env());
     expect(s.mode).toBe('surface');
     expect(s.depthM).toBe(0);
   });
   it('resumes exactly at START_OIL_MIN', () => {
     const s0 = { ...initialGameState(T0, 100), oil: 30 };
-    expect(applyScroll(s0, { px: 10, skimPx: 0 }, T0, DAY, env()).mode).toBe('exploring');
+    expect(applyScroll(s0, { px: 10 }, T0, DAY, env()).mode).toBe('exploring');
   });
   it('recovered oil counts toward the restart check', () => {
     const s0 = { ...initialGameState(T0, 100), oil: 0 };
     const later = T0 + 5 * 60_000; // about 33 oil
-    expect(applyScroll(s0, { px: 10, skimPx: 0 }, later, DAY, env()).mode).toBe('exploring');
-  });
-  it('skimmed distance is stats only: no depth, no oil', () => {
-    const s = applyScroll(exploring(), { px: 0, skimPx: 5000 }, T0, DAY, env());
-    expect(s.depthM).toBe(0);
-    expect(s.oil).toBe(100);
-    expect(s.days[DAY]?.skimPx).toBe(5000);
+    expect(applyScroll(s0, { px: 10 }, later, DAY, env()).mode).toBe('exploring');
   });
   it('distance costs oil by real meters', () => {
     // 96px/in -> 3780px = 1m real
-    const s = applyScroll(exploring(), { px: 3779.52756, skimPx: 0 }, T0, DAY, env());
+    const s = applyScroll(exploring(), { px: 3779.52756 }, T0, DAY, env());
     expect(s.oil).toBeCloseTo(100 - 0.02, 4);
   });
   it('running out of oil by distance forces a return and loses half the bag', () => {
     const s0 = exploring({ oil: 0.001, bag: { pebble: 4 } });
-    const s = applyScroll(s0, { px: 3780, skimPx: 0 }, T0, DAY, env());
+    const s = applyScroll(s0, { px: 3780 }, T0, DAY, env());
     expect(s.mode).toBe('surface');
     expect(s.oil).toBe(0);
     expect(s.days[DAY]?.forcedReturns).toBe(1);
@@ -95,9 +89,9 @@ describe('applyScroll', () => {
   });
   it('updates lastActivityAt and ignores empty batches', () => {
     const s0 = exploring({ lastActivityAt: 5 });
-    expect(applyScroll(s0, { px: 10, skimPx: 0 }, T0, DAY, env()).lastActivityAt).toBe(T0);
-    expect(applyScroll(s0, { px: 0, skimPx: 0 }, T0, DAY, env()).lastActivityAt).toBe(5);
-    expect(applyScroll(s0, { px: -5, skimPx: Number.NaN }, T0, DAY, env()).depthM).toBe(0);
+    expect(applyScroll(s0, { px: 10 }, T0, DAY, env()).lastActivityAt).toBe(T0);
+    expect(applyScroll(s0, { px: 0 }, T0, DAY, env()).lastActivityAt).toBe(5);
+    expect(applyScroll(s0, { px: -5 }, T0, DAY, env()).depthM).toBe(0);
   });
 });
 
@@ -204,13 +198,13 @@ describe('checkAutoReturn', () => {
 
 describe('normalizeState', () => {
   it('upgrades a Phase 1 (version 1) save, keeping depth and stats', () => {
-    const v1 = { version: 1, depthM: 12.5, days: { [DAY]: { scrollPx: 100, skimPx: 20 } } };
+    const v1 = { version: 1, depthM: 12.5, days: { [DAY]: { scrollPx: 100, skimPx: 20 } } /* skimPx is dropped */ };
     const s = normalizeState(v1, T0, 100);
     expect(s.version).toBe(2);
     expect(s.depthM).toBe(12.5);
     expect(s.mode).toBe('surface');
     expect(s.oil).toBe(100);
-    expect(s.days[DAY]).toEqual({ scrollPx: 100, skimPx: 20, mines: 0, points: 0, selfReturns: 0, forcedReturns: 0 });
+    expect(s.days[DAY]).toEqual({ scrollPx: 100, mines: 0, points: 0, selfReturns: 0, forcedReturns: 0 });
   });
   it('survives garbage', () => {
     for (const bad of [null, undefined, 5, 'x', [], { depthM: 'a', bag: { x: -1, y: 'z' }, oil: 9999 }]) {

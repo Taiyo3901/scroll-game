@@ -5,12 +5,13 @@ export const OVERLAY_CSS = `
 :host { all: initial; }
 * { box-sizing: border-box; }
 
+/* 画面の縦中央に置く。上端や下端には、固定ヘッダーやメニューがあることが多いため */
 .band {
-  position: fixed; top: 0; bottom: 0; right: var(--sb, 0px);
+  position: fixed; top: 50%; right: var(--sb, 0px); transform: translateY(-50%);
   width: ${CONFIG.OVERLAY_WIDTH_PX}px; z-index: 2147483647; pointer-events: none;
-  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-  padding: 10px 0 12px;
-  background: linear-gradient(90deg, rgba(0,0,0,0) 0%, var(--strata, #8b6b4a) 100%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 10px 0 12px; border-radius: 10px 0 0 10px; max-height: 96vh; overflow: hidden;
+  background: linear-gradient(90deg, rgba(0,0,0,.15) 0%, var(--strata, #8b6b4a) 100%);
   color: #fff; font: 600 11px/1.2 system-ui, "Hiragino Sans", "Yu Gothic UI", sans-serif;
   text-shadow: 0 1px 2px rgba(0,0,0,.6);
   user-select: none;
@@ -20,11 +21,10 @@ export const OVERLAY_CSS = `
 .depth { font-size: 12px; letter-spacing: -0.02em; }
 .strata-name { writing-mode: vertical-rl; font-size: 11px; opacity: .85; margin-top: 4px; }
 
-.mid { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+.mid { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
 .pick { font-size: 20px; line-height: 1; transform-origin: 80% 80%; opacity: .45; }
 .pick.active { opacity: 1; }
 .pick.mining { animation: swing .7s ease-in-out infinite; }
-.pick.whiff { opacity: .7; animation: whiff .45s ease-out infinite; }
 
 .gauge { width: 7px; height: 84px; border-radius: 4px; background: rgba(0,0,0,.35); overflow: hidden; }
 .gauge-fill {
@@ -34,7 +34,7 @@ export const OVERLAY_CSS = `
 
 .status { writing-mode: vertical-rl; font-size: 11px; min-height: 1em; }
 
-.oil { width: 7px; height: 64px; border-radius: 4px; background: rgba(0,0,0,.35); overflow: hidden; margin-top: 8px; }
+.oil { width: 7px; height: 64px; border-radius: 4px; background: rgba(0,0,0,.35); overflow: hidden; }
 .oil-fill {
   width: 100%; height: 100%; background: #ffb300; transform-origin: bottom; transform: scaleY(1);
   transition: transform .4s linear;
@@ -61,7 +61,6 @@ export const OVERLAY_CSS = `
 .pop.warn { background: rgba(160, 50, 20, .88); }
 
 @keyframes swing { 0% { transform: rotate(-35deg); } 50% { transform: rotate(15deg); } 100% { transform: rotate(-35deg); } }
-@keyframes whiff { 0% { transform: rotate(-45deg); } 60% { transform: rotate(30deg); } 100% { transform: rotate(-45deg); } }
 @keyframes flicker { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 @keyframes popIn {
   0% { opacity: 0; transform: translateY(8px) scale(.92); }
@@ -80,8 +79,8 @@ export const OVERLAY_CSS = `
 
 /* 動きを控えめにする: 振り・ちらつき・ふくらみをやめ、ゲージは即時に動かす */
 @media (prefers-reduced-motion: reduce) {
-  .pick.mining, .pick.whiff, .oil.low .oil-fill, .pop.r3::after { animation: none; }
-  .pick.mining, .pick.whiff { opacity: 1; }
+  .pick.mining, .oil.low .oil-fill, .pop.r3::after { animation: none; }
+  .pick.mining { opacity: 1; }
   .gauge-fill, .oil-fill { transition: none; }
   .pop, .pop.r3 { animation: popFade 2.6s linear forwards; }
 }

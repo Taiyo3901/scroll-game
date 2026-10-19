@@ -137,19 +137,18 @@ export function returnToSurface(
 /** スクロール距離(content script からのまとめ送り)を反映する。 */
 export function applyScroll(
   state: GameState,
-  batch: { px: number; skimPx: number },
+  batch: { px: number },
   now: number,
   dayKey: string,
   env: Env,
 ): GameState {
   const rules = env.rules;
   const px = clean(batch.px);
-  const skimPx = clean(batch.skimPx);
 
   let s = settleOil(state, now, rules);
-  if (px === 0 && skimPx === 0) return s;
+  if (px === 0) return s;
 
-  s = withDay(s, dayKey, (d) => ({ ...d, scrollPx: d.scrollPx + px, skimPx: d.skimPx + skimPx }));
+  s = withDay(s, dayKey, (d) => ({ ...d, scrollPx: d.scrollPx + px }));
   s = { ...s, lastActivityAt: now };
 
   if (s.mode === 'surface') {
@@ -157,14 +156,12 @@ export function applyScroll(
     s = { ...s, mode: 'exploring' };
   }
 
-  if (px > 0) {
-    s = {
-      ...s,
-      depthM: s.depthM + pxToDepth(px, rules.depthMultiplier),
-      oil: s.oil - rules.oilPerMeter * pxToMeters(px),
-    };
-    if (s.oil <= 0) s = returnToSurface(s, 'forced', now, dayKey, env);
-  }
+  s = {
+    ...s,
+    depthM: s.depthM + pxToDepth(px, rules.depthMultiplier),
+    oil: s.oil - rules.oilPerMeter * pxToMeters(px),
+  };
+  if (s.oil <= 0) s = returnToSurface(s, 'forced', now, dayKey, env);
   return s;
 }
 

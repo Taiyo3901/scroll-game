@@ -79,7 +79,6 @@ function main(): void {
         surface: state.mode === 'surface',
         mining: m.mining,
         gauge: m.gauge,
-        skimming: t.skimming && state.mode === 'exploring',
         refilling,
       });
     }

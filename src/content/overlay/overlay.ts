@@ -12,8 +12,6 @@ export interface OverlayView {
   mining: boolean;
   /** 0〜1 */
   gauge: number;
-  /** 流し読み状態（ツルハシが空振りする） */
-  skimming: boolean;
   /** 地上で油が足りず、探検を再開できない */
   refilling: boolean;
 }
@@ -86,13 +84,13 @@ export function createOverlay(): Overlay {
       set('gauge', v.gauge.toFixed(3), () => (gaugeFill.style.transform = `scaleY(${v.gauge})`));
       set('oil', v.oilRatio.toFixed(3), () => (oilFill.style.transform = `scaleY(${v.oilRatio})`));
       set('oilLow', String(v.oilLow), () => oil.classList.toggle('low', v.oilLow));
-      const pickState = v.mining ? 'mining' : v.skimming ? 'whiff' : v.surface ? 'idle' : 'active';
+      const pickState = v.mining ? 'mining' : v.surface ? 'idle' : 'active';
       set('pick', pickState, () => {
         pick.className = `pick ${pickState === 'idle' ? '' : 'active'} ${
-          pickState === 'mining' || pickState === 'whiff' ? pickState : ''
+          pickState === 'mining' ? pickState : ''
         }`.trim();
       });
-      const statusText = v.refilling ? '油を補充中' : v.skimming ? '流し読み中' : '';
+      const statusText = v.refilling ? '油を補充中' : '';
       set('status', statusText, () => (status.textContent = statusText));
     },
 

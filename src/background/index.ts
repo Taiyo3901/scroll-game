@@ -42,7 +42,7 @@ chrome.runtime.onMessage.addListener((message: unknown) => {
   if (!isContentMessage(message)) return false;
   if (message.type === 'scroll-batch') {
     void update((s, now, day) =>
-      applyScroll(s, { px: message.px, skimPx: message.skimPx }, now, day, env()),
+      applyScroll(s, { px: message.px }, now, day, env()),
     );
   } else {
     void update((s, now, day) => applyMine(s, now, day, env()));
