@@ -1,7 +1,9 @@
-import { OVERLAY_CSS } from './styles';
+import { OVERLAY_CSS, TILE_HEIGHT_PX } from './styles';
 
 export interface OverlayView {
   depthText: string;
+  /** 背景の岩肌を流す量に使う（m） */
+  depthM: number;
   strataName: string;
   strataColor: string;
   /** 0〜1 */
@@ -27,8 +29,6 @@ export interface PopSpec {
 export interface Overlay {
   update(v: OverlayView): void;
   pop(p: PopSpec): void;
-  /** 縦スクロールバーの幅だけ内側に寄せる */
-  setScrollbarWidth(px: number): void;
   destroy(): void;
 }
 
@@ -62,7 +62,14 @@ export function createOverlay(): Overlay {
   const oil = el('div', 'oil');
   const oilFill = el('div', 'oil-fill');
   oil.append(oilFill);
-  band.append(depth, strataName, mid, oil);
+  const col = el('div', 'col');
+  col.append(depth, strataName, mid, oil);
+  const rock = el('div', 'rock');
+  const tint = el('div', 'tint');
+  const shade = el('div', 'shade');
+  const glow = el('div', 'glow');
+  const stalac = el('div', 'stalac');
+  band.append(rock, tint, shade, glow, stalac, col);
   const pops = el('div', 'pops');
   root.append(style, band, pops);
   document.documentElement.append(host);
@@ -81,6 +88,12 @@ export function createOverlay(): Overlay {
         strataName.textContent = v.strataName;
         band.style.setProperty('--strata', v.strataColor);
       });
+      // 深く進むほど岩肌が上へ流れる（1mあたり3px。タイル1枚ぶんでひと回り）
+      const shift = Math.floor(v.depthM * 3) % TILE_HEIGHT_PX;
+      set('rock', String(shift), () => (rock.style.transform = `translateY(${-shift}px)`));
+      // 油が多いほどランタンの明かりが強い。地上では弱める
+      const glowOpacity = (v.surface ? 0.25 : 0.35 + 0.6 * v.oilRatio).toFixed(2);
+      set('glow', glowOpacity, () => (glow.style.opacity = glowOpacity));
       set('gauge', v.gauge.toFixed(3), () => (gaugeFill.style.transform = `scaleY(${v.gauge})`));
       set('oil', v.oilRatio.toFixed(3), () => (oilFill.style.transform = `scaleY(${v.oilRatio})`));
       set('oilLow', String(v.oilLow), () => oil.classList.toggle('low', v.oilLow));
@@ -113,13 +126,6 @@ export function createOverlay(): Overlay {
       });
       // 同時に出すと重なるので、前のものは消す
       pops.replaceChildren(e);
-    },
-
-    setScrollbarWidth(px) {
-      set('sb', String(px), () => {
-        band.style.setProperty('--sb', `${px}px`);
-        pops.style.setProperty('--sb', `${px}px`);
-      });
     },
 
     destroy() {

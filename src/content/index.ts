@@ -69,9 +69,9 @@ function main(): void {
       const oil = currentOil(state, Date.now(), RULES);
       const refilling =
         state.mode === 'surface' && oil < CONFIG.START_OIL_MIN && t.msSinceLastScroll < 4000;
-      overlay.setScrollbarWidth(Math.max(0, window.innerWidth - document.documentElement.clientWidth));
       overlay.update({
         depthText: formatBadge(state.depthM),
+        depthM: state.depthM,
         strataName: stratumAt(CATALOG.strata, state.depthM).name,
         strataColor: stratumAt(CATALOG.strata, state.depthM).color,
         oilRatio: Math.max(0, Math.min(1, oil / CONFIG.OIL_MAX)),

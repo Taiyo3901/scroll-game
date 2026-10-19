@@ -1,32 +1,74 @@
 import { CONFIG } from '../../config';
 
-/** 右端の帯のCSS。アニメーションは transform と opacity だけを動かす（レイアウトを触らない）。 */
+/** 岩肌のタイル（グレースケールの地層・小石・ひび・鉱石のきらめき）。色は地層ごとの色を重ねて付ける。 */
+const TILE_H = 220;
+const ROCK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${CONFIG.OVERLAY_WIDTH_PX}" height="${TILE_H}" viewBox="0 0 44 ${TILE_H}">
+<rect width="44" height="${TILE_H}" fill="#888"/>
+<path d="M0 0H44V28Q33 20 22 29T0 26Z" fill="#fff" opacity=".10"/>
+<path d="M0 26Q11 34 22 29T44 28V58Q30 66 20 58T0 62Z" fill="#000" opacity=".14"/>
+<path d="M0 62Q12 55 24 61T44 58V92Q32 86 20 94T0 90Z" fill="#fff" opacity=".07"/>
+<path d="M0 90Q10 98 20 94T44 92V128Q30 120 18 129T0 124Z" fill="#000" opacity=".18"/>
+<path d="M0 124Q14 132 26 126T44 128V160Q30 168 18 160T0 164Z" fill="#fff" opacity=".09"/>
+<path d="M0 164Q12 158 24 164T44 160V196Q32 190 20 198T0 194Z" fill="#000" opacity=".12"/>
+<path d="M0 194Q11 202 22 197T44 196V${TILE_H}H0Z" fill="#fff" opacity=".06"/>
+<g fill="#000" opacity=".28"><circle cx="8" cy="12" r="2"/><circle cx="31" cy="44" r="1.6"/><circle cx="15" cy="76" r="2.2"/><circle cx="36" cy="108" r="1.8"/><circle cx="10" cy="146" r="2"/><circle cx="29" cy="178" r="2.4"/><circle cx="38" cy="208" r="1.5"/></g>
+<g fill="#fff" opacity=".22"><circle cx="24" cy="18" r="1.3"/><circle cx="6" cy="52" r="1.5"/><circle cx="34" cy="84" r="1.2"/><circle cx="20" cy="118" r="1.6"/><circle cx="40" cy="150" r="1.3"/><circle cx="12" cy="188" r="1.5"/></g>
+<g fill="none" stroke="#000" stroke-width="1" opacity=".3"><path d="M30 6l-4 9 5 7-3 8"/><path d="M8 96l6 8-2 9 6 6"/><path d="M34 132l-5 10 4 8"/><path d="M14 168l5 7-3 9"/></g>
+<g fill="#ffe9a8" opacity=".9"><path d="M36 36l1.4 2.6 2.6 1.4-2.6 1.4-1.4 2.6-1.4-2.6-2.6-1.4 2.6-1.4z"/><path d="M11 112l1.2 2.2 2.2 1.2-2.2 1.2-1.2 2.2-1.2-2.2-2.2-1.2 2.2-1.2z"/><path d="M33 190l1.2 2.2 2.2 1.2-2.2 1.2-1.2 2.2-1.2-2.2-2.2-1.2 2.2-1.2z"/></g>
+</svg>`;
+const ROCK_URL = `url("data:image/svg+xml,${encodeURIComponent(ROCK_SVG)}")`;
+
+/** 洞窟の壁のようにギザギザにした左端（見た目だけ。毎回同じ形にするため疑似乱数は固定）。 */
+function caveEdge(): string {
+  const pts: string[] = ['10px 0'];
+  let seed = 7;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (let y = 2; y <= 98; y += 3) pts.push(`${(rnd() * 7).toFixed(1)}px ${y}%`);
+  pts.push('10px 100%', '100% 100%', '100% 0');
+  return `polygon(${pts.join(',')})`;
+}
+
+export const TILE_HEIGHT_PX = TILE_H;
+
+/**
+ * 右端の帯のCSS。スクロールバーのすぐ左（position: fixed の right: 0 がそこ）に密着させる。
+ * 背景は岩肌のタイルを、深く進むほど上へ流して「掘り進んでいる」ように見せる。
+ * アニメーションは transform と opacity だけを動かす（レイアウトを触らない）。
+ */
 export const OVERLAY_CSS = `
 :host { all: initial; }
 * { box-sizing: border-box; }
 
-/* 画面の縦中央に置く。上端や下端には、固定ヘッダーやメニューがあることが多いため */
 .band {
-  position: fixed; top: 50%; right: var(--sb, 0px); transform: translateY(-50%);
+  position: fixed; top: 7vh; bottom: 7vh; right: 0;
   width: ${CONFIG.OVERLAY_WIDTH_PX}px; z-index: 2147483647; pointer-events: none;
-  display: flex; flex-direction: column; align-items: center; gap: 8px;
-  padding: 10px 0 12px; border-radius: 10px 0 0 10px; max-height: 96vh; overflow: hidden;
-  background: linear-gradient(90deg, rgba(0,0,0,.15) 0%, var(--strata, #8b6b4a) 100%);
+  clip-path: ${caveEdge()};
   color: #fff; font: 600 11px/1.2 system-ui, "Hiragino Sans", "Yu Gothic UI", sans-serif;
-  text-shadow: 0 1px 2px rgba(0,0,0,.6);
-  user-select: none;
+  text-shadow: 0 1px 2px rgba(0,0,0,.8);
+  user-select: none; overflow: hidden;
+  background: var(--strata, #8b6b4a);
 }
 .band.hidden { display: none; }
 
-.depth { font-size: 12px; letter-spacing: -0.02em; }
-.strata-name { writing-mode: vertical-rl; font-size: 11px; opacity: .85; margin-top: 4px; }
+.rock { position: absolute; left: 0; right: 0; top: 0; height: calc(100% + ${TILE_H}px); background: ${ROCK_URL} repeat-y; background-size: 100% ${TILE_H}px; mix-blend-mode: soft-light; opacity: .95; will-change: transform; }
+.tint { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,.18) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,.28) 100%); }
+.shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,.65) 0%, rgba(0,0,0,.18) 40%, rgba(0,0,0,0) 100%); }
+.glow { position: absolute; left: -10px; right: -10px; top: 38%; height: 130px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,214,120,.85), rgba(255,170,60,.35) 55%, rgba(255,150,40,0) 100%); mix-blend-mode: screen; opacity: .6; }
+.stalac { position: absolute; left: 0; right: 0; top: 0; height: 14px; background: linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,0)); }
 
-.mid { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
-.pick { font-size: 20px; line-height: 1; transform-origin: 80% 80%; opacity: .45; }
+.col {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center;
+  padding: 12px 0 14px; gap: 6px;
+}
+.depth { font-size: 12px; letter-spacing: -0.02em; padding: 2px 4px; border-radius: 6px; background: rgba(0,0,0,.45); }
+.strata-name { writing-mode: vertical-rl; font-size: 11px; opacity: .92; letter-spacing: .08em; }
+
+.mid { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+.pick { position: relative; font-size: 20px; line-height: 1; transform-origin: 80% 80%; opacity: .5; }
 .pick.active { opacity: 1; }
 .pick.mining { animation: swing .7s ease-in-out infinite; }
 
-.gauge { width: 7px; height: 84px; border-radius: 4px; background: rgba(0,0,0,.35); overflow: hidden; }
+.gauge { width: 7px; height: 96px; border-radius: 4px; background: rgba(0,0,0,.5); overflow: hidden; box-shadow: 0 0 0 1px rgba(255,255,255,.18); }
 .gauge-fill {
   width: 100%; height: 100%; background: #ffd54f; transform-origin: bottom; transform: scaleY(0);
   transition: transform .25s linear;
@@ -34,14 +76,14 @@ export const OVERLAY_CSS = `
 
 .status { writing-mode: vertical-rl; font-size: 11px; min-height: 1em; }
 
-.oil { width: 7px; height: 64px; border-radius: 4px; background: rgba(0,0,0,.35); overflow: hidden; }
+.oil { width: 7px; height: 72px; border-radius: 4px; background: rgba(0,0,0,.5); overflow: hidden; box-shadow: 0 0 0 1px rgba(255,255,255,.18); }
 .oil-fill {
   width: 100%; height: 100%; background: #ffb300; transform-origin: bottom; transform: scaleY(1);
   transition: transform .4s linear;
 }
 .oil.low .oil-fill { background: #ff7043; animation: flicker 1.1s steps(2, end) infinite; }
 
-.pops { position: fixed; top: 38%; right: calc(var(--sb, 0px) + ${CONFIG.OVERLAY_WIDTH_PX + 8}px); z-index: 2147483647; pointer-events: none; }
+.pops { position: fixed; top: 38%; right: ${CONFIG.OVERLAY_WIDTH_PX + 8}px; z-index: 2147483647; pointer-events: none; }
 .pop {
   position: absolute; right: 0; top: 0; white-space: nowrap;
   padding: 6px 10px; border-radius: 8px;

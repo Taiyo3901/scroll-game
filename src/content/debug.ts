@@ -11,7 +11,7 @@ import type { TrackerSnapshot } from './tracker';
 const STYLE = `
 :host { all: initial; }
 .box {
-  position: fixed; right: ${CONFIG.OVERLAY_WIDTH_PX + 30}px; bottom: 8px; z-index: 2147483646;
+  position: fixed; right: ${CONFIG.OVERLAY_WIDTH_PX + 8}px; bottom: 8px; z-index: 2147483646;
   pointer-events: none; padding: 6px 8px; border-radius: 6px;
   background: rgba(0, 0, 0, 0.72); color: #e8f5e9;
   font: 11px/1.45 ui-monospace, Consolas, "Yu Gothic UI", monospace; white-space: pre;
