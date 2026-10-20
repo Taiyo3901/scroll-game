@@ -3,7 +3,7 @@ import { areaAt } from '../core/catalog';
 import { rollContainer, type ContainerKind } from '../core/containers';
 import { classifyHost } from '../core/genre';
 import { findsToday } from '../core/game';
-import { MAX_OPENED_SPOTS, evaluateConditions, findOpenedSpot, type ConditionResult, type OpenedSpot } from '../core/mining';
+import { evaluateConditions, type ConditionResult } from '../core/mining';
 import { localDayKey } from '../core/week';
 import { CATALOG } from '../data';
 import type { FindCompleteMessage } from '../messages';
@@ -48,14 +48,12 @@ export class Miner {
   private skin = '';
   /** 品を見つけたときの「最後のスクロール」の時刻。これが変わる（新しくスクロールする）まで、次は見つからない */
   private doneMark: { at: number | null } | null = null;
-  /** このページで、すでに入れ物を開けた場所と、そのときの入れ物。メモリだけで、保存しない */
-  private opened: (OpenedSpot & { container: ContainerKind; skin: string })[] = [];
   private last: MinerSnapshot = {
     phase: 'idle',
     gauge: 0,
     container: null,
     skin: '',
-    checks: { stopped: false, visible: false, underDailyCap: true, oncePerStop: true, newSpot: true },
+    checks: { stopped: false, visible: false, underDailyCap: true, oncePerStop: true },
   };
 
   get snapshot(): MinerSnapshot {
@@ -95,7 +93,6 @@ export class Miner {
       findsToday: findsToday(state, localDayKey(new Date())),
       maxFindsPerDay: cfg.MAX_FINDS_PER_DAY,
       foundThisStop,
-      spotOpened: findOpenedSpot(this.opened, snap.spot) !== undefined,
     });
 
     if (!result.ok) {
@@ -118,45 +115,29 @@ export class Miner {
         genreId: classifyHost(location.hostname, CATALOG.genres),
         container: this.container,
       };
-      const entry = {
-        elementId: snap.spot.elementId,
-        scrollTop: snap.spot.scrollTop,
-        container: this.container,
-        skin: this.skin,
-      };
-      this.opened.push(entry);
-      if (this.opened.length > MAX_OPENED_SPOTS) this.opened.shift();
       this.startedAt = null;
       this.doneMark = { at: snap.lastScrollAt };
       gauge = 1;
-      // 報告が届かなかったときは、その場所をまた開けられるようにする（品が付かないまま使い切らない）
-      void sendToBackground(msg).then((ok) => {
-        if (!ok) this.opened = this.opened.filter((o) => o !== entry);
-      });
+      void sendToBackground(msg);
     }
 
-    // 動いている間は歩く。止まっていて、この場所をすでに開けているなら、開けた入れ物が残っている
-    const here = findOpenedSpot(this.opened, snap.spot);
     let phase: Phase;
     if (this.doneMark) phase = 'done';
     else if (this.startedAt !== null) phase = 'search';
-    else if (snap.msSinceLastScroll < delayMs) phase = 'walk';
-    else phase = here ? 'done' : 'idle';
+    else phase = snap.msSinceLastScroll < delayMs ? 'walk' : 'idle';
 
-    const shown = this.doneMark || this.startedAt !== null ? this.container : here ? here.container : null;
     this.last = {
       phase,
       gauge,
-      container: phase === 'search' || phase === 'done' ? shown : null,
-      skin: this.doneMark || this.startedAt !== null ? this.skin : (here?.skin ?? this.skin),
+      container: phase === 'search' || phase === 'done' ? this.container : null,
+      skin: this.skin,
       checks: result.checks,
     };
     return this.last;
   }
 
-  /** ページが切り替わったとき（同じタブの中での移動を含む）、開けた場所の記録を捨てる */
-  resetSpots(): void {
-    this.opened = [];
+  /** ページが切り替わったとき（同じタブの中での移動を含む）、進行中の状態を捨てる */
+  resetPage(): void {
     this.doneMark = null;
     this.startedAt = null;
     this.container = null;

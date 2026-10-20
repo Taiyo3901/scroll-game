@@ -1,5 +1,4 @@
 import { CONFIG } from '../config';
-import type { SpotPos } from '../core/mining';
 import { downwardDelta, isWithinInputWindow } from '../core/scroll';
 import type { ScrollBatchMessage } from '../messages';
 import { sendToBackground } from './send';
@@ -11,8 +10,6 @@ export interface TrackerSnapshot {
   lastScrollAt: number | null;
   /** 今スクロールしている枠の中での位置 0（先頭）〜1（末尾）。帯の中の探索者の位置になる */
   progress: number;
-  /** 今スクロールしている枠と位置（開けた場所の判定に使う。URLは含まれず、保存もしない） */
-  spot: SpotPos;
   /** まだ service worker に送っていない距離 */
   pendingPx: number;
 }
@@ -40,16 +37,6 @@ export interface TrackerOptions {
 
 export function startTracker(opts: TrackerOptions = {}): Tracker {
   const lastTop = new WeakMap<Element, number>();
-  const elementIds = new WeakMap<Element, number>();
-  let nextElementId = 1;
-  const idOf = (el: Element): number => {
-    let id = elementIds.get(el);
-    if (id === undefined) {
-      id = nextElementId++;
-      elementIds.set(el, id);
-    }
-    return id;
-  };
   let lastInputAt: number | null = null;
   let pointerDown = false;
   let lastAnyScrollAt: number | null = null;
@@ -149,10 +136,6 @@ export function startTracker(opts: TrackerOptions = {}): Tracker {
       msSinceLastScroll: lastAnyScrollAt === null ? Infinity : performance.now() - lastAnyScrollAt,
       lastScrollAt: lastAnyScrollAt,
       progress: progressOf(lastScroller ?? rootEl()),
-      spot: (() => {
-        const el = lastScroller ?? rootEl();
-        return { elementId: idOf(el), scrollTop: el.scrollTop, viewportH: window.innerHeight };
-      })(),
       pendingPx,
     }),
   };

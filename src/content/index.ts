@@ -76,14 +76,14 @@ function main(): void {
     debug.setEnabled(getView().settings.debugOverlay);
   };
 
-  // 同じタブの中でページが切り替わったら（ページの再読み込みなしの移動を含む）、開けた場所と目印を忘れる。
+  // 同じタブの中でページが切り替わったら（ページの再読み込みなしの移動を含む）、帯の目印を消す。
   // 比べるのはメモリ上の値だけで、保存も送信もしない。
   let lastHref = location.href;
 
   const tick = () => {
     if (location.href !== lastHref) {
       lastHref = location.href;
-      miner.resetSpots();
+      miner.resetPage();
       overlay?.clearMarks();
     }
     if (isDisabledHere()) {
