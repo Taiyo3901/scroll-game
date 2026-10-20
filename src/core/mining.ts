@@ -43,12 +43,46 @@ export function evaluateConditions(i: MiningInput): { ok: boolean; checks: Condi
   return { ok: CONDITION_KEYS.every((k) => checks[k]), checks };
 }
 
+/** いまスクロールしている位置（開けた場所の判定に使う）。URLは含まない。 */
+export interface SpotPos {
+  /** スクロールしている枠（ページ全体、またはページ内の枠）を区別する番号 */
+  elementId: number;
+  scrollTop: number;
+  /** 画面の高さ */
+  viewportH: number;
+}
+
+export interface OpenedSpot {
+  elementId: number;
+  scrollTop: number;
+}
+
 /**
- * 「開けた場所」のキー: スクロールしている枠と、スクロール位置を画面の高さ単位で丸めた値の組。
- * この記録は、そのページを開いている間のメモリだけに置き、保存も送信もしない（URLを残さないため）。
+ * 開けた場所から、この距離（画面の高さに対する割合）より近い位置は、同じ場所として扱う。
+ * 画面の約3割。少し動いただけなら同じ場所、読み進めて別の部分に来たら新しい場所になる。
  */
-export function spotKey(elementId: number, scrollTop: number, viewportH: number): string {
-  const h = viewportH > 0 ? viewportH : 1;
-  const slot = Number.isFinite(scrollTop) ? Math.round(scrollTop / h) : 0;
-  return `${elementId}:${slot}`;
+export const SPOT_RADIUS_VIEWPORTS = 0.3;
+/** 覚えておく開けた場所の数の上限（メモリを使いすぎないため） */
+export const MAX_OPENED_SPOTS = 300;
+
+const finite = (n: number) => (Number.isFinite(n) ? n : 0);
+
+/**
+ * pos の近くに、開けた場所があれば、いちばん近いものを返す（なければ undefined）。
+ * 同じ枠の中だけを比べる。この記録は、そのページを開いている間のメモリだけに置き、保存も送信もしない。
+ */
+export function findOpenedSpot<T extends OpenedSpot>(opened: readonly T[], pos: SpotPos): T | undefined {
+  const radius = Math.max(1, finite(pos.viewportH)) * SPOT_RADIUS_VIEWPORTS;
+  const top = finite(pos.scrollTop);
+  let best: T | undefined;
+  let bestDist = Infinity;
+  for (const o of opened) {
+    if (o.elementId !== pos.elementId) continue;
+    const d = Math.abs(finite(o.scrollTop) - top);
+    if (d < radius && d < bestDist) {
+      best = o;
+      bestDist = d;
+    }
+  }
+  return best;
 }

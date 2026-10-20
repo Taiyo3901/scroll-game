@@ -1,5 +1,5 @@
 import { CONFIG } from '../config';
-import { spotKey } from '../core/mining';
+import type { SpotPos } from '../core/mining';
 import { downwardDelta, isWithinInputWindow } from '../core/scroll';
 import type { ScrollBatchMessage } from '../messages';
 import { sendToBackground } from './send';
@@ -11,8 +11,8 @@ export interface TrackerSnapshot {
   lastScrollAt: number | null;
   /** 今スクロールしている枠の中での位置 0（先頭）〜1（末尾）。帯の中の探索者の位置になる */
   progress: number;
-  /** 今スクロールしている枠と、画面の高さ単位で丸めた位置（開けた場所の記録に使う。URLは含まれず、保存もしない） */
-  spotKey: string;
+  /** 今スクロールしている枠と位置（開けた場所の判定に使う。URLは含まれず、保存もしない） */
+  spot: SpotPos;
   /** まだ service worker に送っていない距離 */
   pendingPx: number;
 }
@@ -149,9 +149,9 @@ export function startTracker(opts: TrackerOptions = {}): Tracker {
       msSinceLastScroll: lastAnyScrollAt === null ? Infinity : performance.now() - lastAnyScrollAt,
       lastScrollAt: lastAnyScrollAt,
       progress: progressOf(lastScroller ?? rootEl()),
-      spotKey: (() => {
+      spot: (() => {
         const el = lastScroller ?? rootEl();
-        return spotKey(idOf(el), el.scrollTop, window.innerHeight);
+        return { elementId: idOf(el), scrollTop: el.scrollTop, viewportH: window.innerHeight };
       })(),
       pendingPx,
     }),

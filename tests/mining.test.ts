@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CONDITION_KEYS, evaluateConditions, spotKey, type MiningInput } from '../src/core/mining';
+import { CONDITION_KEYS, evaluateConditions, findOpenedSpot, type MiningInput } from '../src/core/mining';
 
 const good: MiningInput = {
   msSinceLastScroll: 1000,
@@ -38,19 +38,47 @@ describe('evaluateConditions', () => {
   }
 });
 
-describe('spotKey', () => {
-  it('rounds the scroll position to viewport-height units', () => {
-    expect(spotKey(1, 0, 800)).toBe('1:0');
-    expect(spotKey(1, 399, 800)).toBe('1:0');
-    expect(spotKey(1, 401, 800)).toBe('1:1');
-    expect(spotKey(1, 1600, 800)).toBe('1:2');
+describe('findOpenedSpot', () => {
+  const at = (scrollTop: number, elementId = 1) => ({ elementId, scrollTop, viewportH: 1000 });
+  const opened = [
+    { elementId: 1, scrollTop: 500 },
+    { elementId: 2, scrollTop: 100 },
+  ];
+
+  it('treats positions within about 30% of the viewport as the same spot', () => {
+    expect(findOpenedSpot(opened, at(500))).toBe(opened[0]);
+    expect(findOpenedSpot(opened, at(700))).toBe(opened[0]);
+    expect(findOpenedSpot(opened, at(300))).toBe(opened[0]);
+    expect(findOpenedSpot(opened, at(799))).toBe(opened[0]);
   });
-  it('differs by scrolling element and never includes a URL', () => {
-    expect(spotKey(1, 0, 800)).not.toBe(spotKey(2, 0, 800));
-    expect(spotKey(1, 0, 800)).toMatch(/^\d+:-?\d+$/);
+  it('a position beyond that is a new spot (the boundary is exclusive)', () => {
+    expect(findOpenedSpot(opened, at(800))).toBeUndefined();
+    expect(findOpenedSpot(opened, at(200))).toBeUndefined();
+    expect(findOpenedSpot(opened, at(0))).toBeUndefined();
   });
-  it('is safe for zero height or a bad scrollTop', () => {
-    expect(spotKey(1, 100, 0)).toBe('1:100');
-    expect(spotKey(1, Number.NaN, 800)).toBe('1:0');
+  it('is not affected by where the screen cuts: nearby positions on either side of any boundary agree', () => {
+    for (const top of [499, 500, 501, 749, 751]) {
+      expect(findOpenedSpot(opened, at(top)) !== undefined, String(top)).toBe(true);
+    }
+  });
+  it('only compares within the same scrolling element', () => {
+    expect(findOpenedSpot(opened, at(500, 3))).toBeUndefined();
+    expect(findOpenedSpot(opened, at(110, 2))).toBe(opened[1]);
+  });
+  it('returns the nearest one when two are close', () => {
+    const two = [
+      { elementId: 1, scrollTop: 100 },
+      { elementId: 1, scrollTop: 400 },
+    ];
+    expect(findOpenedSpot(two, at(300))).toBe(two[1]);
+  });
+  it('scales with the viewport height', () => {
+    expect(findOpenedSpot(opened, { elementId: 1, scrollTop: 700, viewportH: 400 })).toBeUndefined();
+    expect(findOpenedSpot(opened, { elementId: 1, scrollTop: 600, viewportH: 400 })).toBe(opened[0]);
+  });
+  it('is safe with no records, bad numbers and a zero-height viewport', () => {
+    expect(findOpenedSpot([], at(0))).toBeUndefined();
+    expect(findOpenedSpot(opened, { elementId: 1, scrollTop: Number.NaN, viewportH: 1000 })).toBeUndefined();
+    expect(findOpenedSpot(opened, { elementId: 1, scrollTop: 500, viewportH: 0 })).toBe(opened[0]);
   });
 });

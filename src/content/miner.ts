@@ -3,7 +3,7 @@ import { areaAt } from '../core/catalog';
 import { rollContainer, type ContainerKind } from '../core/containers';
 import { classifyHost } from '../core/genre';
 import { findsToday } from '../core/game';
-import { evaluateConditions, type ConditionResult } from '../core/mining';
+import { MAX_OPENED_SPOTS, evaluateConditions, findOpenedSpot, type ConditionResult, type OpenedSpot } from '../core/mining';
 import { localDayKey } from '../core/week';
 import { CATALOG } from '../data';
 import type { FindCompleteMessage } from '../messages';
@@ -48,8 +48,8 @@ export class Miner {
   private skin = '';
   /** 品を見つけたときの「最後のスクロール」の時刻。これが変わる（新しくスクロールする）まで、次は見つからない */
   private doneMark: { at: number | null } | null = null;
-  /** このページで、すでに入れ物を開けた場所（キーは tracker の spotKey）と、そのときの入れ物。メモリだけで、保存しない */
-  private readonly opened = new Map<string, { container: ContainerKind; skin: string }>();
+  /** このページで、すでに入れ物を開けた場所と、そのときの入れ物。メモリだけで、保存しない */
+  private opened: (OpenedSpot & { container: ContainerKind; skin: string })[] = [];
   private last: MinerSnapshot = {
     phase: 'idle',
     gauge: 0,
@@ -95,7 +95,7 @@ export class Miner {
       findsToday: findsToday(state, localDayKey(new Date())),
       maxFindsPerDay: cfg.MAX_FINDS_PER_DAY,
       foundThisStop,
-      spotOpened: this.opened.has(snap.spotKey),
+      spotOpened: findOpenedSpot(this.opened, snap.spot) !== undefined,
     });
 
     if (!result.ok) {
@@ -118,19 +118,25 @@ export class Miner {
         genreId: classifyHost(location.hostname, CATALOG.genres),
         container: this.container,
       };
-      const spot = snap.spotKey;
-      this.opened.set(spot, { container: this.container, skin: this.skin });
+      const entry = {
+        elementId: snap.spot.elementId,
+        scrollTop: snap.spot.scrollTop,
+        container: this.container,
+        skin: this.skin,
+      };
+      this.opened.push(entry);
+      if (this.opened.length > MAX_OPENED_SPOTS) this.opened.shift();
       this.startedAt = null;
       this.doneMark = { at: snap.lastScrollAt };
       gauge = 1;
       // 報告が届かなかったときは、その場所をまた開けられるようにする（品が付かないまま使い切らない）
       void sendToBackground(msg).then((ok) => {
-        if (!ok) this.opened.delete(spot);
+        if (!ok) this.opened = this.opened.filter((o) => o !== entry);
       });
     }
 
     // 動いている間は歩く。止まっていて、この場所をすでに開けているなら、開けた入れ物が残っている
-    const here = this.opened.get(snap.spotKey);
+    const here = findOpenedSpot(this.opened, snap.spot);
     let phase: Phase;
     if (this.doneMark) phase = 'done';
     else if (this.startedAt !== null) phase = 'search';
@@ -150,7 +156,7 @@ export class Miner {
 
   /** ページが切り替わったとき（同じタブの中での移動を含む）、開けた場所の記録を捨てる */
   resetSpots(): void {
-    this.opened.clear();
+    this.opened = [];
     this.doneMark = null;
     this.startedAt = null;
     this.container = null;
