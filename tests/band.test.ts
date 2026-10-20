@@ -5,13 +5,13 @@ const STEP = BAND_STEP_M;
 const LOOP = BAND_STEP_M * BAND_VARIANTS;
 
 describe('bandVariant', () => {
-  it('changes every step (50 m), through 6 variants', () => {
-    expect(BAND_STEP_M).toBe(50);
+  it('changes every step (25 m), through 6 variants', () => {
+    expect(BAND_STEP_M).toBe(25);
     expect(BAND_VARIANTS).toBe(6);
     const edges = [0, STEP - 0.1, STEP, 2 * STEP - 0.1, 2 * STEP, 3 * STEP - 1, 3 * STEP, 4 * STEP - 1, 4 * STEP, 5 * STEP - 1, 5 * STEP, LOOP - 0.1];
     expect(edges.map(bandVariant)).toEqual([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5]);
   });
-  it('loops back to the first after one full round (300 m)', () => {
+  it('loops back to the first after one full round (150 m)', () => {
     expect(bandVariant(LOOP)).toBe(0);
     expect(bandVariant(LOOP + STEP - 0.1)).toBe(0);
     expect(bandVariant(LOOP + STEP)).toBe(1);
