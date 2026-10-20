@@ -5,8 +5,8 @@
 
 const BASE = {
   // --- 深度 ---
-  /** 実際の距離(m)に掛ける倍率。1000px ≒ 0.26m */
-  DEPTH_MULTIPLIER: 30,
+  /** 実際の距離(m)に掛ける倍率。1000px ≒ 0.26m なので、1000px のスクロールで約 26m 進む */
+  DEPTH_MULTIPLIER: 100,
 
   // --- スクロール計測 ---
   /** ユーザー操作からこの秒数以内のスクロールだけ数える */
@@ -55,7 +55,7 @@ const BASE = {
  * デモ中のデータは、本番のデータとは別の場所に保存し、ランキングにも送らない。
  */
 const DEMO_OVERRIDES: Partial<typeof BASE> = {
-  DEPTH_MULTIPLIER: 600,
+  DEPTH_MULTIPLIER: 2000,
   FIND_START_DELAY_SEC: 1,
   FIND_DURATION_SEC: 2,
   MAX_FINDS_PER_DAY: 9999,

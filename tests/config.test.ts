@@ -4,7 +4,7 @@ import { rulesFor } from '../src/rules';
 
 describe('demo mode config', () => {
   it('the normal config is unchanged by the existence of demo mode', () => {
-    expect(configFor(false).DEPTH_MULTIPLIER).toBe(30);
+    expect(configFor(false).DEPTH_MULTIPLIER).toBe(100);
     expect(configFor(false).FIND_DURATION_SEC).toBe(4);
     expect(configFor(false).MAX_FINDS_PER_DAY).toBe(300);
     expect(configFor(false).MIMIC_IN_CHEST).toBe(0.12);
@@ -18,11 +18,11 @@ describe('demo mode config', () => {
   });
   it('switching does not mutate either config', () => {
     configFor(true);
-    expect(configFor(false).DEPTH_MULTIPLIER).toBe(30);
+    expect(configFor(false).DEPTH_MULTIPLIER).toBe(100);
   });
   it('rules follow the config: demo is faster and keeps the minimum find interval at half the gauge time', () => {
     expect(rulesFor(false).minFindIntervalMs).toBe(2000);
     expect(rulesFor(true).minFindIntervalMs).toBe(1000);
-    expect(rulesFor(true).depthMultiplier).toBe(600);
+    expect(rulesFor(true).depthMultiplier).toBe(2000);
   });
 });
