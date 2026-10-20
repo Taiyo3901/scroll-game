@@ -84,49 +84,47 @@ export const OVERLAY_CSS = `
 .foot { position: absolute; left: 13px; right: 3px; bottom: 14px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
 
 /* 帯の長さ = ページの長さ。探索者は、読み進めるほど上から下へ降りていく */
-.track { position: absolute; left: 12px; right: 7px; top: 46px; bottom: 150px; }
+.track { position: absolute; left: 12px; right: 6px; top: 46px; bottom: 150px; }
 .band:has(.demo-tag.on) .track { top: 66px; }
 /* 10% ごとの目盛り（スクロールバーのすぐ内側） */
 .ruler {
   position: absolute; right: -6px; top: 0; bottom: 0; width: 3px;
   background: repeating-linear-gradient(180deg, rgba(245,240,230,.55) 0 2px, transparent 2px 10%);
 }
-.stage { position: absolute; left: 0; top: 0; width: 41px; height: 86px; transition: transform .25s steps(5, end); will-change: transform; }
-.scene { position: relative; width: 41px; height: 62px; }
+.stage { position: absolute; left: 0; top: 0; width: 46px; height: 102px; transition: transform .25s steps(5, end); will-change: transform; }
+.scene { position: relative; width: 46px; height: 84px; }
 .marks { position: absolute; inset: 0; }
 .mark { position: absolute; right: -3px; top: 0; width: 18px; height: 18px; opacity: .85; }
 .mark img { width: 18px; height: 18px; image-rendering: pixelated; display: block; filter: drop-shadow(1px 1px 0 #2a1f1a); }
 .mark.r2 img { filter: drop-shadow(0 0 2px rgba(80,160,220,.9)); }
 .mark.r3 img { filter: drop-shadow(0 0 3px rgba(255,210,70,1)); }
 
-/* 場面: 左下に探索者、右上に入れ物（ドット絵 14マス x 2px = 28px） */
+/* 場面: 下に探索者、上に入れ物（ドット絵 14マス x 3px = 42px） */
 .hero {
-  position: absolute; left: 0; bottom: 0; width: 28px; height: 28px;
+  position: absolute; left: 0; bottom: 0; width: 42px; height: 42px;
   background-repeat: no-repeat; image-rendering: pixelated; filter: drop-shadow(1px 1px 0 #2a1f1a);
 }
 .hero.walk { animation: heroWalk .5s steps(4, end) infinite; }
 .hero.search { animation: heroSearch .45s steps(2, end) infinite; }
 .hero.scared { animation: scared .3s steps(2, end) 3; }
-.cont { position: absolute; right: 0; top: 0; width: 28px; height: 28px; opacity: 0; filter: drop-shadow(1px 1px 0 #2a1f1a); }
+.cont { position: absolute; right: 0; top: 0; width: 42px; height: 42px; opacity: 0; filter: drop-shadow(1px 1px 0 #2a1f1a); }
 .cont.on { opacity: 1; }
-.cont img { width: 28px; height: 28px; image-rendering: pixelated; display: block; }
+.cont img { width: 42px; height: 42px; image-rendering: pixelated; display: block; }
 .cont.enter { animation: enter .35s steps(5, end); }
 .cont.searching { animation: enter .35s steps(5, end), rummage .5s steps(2, end) .35s infinite; }
 .cont.mimic-reveal { animation: shudder .25s steps(2, end) infinite; }
 .fly {
-  position: absolute; right: 6px; top: 0; width: 28px; height: 28px; image-rendering: pixelated;
+  position: absolute; right: 7px; top: 7px; width: 28px; height: 28px; image-rendering: pixelated;
   animation: fly 1.2s steps(10, end) forwards;
 }
 .fly.r2 { filter: drop-shadow(0 0 3px rgba(80,160,220,.9)); }
 .fly.r3 { filter: drop-shadow(0 0 5px rgba(255,210,70,1)); }
 
-.gauge { width: 41px; height: 12px; padding: 2px; margin-top: 8px; }
-.gauge-inner { width: 100%; height: 100%; overflow: hidden; background: #3a2c20; }
-.gauge-fill {
-  width: 100%; height: 100%; transform-origin: left; transform: scaleX(0);
-  background: repeating-linear-gradient(90deg, #f6d44c 0 4px, #b8870f 4px 6px);
-  transition: transform .25s linear;
-}
+/* ゲージ: 目盛りは6つで固定。進むと、目盛りが1つずつ点く（伸び縮みしない） */
+.gauge { width: 34px; height: 10px; padding: 2px; margin: 6px 0 0 6px; }
+.gauge-inner { display: flex; gap: 1px; width: 100%; height: 100%; background: #1b1410; }
+.gauge-inner .cell { flex: 1 1 0; background: #3a2c20; }
+.gauge-inner .cell.on { background: #f6d44c; box-shadow: inset 0 -1px 0 #b8870f; }
 
 .today { white-space: pre; text-align: center; font-size: 10px; line-height: 1.3; padding: 3px 3px; }
 
@@ -149,8 +147,8 @@ export const OVERLAY_CSS = `
 .pop.r3 .stars { color: #f6d44c; }
 .pop.r3 .ico img { filter: drop-shadow(0 0 4px rgba(255,210,70,.95)); }
 
-@keyframes heroWalk { from { background-position-x: 0; } to { background-position-x: -112px; } }
-@keyframes heroSearch { from { background-position-x: 0; } to { background-position-x: -56px; } }
+@keyframes heroWalk { from { background-position-x: 0; } to { background-position-x: -168px; } }
+@keyframes heroSearch { from { background-position-x: 0; } to { background-position-x: -84px; } }
 @keyframes scared { 0% { transform: translateX(0); } 50% { transform: translateX(-3px); } 100% { transform: translateX(0); } }
 @keyframes enter { 0% { transform: translateY(-10px) scale(.4); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
 @keyframes rummage { 0% { transform: translateX(0); } 50% { transform: translateX(-1px) rotate(-3deg); } 100% { transform: translateX(1px) rotate(3deg); } }
@@ -185,7 +183,6 @@ export const OVERLAY_CSS = `
   .fly { opacity: 0; }
   .torch svg .f1 { opacity: 1; }
   .torch svg .f2 { opacity: 0; }
-  .gauge-fill { transition: none; }
   .pop, .pop.r3 { animation: popFade 2.6s linear forwards; }
 }
 @keyframes popFade { 0% { opacity: 0; } 8% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; } }

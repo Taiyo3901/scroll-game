@@ -57,7 +57,10 @@ const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls: string): HTMLEle
   return e;
 };
 
-const CELL = 2;
+/** ドット絵1マスの大きさ(px)。探索者と入れ物は、14マス x 3px = 42px */
+const CELL = 3;
+/** ゲージの目盛りの数 */
+const GAUGE_CELLS = 6;
 /** 帯に残す目印の数の上限 */
 const MAX_MARKS = 40;
 
@@ -105,8 +108,8 @@ export function createOverlay(): Overlay {
   scene.append(cont, hero);
   const gauge = el('div', 'gauge panel');
   const gaugeInner = el('div', 'gauge-inner');
-  const gaugeFill = el('div', 'gauge-fill');
-  gaugeInner.append(gaugeFill);
+  const gaugeCells = Array.from({ length: GAUGE_CELLS }, () => el('div', 'cell'));
+  gaugeInner.append(...gaugeCells);
   gauge.append(gaugeInner);
   stage.append(scene, gauge);
   track.append(ruler, marks, stage);
@@ -142,7 +145,7 @@ export function createOverlay(): Overlay {
   };
 
   // 帯の長さ（探索者が動ける高さ）。大きさが変わったときだけ測り直す
-  const STAGE_H = 86;
+  const STAGE_H = 102;
   const MARK_H = 18;
   let trackH = 0;
   let progress = 0;
@@ -219,7 +222,9 @@ export function createOverlay(): Overlay {
 
       // 物色の進み具合と、まわりの明るさ
       const g = v.phase === 'search' ? v.gauge : 0;
-      set('gauge', g.toFixed(3), () => (gaugeFill.style.transform = `scaleX(${g})`));
+      // 目盛りは、固定の6つ。進み具合に合わせて、左から点く
+      const lit = g <= 0 ? 0 : Math.min(GAUGE_CELLS, Math.ceil(g * GAUGE_CELLS));
+      set('gauge', String(lit), () => gaugeCells.forEach((c, i) => c.classList.toggle('on', i < lit)));
       const glowOpacity = (0.25 + 0.6 * g).toFixed(2);
       set('glow', glowOpacity, () => (glow.style.opacity = glowOpacity));
       set('today', String(v.todayFinds), () => (today.textContent = `今日\n${v.todayFinds}`));
