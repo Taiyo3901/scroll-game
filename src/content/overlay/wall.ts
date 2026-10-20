@@ -240,6 +240,112 @@ function decorate(roomId: string, rand: () => number, rects: Rect[]): void {
   }
 }
 
+/**
+ * 深さの変化ごとの飾り（壁の上に重ねる、透明な背景のドット絵）。
+ * 0: 土と根 / 1: 水と苔 / 2: 坑道の梁 / 3: 水晶 / 4: 溶岩 / 5: 深い闇
+ */
+function drawDeco(variant: number, rand: () => number, rects: Rect[]): void {
+  const add = (x: number, y: number, w: number, h: number, fill: string) => rects.push(...wrapRects(x, y, w, h, fill));
+  const at = (n: number) => Math.floor(rand() * n);
+
+  if (variant === 0) {
+    // 垂れ下がる木の根と、土のつぶ
+    for (const x0 of [3, 11, 19, 27]) {
+      let x = x0;
+      const y0 = at(70);
+      for (let y = y0; y < y0 + 26; y++) {
+        add(x, y, 1, 1, y % 4 === 0 ? '#5a3a1c' : '#8a5a2c');
+        if (y % 5 === 4) x = Math.max(0, Math.min(W - 1, x + (rand() > 0.5 ? 1 : -1)));
+      }
+      add(x - 1, y0 + 26, 3, 1, '#c8a060');
+    }
+    for (let i = 0; i < 28; i++) add(at(W), at(H), 1, 1, rand() > 0.5 ? '#6b4a26' : '#c89a5a');
+  } else if (variant === 1) {
+    // 流れる水と、苔
+    for (const x of [5, 15, 25]) {
+      const y0 = at(60);
+      const len = 22 + at(14);
+      add(x, y0, 2, len, '#3f8ff0');
+      add(x, y0, 1, len, '#9ad0ff');
+      add(x - 1, y0 + len, 4, 1, '#d6ecff');
+      add(x, y0 + len + 1, 2, 1, '#9ad0ff');
+    }
+    for (let i = 0; i < 12; i++) add(at(W - 4), at(H), 3 + at(3), 1, i % 2 ? '#58c27a' : '#2f8a52');
+  } else if (variant === 2) {
+    // 坑道の支柱と梁、ランプの灯り
+    add(0, 0, 3, H, '#a8703a');
+    add(0, 0, 1, H, '#d49a58');
+    add(2, 0, 1, H, '#5a3414');
+    for (const y of [10, 60]) {
+      add(0, y, W, 4, '#b57c40');
+      add(0, y, W, 1, '#e0aa68');
+      add(0, y + 3, W, 1, '#5a3414');
+      for (const x of [6, 16, 26]) add(x, y + 1, 1, 1, '#dfe4ea');
+    }
+    for (const [x, y] of [[24, 28], [10, 78], [28, 90]] as const) {
+      add(x, y, 2, 3, '#ffb347');
+      add(x, y, 2, 1, '#fff0b0');
+    }
+  } else if (variant === 3) {
+    // 壁から生えた水晶
+    for (let i = 0; i < 9; i++) {
+      const x = 2 + at(W - 6);
+      const y = at(H - 9);
+      add(x + 1, y, 1, 1, '#f2fdff');
+      add(x, y + 1, 3, 2, '#86ecfa');
+      add(x + 1, y + 1, 1, 2, '#f2fdff');
+      add(x, y + 3, 3, 3, '#31bad6');
+      add(x + 1, y + 6, 1, 1, '#1f7f9a');
+    }
+    for (let i = 0; i < 10; i++) add(at(W), at(H), 1, 1, '#d8fbff');
+  } else if (variant === 4) {
+    // 割れ目から漏れる赤い光と、火の粉
+    for (let i = 0; i < 7; i++) {
+      let x = 2 + at(W - 4);
+      let y = at(H - 14);
+      for (let j = 0; j < 12; j++) {
+        add(x, y, 1, 1, j % 3 === 0 ? '#ffe070' : '#ff5a1f');
+        add(x + 1, y, 1, 1, '#a02808');
+        y += 1;
+        if (j % 2 === 1) x = Math.max(0, Math.min(W - 2, x + (rand() > 0.5 ? 1 : -1)));
+      }
+    }
+    for (let i = 0; i < 14; i++) add(at(W), at(H), 1, 1, '#ffa040');
+  } else {
+    // 暗闇でこちらを見ている目と、紫の割れ目
+    for (let i = 0; i < 5; i++) {
+      const x = 3 + at(W - 10);
+      const y = 4 + at(H - 8);
+      add(x - 1, y - 1, 4, 3, '#140a26');
+      add(x + 5, y - 1, 4, 3, '#140a26');
+      add(x, y, 2, 1, '#d08cff');
+      add(x + 6, y, 2, 1, '#d08cff');
+    }
+    for (let i = 0; i < 9; i++) {
+      const x = at(W);
+      const y = at(H - 5);
+      add(x, y, 1, 3 + at(3), '#7a52c8');
+    }
+    for (let i = 0; i < 12; i++) add(at(W), at(H), 1, 1, '#e6d4ff');
+  }
+}
+
+const decoCache = new Map<number, string>();
+
+/** 深さの変化（0〜5）ごとの飾りのタイル。背景に敷く CSS の url(...) 文字列。 */
+export function decoUri(variant: number): string {
+  const v = Math.max(0, Math.floor(variant)) % 6;
+  const hit = decoCache.get(v);
+  if (hit) return hit;
+  const rects: Rect[] = [];
+  drawDeco(v, rng(101 + v * 31), rects);
+  const body = rects.map(([x, y, w, h, f]) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${f}"/>`).join('');
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W * CELL_PX}" height="${H * CELL_PX}" viewBox="0 0 ${W} ${H}" shape-rendering="crispEdges">${body}</svg>`;
+  const uri = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+  decoCache.set(v, uri);
+  return uri;
+}
+
 const cache = new Map<string, string>();
 
 /**

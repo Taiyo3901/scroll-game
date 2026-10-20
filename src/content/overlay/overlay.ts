@@ -2,7 +2,8 @@ import { HERO_SIZE, containerFrameUri, heroSheet, type HeroPose } from '../../co
 import type { ContainerKind } from '../../core/containers';
 import type { Phase } from '../miner';
 import { OVERLAY_CSS, TILE_HEIGHT_PX } from './styles';
-import { TORCH_SVG, wallUri } from './wall';
+import { BAND_TINTS } from '../../core/band';
+import { TORCH_SVG, decoUri, wallUri } from './wall';
 
 export interface OverlayView {
   depthText: string;
@@ -10,8 +11,8 @@ export interface OverlayView {
   roomId: string;
   /** 背景の岩肌を流す量に使う（m） */
   depthM: number;
-  /** 階層の色。壁に薄くかぶせる（階層の名前は、表示しない） */
-  strataColor: string;
+  /** 深さに応じた背景の変化の番号（0〜5。50mごとに変わり、使い切ると最初に戻る） */
+  bandVariant: number;
   /** 場面: 歩く / 立ち止まり / 物色中 / 見つけ終わった */
   phase: Phase;
   /** 物色の進み具合 0〜1 */
@@ -113,10 +114,11 @@ export function createOverlay(): Overlay {
   const col = el('div', 'col');
   col.append(demoTag, depth);
   const rock = el('div', 'rock');
+  const deco = el('div', 'deco');
   const shade = el('div', 'shade');
   const tint = el('div', 'tint');
   const glow = el('div', 'glow');
-  band.append(rock, tint, shade, glow);
+  band.append(rock, tint, deco, shade, glow);
   for (const pos of ['t1', 't2']) {
     // 壁の松明（飾り）。SVG は自前の固定文字列で、ページの内容は入らない
     const torch = el('div', `torch ${pos}`);
@@ -167,11 +169,18 @@ export function createOverlay(): Overlay {
     update(v) {
       set('depth', v.depthText, () => (depth.textContent = v.depthText));
       set('demo', String(v.demo), () => demoTag.classList.toggle('on', v.demo));
-      set('area', v.strataColor, () => band.style.setProperty('--area', v.strataColor)); // 階層は、壁にかぶせる色で表す
+      // 深さに応じた背景の変化: 壁に重ねる色と、その変化ごとの飾り
+      set('variant', String(v.bandVariant), () => {
+        band.style.setProperty('--area', BAND_TINTS[v.bandVariant] ?? BAND_TINTS[0]);
+        band.style.setProperty('--deco', decoUri(v.bandVariant));
+      });
       set('room', v.roomId, () => band.style.setProperty('--wall', wallUri(v.roomId)));
       // 深く進むほど石壁が上へ流れる（1mあたり3px。タイル1枚ぶんでひと回り）
       const shift = Math.floor(v.depthM * 3) % TILE_HEIGHT_PX;
-      set('rock', String(shift), () => (rock.style.transform = `translateY(${-shift}px)`));
+      set('rock', String(shift), () => {
+        rock.style.transform = `translateY(${-shift}px)`;
+        deco.style.transform = `translateY(${-shift}px)`;
+      });
 
       // 探索者は、ページの読み進み具合に合わせて、帯を上から下へ進む
       if (Math.abs(v.progress - progress) > 0.001) {

@@ -1,5 +1,6 @@
 import { CONFIG } from '../config';
-import { areaAt, findItem } from '../core/catalog';
+import { findItem } from '../core/catalog';
+import { bandVariant } from '../core/band';
 import { classifyHost } from '../core/genre';
 import { isHostDisabled, isHostQuery, type HostReply } from '../core/hosts';
 import { formatBadge } from '../core/format';
@@ -96,12 +97,11 @@ function main(): void {
     const { state } = getView();
 
     if (overlay) {
-      const area = areaAt(CATALOG.areas, state.depthM);
       overlay.update({
         depthText: formatBadge(state.depthM),
         roomId: ROOM_ID,
         depthM: state.depthM,
-        strataColor: area.color,
+        bandVariant: bandVariant(state.depthM),
         phase: m.phase,
         gauge: m.gauge,
         container: m.container,
