@@ -1,0 +1,9 @@
+apiKey: "AIzaSyDP2jkxzlT57SZ0okBOlvrI_lYR2x3h3Wo",
+authDomain: "scroll-game-7177c.firebaseapp.com",
+projectId: "scroll-game-7177c",
+storageBucket: "scroll-game-7177c.firebasestorage.app",
+messagingSenderId: "762979997726",
+appId: "1:762979997726:web:35808b1bfc285a977fb60f",
+measurementId: "G-MQWM6899QS"
+
+クライアントID:762979997726-jbm59ve4mp9uomn57qdk3cu7blq3u0s0.apps.googleusercontent.com

@@ -15,6 +15,14 @@
     "alarms",
     "identity"
   ],
+  "oauth2": {
+    "client_id": "762979997726-jbm59ve4mp9uomn57qdk3cu7blq3u0s0.apps.googleusercontent.com",
+    "scopes": [
+      "openid",
+      "email",
+      "profile"
+    ]
+  },
   "background": {
     "service_worker": "service-worker-loader.js",
     "type": "module"
