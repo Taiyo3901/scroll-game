@@ -9,7 +9,9 @@ type ActorData = {
 };
 const { palette, containers, heroes } = data as ActorData;
 
-export const ACTOR_SIZE = 14;
+/** 入れ物の絵の1辺のマス数（縁取りを含む）。探索者は、もっと細かい */
+export const CONTAINER_SIZE = 14;
+export const HERO_SIZE = 22;
 export type HeroPose = Pose;
 
 function rects(rows: string[], xOffset: number): string {
@@ -29,10 +31,10 @@ function rects(rows: string[], xOffset: number): string {
 }
 
 /** いくつかの絵を横につないだ1枚の絵（data URI）。アニメーションは CSS の steps で切り替える。 */
-function sheetUri(frames: string[][]): string {
-  const w = ACTOR_SIZE * frames.length;
-  const body = frames.map((rows, i) => rects(rows, i * ACTOR_SIZE)).join('');
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${ACTOR_SIZE}" shape-rendering="crispEdges">${body}</svg>`;
+function sheetUri(frames: string[][], size: number): string {
+  const w = size * frames.length;
+  const body = frames.map((rows, i) => rects(rows, i * size)).join('');
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${size}" shape-rendering="crispEdges">${body}</svg>`;
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
@@ -51,14 +53,14 @@ export function containerFrameCount(key: string): number {
 export function containerFrameUri(key: string, frame: number): string | null {
   return cached(`c|${key}|${frame}`, () => {
     const rows = containers[key]?.[frame];
-    return rows ? sheetUri([rows]) : null;
+    return rows ? sheetUri([rows], CONTAINER_SIZE) : null;
   });
 }
 
 /** 探索者の動き（コマを横につないだ絵）と、そのコマ数。職業が未登録なら標準の見た目。 */
 export function heroSheet(job: string, pose: Pose): { uri: string; frames: number } {
   const frames = (heroes[job] ?? heroes.default)![pose];
-  const uri = cached(`h|${heroes[job] ? job : 'default'}|${pose}`, () => sheetUri(frames)) as string;
+  const uri = cached(`h|${heroes[job] ? job : 'default'}|${pose}`, () => sheetUri(frames, HERO_SIZE)) as string;
   return { uri, frames: frames.length };
 }
 

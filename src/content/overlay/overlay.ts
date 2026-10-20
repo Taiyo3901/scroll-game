@@ -1,4 +1,4 @@
-import { ACTOR_SIZE, containerFrameUri, heroSheet, type HeroPose } from '../../core/actors';
+import { HERO_SIZE, containerFrameUri, heroSheet, type HeroPose } from '../../core/actors';
 import type { ContainerKind } from '../../core/containers';
 import type { Phase } from '../miner';
 import { OVERLAY_CSS, TILE_HEIGHT_PX } from './styles';
@@ -14,8 +14,6 @@ export interface OverlayView {
   depthM: number;
   strataName: string;
   strataColor: string;
-  /** 今日見つけた数 */
-  todayFinds: number;
   /** 場面: 歩く / 立ち止まり / 物色中 / 見つけ終わった */
   phase: Phase;
   /** 物色の進み具合 0〜1 */
@@ -57,8 +55,8 @@ const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls: string): HTMLEle
   return e;
 };
 
-/** ドット絵1マスの大きさ(px)。探索者と入れ物は、14マス x 3px = 42px */
-const CELL = 3;
+/** ドット絵1マスの大きさ(px)。探索者は 22マス x 2px = 44px、入れ物は 14マス x 2px = 28px */
+const CELL = 2;
 /** ゲージの目盛りの数 */
 const GAUGE_CELLS = 6;
 /** 帯に残す目印の数の上限 */
@@ -113,9 +111,8 @@ export function createOverlay(): Overlay {
   gauge.append(gaugeInner);
   stage.append(scene, gauge);
   track.append(ruler, marks, stage);
-  const today = el('div', 'today panel');
   const foot = el('div', 'foot');
-  foot.append(strataName, today);
+  foot.append(strataName);
   const col = el('div', 'col');
   col.append(demoTag, depth);
   const rock = el('div', 'rock');
@@ -145,7 +142,7 @@ export function createOverlay(): Overlay {
   };
 
   // 帯の長さ（探索者が動ける高さ）。大きさが変わったときだけ測り直す
-  const STAGE_H = 102;
+  const STAGE_H = 90;
   const MARK_H = 18;
   let trackH = 0;
   let progress = 0;
@@ -193,7 +190,7 @@ export function createOverlay(): Overlay {
       set('hero', `${v.job}|${pose}`, () => {
         const sheet = heroSheet(v.job, pose);
         hero.style.backgroundImage = `url("${sheet.uri}")`;
-        hero.style.backgroundSize = `${sheet.frames * ACTOR_SIZE * CELL}px ${ACTOR_SIZE * CELL}px`;
+        hero.style.backgroundSize = `${sheet.frames * HERO_SIZE * CELL}px ${HERO_SIZE * CELL}px`;
         hero.className = `hero ${pose}`;
       });
       set('shake', String(v.phase === 'done' && v.container === 'mimic'), () =>
@@ -227,7 +224,6 @@ export function createOverlay(): Overlay {
       set('gauge', String(lit), () => gaugeCells.forEach((c, i) => c.classList.toggle('on', i < lit)));
       const glowOpacity = (0.25 + 0.6 * g).toFixed(2);
       set('glow', glowOpacity, () => (glow.style.opacity = glowOpacity));
-      set('today', String(v.todayFinds), () => (today.textContent = `今日\n${v.todayFinds}`));
     },
 
     mark(p, iconUri, rarity) {

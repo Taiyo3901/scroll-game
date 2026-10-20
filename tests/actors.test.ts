@@ -3,7 +3,8 @@ import {
   ACTOR_CONTAINER_KEYS,
   ACTOR_HERO_JOBS,
   ACTOR_PALETTE,
-  ACTOR_SIZE,
+  CONTAINER_SIZE,
+  HERO_SIZE,
   containerFrameCount,
   containerFrameUri,
   containerFrames,
@@ -12,14 +13,14 @@ import {
 } from '../src/core/actors';
 import { CATALOG } from '../src/data';
 
-const checkFrames = (name: string, frames: string[][] | undefined, count: number) => {
+const checkFrames = (name: string, frames: string[][] | undefined, count: number, size: number) => {
   expect(frames, name).toBeDefined();
   expect(frames, name).toHaveLength(count);
   for (const rows of frames!) {
-    expect(rows, name).toHaveLength(ACTOR_SIZE);
+    expect(rows, name).toHaveLength(size);
     let filled = 0;
     for (const row of rows) {
-      expect(row, name).toHaveLength(ACTOR_SIZE);
+      expect(row, name).toHaveLength(size);
       for (const c of row) {
         if (c === '.') continue;
         expect(ACTOR_PALETTE[c], `${name}: '${c}'`).toBeDefined();
@@ -33,11 +34,11 @@ const checkFrames = (name: string, frames: string[][] | undefined, count: number
 describe('container sprites', () => {
   it('every area has a pot, a chest (3 frames) and a mimic (2 frames); every room has a box (3 frames)', () => {
     for (const a of CATALOG.areas) {
-      checkFrames(`pot:${a.id}`, containerFrames(`pot:${a.id}`), 3);
-      checkFrames(`chest:${a.id}`, containerFrames(`chest:${a.id}`), 3);
-      checkFrames(`mimic:${a.id}`, containerFrames(`mimic:${a.id}`), 2);
+      checkFrames(`pot:${a.id}`, containerFrames(`pot:${a.id}`), 3, CONTAINER_SIZE);
+      checkFrames(`chest:${a.id}`, containerFrames(`chest:${a.id}`), 3, CONTAINER_SIZE);
+      checkFrames(`mimic:${a.id}`, containerFrames(`mimic:${a.id}`), 2, CONTAINER_SIZE);
     }
-    for (const g of CATALOG.genres) checkFrames(`box:${g.id}`, containerFrames(`box:${g.id}`), 3);
+    for (const g of CATALOG.genres) checkFrames(`box:${g.id}`, containerFrames(`box:${g.id}`), 3, CONTAINER_SIZE);
   });
   it('has no sprites for unknown skins', () => {
     const expected = CATALOG.areas.length * 3 + CATALOG.genres.length;
@@ -55,10 +56,10 @@ describe('hero sprites', () => {
     const jobs = new Set([...CATALOG.genres.map((g) => g.job), '勇者', 'default']);
     expect(new Set(ACTOR_HERO_JOBS)).toEqual(jobs);
     for (const j of jobs) {
-      checkFrames(`${j}:walk`, heroFrames(j, 'walk'), 4);
-      checkFrames(`${j}:search`, heroFrames(j, 'search'), 2);
-      checkFrames(`${j}:idle`, heroFrames(j, 'idle'), 1);
-      checkFrames(`${j}:cheer`, heroFrames(j, 'cheer'), 1);
+      checkFrames(`${j}:walk`, heroFrames(j, 'walk'), 4, HERO_SIZE);
+      checkFrames(`${j}:search`, heroFrames(j, 'search'), 2, HERO_SIZE);
+      checkFrames(`${j}:idle`, heroFrames(j, 'idle'), 1, HERO_SIZE);
+      checkFrames(`${j}:cheer`, heroFrames(j, 'cheer'), 1, HERO_SIZE);
     }
   });
   it('each job looks different from the others', () => {

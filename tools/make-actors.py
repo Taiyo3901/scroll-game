@@ -3,7 +3,7 @@
 `python tools/make-actors.py` で src/data/actors.json を作り直す。共通の部品は art.py。
 
 - 入れ物: 壺(階層ごと) / 宝箱(階層ごと) / ミミック(階層ごと) / 箱(部屋ごと)。ふたの開き方を3コマ（ミミックは2コマ）で描く。
-- 探索者: 職業ごとの見た目。歩く(4コマ)・物色(2コマ)・立ち(1コマ)・喜ぶ(1コマ)。
+- 探索者: 職業ごとの見た目（22x22のマス。入れ物の14x14より細かい）。歩く(4コマ)・物色(2コマ)・立ち(1コマ)・喜ぶ(1コマ)。
 """
 import json
 import os
@@ -257,142 +257,226 @@ for room in BOX_STYLE:
     CONTAINERS[f'box:{room}'] = [box(room, f).rows() for f in range(3)]
 
 # ====================== 探索者 ======================
+# 20x20 のマスに描き、縁取りを付けて 22x22。入れ物（14x14）より、ドットが細かい。
 
-# 職業ごとの見た目: 服, 差し色, 帽子の種類
 OUTFITS = {
-    'default': dict(body='b', trim='B', hat='hair'),
-    '踊り子': dict(body='m', trim='y', hat='flower'),
-    '遊び人': dict(body='p', trim='y', hat='jester'),
-    '斥候': dict(body='N', trim='n', hat='hood', hood='N'),
-    '賢者': dict(body='w', trim='u', hat='wizard', robe=True),
-    '商人': dict(body='b', trim='Y', hat='cap', pack=True),
-    '錬金術師': dict(body='a', trim='w', hat='goggles'),
-    '戦士': dict(body='r', trim='l', hat='horns'),
-    '吟遊詩人': dict(body='o', trim='R', hat='feather'),
-    '旅人': dict(body='n', trim='t', hat='straw'),
-    '騎士': dict(body='l', trim='d', hat='helm', robe=False),
-    '放浪者': dict(body='g', trim='d', hat='hood', hood='d'),
-    '勇者': dict(body='u', trim='w', hat='spiky', cape=True),
+    'default': dict(body='b', dark='B', trim='Y', hat='none', hair='H'),
+    '踊り子': dict(body='m', dark='M', trim='y', hat='flower', hair='M', skirt=True),
+    '遊び人': dict(body='p', dark='P', trim='y', hat='jester', hair='H'),
+    '斥候': dict(body='N', dark='A', trim='B', hat='hood', hood='N', mask=True),
+    '賢者': dict(body='w', dark='l', trim='u', hat='wizard', hair='l', robe=True),
+    '商人': dict(body='b', dark='B', trim='y', hat='cap', hair='H', pack=True),
+    '錬金術師': dict(body='a', dark='A', trim='w', hat='goggles', hair='H', apron=True),
+    '戦士': dict(body='r', dark='R', trim='l', hat='horns', hair='H', shield=True, pads=True),
+    '吟遊詩人': dict(body='o', dark='b', trim='y', hat='feather', hair='H', lute=True),
+    '旅人': dict(body='n', dark='N', trim='t', hat='straw', hair='H', roll=True),
+    '騎士': dict(body='l', dark='g', trim='y', hat='helm', armor=True, pants='g'),
+    '放浪者': dict(body='g', dark='d', trim='b', hat='hood', hood='d', ragged=True),
+    '勇者': dict(body='u', dark='C', trim='w', hat='spiky', hair='e', cape=True),
 }
 
 
 def hero(job, pose, t):
     o = OUTFITS[job]
-    a = Art()
-    # 姿勢ごとの位置
+    a = Art(20)
+    walk = pose == 'walk'
+    bob = -1 if (walk and t % 2 == 1) else 0
     lean = 1 if pose == 'search' else 0
-    bob = -1 if (pose == 'walk' and t % 2 == 1) else 0
-    x0 = 4 + lean
+    x = 6 + lean
     y = bob
+    body, dark, trim = o['body'], o['dark'], o['trim']
+    hair = o.get('hair', 'H')
+    pants = o.get('pants', 'B')
 
-    # 後ろに付くもの（マント、荷物）
+    # ---- 後ろにあるもの（マント・荷物・リュート）
     if o.get('cape'):
-        a.R(x0 - 1, 6 + y, x0 - 1, 10 + y, 'r')
+        a.R(x - 3, 10 + y, x, 18, 'r')
+        a.R(x - 3, 10 + y, x - 3, 18, 'R')
+        a.R(x - 2, 17, x, 18, 'R')
     if o.get('pack'):
-        a.R(x0 - 2, 6 + y, x0 - 1, 9 + y, 'B')
+        a.R(x - 4, 10 + y, x - 1, 16 + y, 'B')
+        a.R(x - 4, 10 + y, x - 4, 16 + y, 'b')
+        a.R(x - 3, 11 + y, x - 2, 11 + y, 'y')
+    if o.get('lute'):
+        a.R(x - 4, 12 + y, x - 2, 17 + y, 'b')
+        a.R(x - 3, 14 + y, x - 3, 15 + y, 'B')
+        a.R(x - 3, 8 + y, x - 3, 11 + y, 'B')
+    if o.get('roll'):
+        a.R(x - 3, 9 + y, x - 1, 15 + y, 't')
+        a.R(x - 3, 11 + y, x - 1, 11 + y, 'B')
+        a.R(x - 3, 14 + y, x - 1, 14 + y, 'B')
 
-    # 脚
-    if pose == 'walk':
-        legs = {0: (0, 3), 1: (1, 2), 2: (0, 3), 3: (1, 2)}[t]
-    elif pose == 'search':
-        legs = (0, 3)
-    else:
-        legs = (1, 2)
-    leg_col = 'd' if o['body'] in ('w', 'l') else 'B'
+    # ---- 脚（ローブ・スカートのときは裾）
     if o.get('robe'):
-        a.R(x0, 10, x0 + 3, 11, o['body'])
+        a.R(x - 1, 15 + y, x + 8, 19, body)
+        a.R(x + 6, 16 + y, x + 8, 19, dark)
+        a.R(x - 1, 19, x + 8, 19, dark)
+        a.R(x + 2, 15 + y, x + 5, 19, 'u')
+        if walk and t in (0, 2):
+            a.R(x - 1 if t == 0 else x + 6, 19, x + 1 if t == 0 else x + 8, 19, 'B')
     else:
-        a.R(x0 + legs[0], 10 + y, x0 + legs[0], 11, leg_col)
-        a.R(x0 + legs[1], 10 + y, x0 + legs[1], 11, leg_col)
-    # 胴
-    a.R(x0, 6 + y, x0 + 3, 9 + y, o['body'])
-    a.R(x0, 9 + y, x0 + 3, 9 + y, o['trim'])
-    a.P(x0 + 1, 7 + y, o['trim'])
-    # 頭
-    a.R(x0, 3 + y, x0 + 3, 5 + y, 'S')
-    a.P(x0 + 2, 4 + y, 'k')
-    if o['hat'] != 'hood':
-        a.R(x0, 2 + y, x0 + 3, 2 + y, 'H')
-
-    # 帽子・髪
-    h = o['hat']
-    hx = x0
-    if h == 'flower':
-        a.R(hx - 1, 3 + y, hx - 1, 6 + y, 'H')
-        a.P(hx + 1, 1 + y, 'r')
-        a.P(hx + 2, 1 + y, 'y')
-    elif h == 'jester':
-        a.R(hx, 2 + y, hx + 3, 2 + y, 'p')
-        a.P(hx - 1, 1 + y, 'y')
-        a.P(hx - 1, 0 + y, 'p')
-        a.P(hx + 4, 1 + y, 'y')
-        a.P(hx + 4, 0 + y, 'p')
-    elif h == 'hood':
-        a.R(hx - 1, 2 + y, hx + 3, 2 + y, o['hood'])
-        a.R(hx - 1, 3 + y, hx - 1, 5 + y, o['hood'])
-        a.R(hx, 1 + y, hx + 2, 1 + y, o['hood'])
-    elif h == 'wizard':
-        a.R(hx, 2 + y, hx + 3, 2 + y, 'P')
-        a.R(hx + 1, 1 + y, hx + 2, 1 + y, 'P')
-        a.P(hx + 1, 0 + y, 'P')
-        a.P(hx + 1, 1 + y, 'y')
-    elif h == 'cap':
-        a.R(hx, 2 + y, hx + 3, 2 + y, 'Y')
-        a.R(hx + 1, 1 + y, hx + 2, 1 + y, 'Y')
-    elif h == 'goggles':
-        a.R(hx, 2 + y, hx + 3, 2 + y, 'd')
-        a.P(hx, 1 + y, 'c')
-        a.P(hx + 1, 1 + y, 'c')
-        a.P(hx + 2, 1 + y, 'c')
-    elif h == 'horns':
-        a.R(hx, 2 + y, hx + 3, 2 + y, 'l')
-        a.R(hx, 1 + y, hx + 3, 1 + y, 'l')
-        a.P(hx - 1, 0 + y, 'w')
-        a.P(hx + 4, 0 + y, 'w')
-    elif h == 'feather':
-        a.R(hx, 2 + y, hx + 3, 2 + y, 'R')
-        a.R(hx + 1, 1 + y, hx + 2, 1 + y, 'R')
-        a.P(hx + 3, 0 + y, 'w')
-        a.P(hx + 4, 0 + y, 'w')
-    elif h == 'straw':
-        a.R(hx - 1, 2 + y, hx + 4, 2 + y, 't')
-        a.R(hx, 1 + y, hx + 3, 1 + y, 't')
-    elif h == 'helm':
-        a.R(hx, 1 + y, hx + 3, 2 + y, 'l')
-        a.R(hx, 3 + y, hx + 3, 3 + y, 'l')
-        a.R(hx + 1, 4 + y, hx + 3, 4 + y, 'd')
-        a.P(hx + 1, 0 + y, 'r')
-        a.P(hx + 2, 0 + y, 'r')
-    elif h == 'spiky':
-        a.R(hx, 2 + y, hx + 3, 2 + y, 'e')
-        a.P(hx, 1 + y, 'e')
-        a.P(hx + 2, 1 + y, 'e')
-        a.P(hx + 3, 0 + y, 'e')
-        a.R(hx, 3 + y, hx + 3, 3 + y, 'r')
-
-    # 腕
-    if pose == 'walk':
-        swing = (0, 1) if t in (0, 3) else (1, 0)
-        a.P(x0 - 1, 7 + y + swing[0], 'S')
-        a.P(x0 + 4, 7 + y + swing[1], 'S')
-    elif pose == 'search':
-        if t == 0:
-            a.P(x0 + 4, 7 + y, 'S')
-            a.P(x0 + 5, 6 + y, 'S')
+        if walk:
+            lo, ro = {0: (-1, 1), 1: (0, 0), 2: (1, -1), 3: (0, 0)}[t]
+        elif pose == 'search':
+            lo, ro = -1, 1
         else:
-            a.P(x0 + 4, 6 + y, 'S')
-            a.P(x0 + 5, 5 + y, 'S')
-        a.P(x0 - 1, 8 + y, 'S')
-    elif pose == 'cheer':
-        a.P(x0 - 1, 6 + y, 'S')
-        a.P(x0 - 1, 5 + y, 'S')
-        a.P(x0 + 4, 6 + y, 'S')
-        a.P(x0 + 4, 5 + y, 'S')
-        a.P(x0 + 5, 2 + y, 'y')
-        a.P(x0 - 2, 2 + y, 'y')
+            lo, ro = 0, 0
+        top = 18 if o.get('skirt') else 16 + y
+        for lx in (x + 1 + lo, x + 5 + ro):
+            a.R(lx, top, lx + 1, 19, pants)
+            a.R(lx, 18, lx + 2, 19, 'B')
+        if o.get('skirt'):
+            a.R(x - 1, 15 + y, x + 8, 17, body)
+            a.R(x - 1, 17, x + 8, 17, trim)
+            a.R(x + 6, 15 + y, x + 8, 17, dark)
+
+    # ---- 胴
+    a.R(x, 10 + y, x + 7, 14 + y, body)
+    a.R(x + 6, 11 + y, x + 7, 14 + y, dark)
+    a.R(x + 2, 10 + y, x + 5, 10 + y, trim)
+    a.R(x, 15 + y, x + 7, 15 + y, trim)
+    a.R(x + 3, 15 + y, x + 4, 15 + y, 'y' if trim != 'y' else 'Y')
+    if o.get('apron'):
+        a.R(x + 1, 11 + y, x + 5, 15 + y, 'w')
+        a.R(x + 1, 11 + y, x + 1, 15 + y, 'l')
+        a.P(x + 3, 13 + y, 'c')
+    if o.get('armor'):
+        a.R(x + 1, 11 + y, x + 6, 13 + y, 'w')
+        a.R(x + 3, 11 + y, x + 4, 14 + y, trim)
+    if o.get('pads'):
+        a.R(x - 1, 10 + y, x, 11 + y, 'g')
+        a.R(x + 7, 10 + y, x + 8, 11 + y, 'g')
+    if o.get('ragged'):
+        for dx in (1, 3, 6):
+            a.P(x + dx, 14 + y, '.')
+        a.R(x + 1, 12 + y, x + 2, 13 + y, 'b')
+    if o.get('robe'):
+        a.R(x + 3, 11 + y, x + 4, 14 + y, trim)
+
+    # ---- 腕
+    sleeve = o.get('sleeve', body)
+    if walk:
+        dl, dr = {0: (0, -1), 1: (0, 0), 2: (-1, 0), 3: (0, 0)}[t]
     else:
-        a.P(x0 - 1, 8 + y, 'S')
-        a.P(x0 + 4, 8 + y, 'S')
+        dl = dr = 0
+    if pose == 'cheer':
+        for ax in (x - 2, x + 8):
+            a.R(ax, 6 + y, ax + 1, 10 + y, sleeve)
+            a.R(ax, 4 + y, ax + 1, 5 + y, 'S')
+    else:
+        a.R(x - 2, 11 + y + dl, x - 1, 14 + y + dl, sleeve)
+        a.R(x - 2, 15 + y + dl, x - 1, 15 + y + dl, 'S')
+        if pose == 'search':
+            a.R(x + 8, 8 + y, x + 9, 12 + y, sleeve)
+            a.R(x + 9, 6 + y, x + 10, 7 + y, 'S')
+        else:
+            a.R(x + 8, 11 + y + dr, x + 9, 14 + y + dr, sleeve)
+            a.R(x + 8, 15 + y + dr, x + 9, 15 + y + dr, 'S')
+    if o.get('shield'):
+        a.D(x - 3, 13 + y + dl, 2.6, 'l')
+        a.D(x - 3, 13 + y + dl, 1.2, 'r')
+
+    # ---- 頭（顔）
+    a.R(x, 3 + y, x + 7, 9 + y, 'S')
+    a.R(x + 7, 4 + y, x + 7, 9 + y, 'T')  # 顔の影（右）
+    for ex in (2, 3, 5, 6):
+        a.P(x + ex, 6 + y, 'k')
+    a.P(x + 1, 8 + y, 'm')
+    a.P(x + 6, 8 + y, 'm')
+    if pose == 'cheer':
+        a.R(x + 3, 8 + y, x + 5, 8 + y, 'R')
+    else:
+        a.P(x + 4, 8 + y, 'R')
+
+    # ---- 髪・帽子
+    h = o['hat']
+    if h in ('none', 'goggles', 'feather', 'cap', 'horns'):
+        a.R(x, 2 + y, x + 7, 3 + y, hair)
+        a.R(x, 4 + y, x, 6 + y, hair)
+        a.R(x + 1, 4 + y, x + 3, 4 + y, hair)
+    if h == 'flower':
+        a.R(x, 2 + y, x + 7, 3 + y, hair)
+        a.R(x - 1, 3 + y, x, 11 + y, hair)
+        a.R(x + 1, 4 + y, x + 3, 4 + y, hair)
+        a.R(x + 5, 1 + y, x + 6, 2 + y, 'r')
+        a.P(x + 5, 1 + y, 'y')
+        a.R(x - 2, 6 + y, x - 1, 7 + y, 'y')
+    elif h == 'jester':
+        a.R(x, 2 + y, x + 7, 3 + y, 'p')
+        a.R(x, 4 + y, x, 4 + y, 'p')
+        a.R(x - 1, 0 + y, x + 1, 1 + y, 'y')
+        a.P(x - 2, 0 + y, 'y')
+        a.R(x + 6, 0 + y, x + 8, 1 + y, 'p')
+        a.P(x + 9, 0 + y, 'y')
+        a.R(x, 3 + y, x + 7, 3 + y, 'y')
+    elif h == 'hood':
+        hd = o['hood']
+        a.R(x - 1, 1 + y, x + 8, 2 + y, hd)
+        a.R(x, 0 + y, x + 7, 0 + y, hd)
+        a.R(x - 1, 3 + y, x, 9 + y, hd)
+        a.R(x + 7, 3 + y, x + 8, 9 + y, hd)
+        a.R(x + 1, 3 + y, x + 6, 3 + y, hd)
+        if o.get('mask'):
+            a.R(x + 1, 8 + y, x + 6, 9 + y, 'd')
+    elif h == 'wizard':
+        a.R(x, 3 + y, x + 7, 3 + y, hair)
+        a.R(x - 2, 2 + y, x + 9, 2 + y, 'P')
+        a.R(x + 1, 1 + y, x + 6, 1 + y, 'P')
+        a.R(x + 2, 0 + y, x + 5, 0 + y, 'P')
+        a.P(x + 3, 1 + y, 'y')
+        a.P(x + 4, 0 + y, 'y')
+        a.R(x, 4 + y, x, 6 + y, hair)
+        a.R(x + 1, 8 + y, x + 6, 9 + y, hair)  # ひげ
+    elif h == 'cap':
+        a.R(x - 1, 2 + y, x + 7, 3 + y, 'Y')
+        a.R(x + 1, 1 + y, x + 6, 1 + y, 'Y')
+        a.R(x + 5, 3 + y, x + 9, 3 + y, 'y')
+    elif h == 'goggles':
+        a.R(x, 3 + y, x + 7, 3 + y, 'd')
+        a.R(x + 1, 1 + y, x + 3, 2 + y, 'c')
+        a.R(x + 4, 1 + y, x + 6, 2 + y, 'c')
+        a.P(x + 1, 1 + y, 'w')
+        a.P(x + 4, 1 + y, 'w')
+    elif h == 'horns':
+        a.R(x - 1, 1 + y, x + 8, 3 + y, 'l')
+        a.R(x - 1, 3 + y, x - 1, 6 + y, 'l')
+        a.R(x - 3, 0 + y, x - 2, 2 + y, 'w')
+        a.R(x + 9, 0 + y, x + 10, 2 + y, 'w')
+        a.R(x + 3, 4 + y, x + 4, 5 + y, 'g')
+        a.R(x, 1 + y, x + 7, 1 + y, 'w')
+    elif h == 'feather':
+        a.R(x - 1, 1 + y, x + 8, 3 + y, 'R')
+        a.R(x, 0 + y, x + 7, 0 + y, 'R')
+        a.R(x + 5, 3 + y, x + 9, 3 + y, 'R')
+        a.R(x + 8, 0 + y, x + 9, 2 + y, 'w')
+        a.P(x + 9, 0 + y, 'l')
+        a.P(x + 10, 1 + y, 'w')
+    elif h == 'straw':
+        a.R(x, 3 + y, x + 7, 3 + y, hair)
+        a.R(x - 3, 2 + y, x + 10, 2 + y, 't')
+        a.R(x + 1, 0 + y, x + 6, 1 + y, 't')
+        a.R(x + 1, 1 + y, x + 6, 1 + y, 'B')
+        a.R(x - 2, 3 + y, x - 1, 3 + y, 'T')
+        a.R(x + 8, 3 + y, x + 9, 3 + y, 'T')
+    elif h == 'helm':
+        a.R(x - 1, 1 + y, x + 8, 9 + y, 'l')
+        a.R(x - 1, 1 + y, x + 8, 1 + y, 'w')
+        a.R(x + 2, 5 + y, x + 8, 5 + y, 'd')
+        a.R(x + 2, 6 + y, x + 8, 6 + y, 'g')
+        a.P(x + 5, 8 + y, 'd')
+        a.P(x + 6, 8 + y, 'd')
+        a.R(x + 7, 2 + y, x + 8, 9 + y, 'g')
+        a.R(x + 1, 0 + y, x + 6, 0 + y, 'r')
+        a.R(x - 1, 0 + y, x + 1, 1 + y, 'r')
+    elif h == 'spiky':
+        a.R(x, 2 + y, x + 7, 3 + y, hair)
+        a.R(x, 4 + y, x, 6 + y, hair)
+        for dx in (0, 2, 4, 6):
+            a.P(x + dx, 1 + y, hair)
+        a.P(x + 3, 0 + y, hair)
+        a.P(x + 6, 0 + y, hair)
+        a.R(x, 4 + y, x + 7, 4 + y, 'r')
+        a.R(x - 2, 4 + y, x - 1, 6 + y, 'r')
     return a
 
 

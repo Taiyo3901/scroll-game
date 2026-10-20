@@ -28,7 +28,7 @@ export const OVERLAY_CSS = `
 * { box-sizing: border-box; }
 
 .band {
-  position: fixed; top: 7vh; bottom: 7vh; right: 0;
+  position: fixed; top: 7vh; bottom: 0; right: 0;
   width: ${CONFIG.OVERLAY_WIDTH_PX}px; z-index: 2147483647; pointer-events: none;
   clip-path: ${stairEdge()};
   color: #f5f0e6; font: 700 11px/1.2 system-ui, "Hiragino Sans", "Yu Gothic UI", sans-serif;
@@ -84,37 +84,37 @@ export const OVERLAY_CSS = `
 .foot { position: absolute; left: 13px; right: 3px; bottom: 14px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
 
 /* 帯の長さ = ページの長さ。探索者は、読み進めるほど上から下へ降りていく */
-.track { position: absolute; left: 12px; right: 6px; top: 46px; bottom: 150px; }
+.track { position: absolute; left: 12px; right: 6px; top: 46px; bottom: 124px; }
 .band:has(.demo-tag.on) .track { top: 66px; }
 /* 10% ごとの目盛り（スクロールバーのすぐ内側） */
 .ruler {
   position: absolute; right: -6px; top: 0; bottom: 0; width: 3px;
   background: repeating-linear-gradient(180deg, rgba(245,240,230,.55) 0 2px, transparent 2px 10%);
 }
-.stage { position: absolute; left: 0; top: 0; width: 46px; height: 102px; transition: transform .25s steps(5, end); will-change: transform; }
-.scene { position: relative; width: 46px; height: 84px; }
+.stage { position: absolute; left: 0; top: 0; width: 46px; height: 90px; transition: transform .25s steps(5, end); will-change: transform; }
+.scene { position: relative; width: 46px; height: 72px; }
 .marks { position: absolute; inset: 0; }
 .mark { position: absolute; right: -3px; top: 0; width: 18px; height: 18px; opacity: .85; }
 .mark img { width: 18px; height: 18px; image-rendering: pixelated; display: block; filter: drop-shadow(1px 1px 0 #2a1f1a); }
 .mark.r2 img { filter: drop-shadow(0 0 2px rgba(80,160,220,.9)); }
 .mark.r3 img { filter: drop-shadow(0 0 3px rgba(255,210,70,1)); }
 
-/* 場面: 下に探索者、上に入れ物（ドット絵 14マス x 3px = 42px） */
+/* 場面: 下に探索者（22マス x 2px = 44px）、上に入れ物（14マス x 2px = 28px） */
 .hero {
-  position: absolute; left: 0; bottom: 0; width: 42px; height: 42px;
+  position: absolute; left: 0; bottom: 0; width: 44px; height: 44px;
   background-repeat: no-repeat; image-rendering: pixelated; filter: drop-shadow(1px 1px 0 #2a1f1a);
 }
 .hero.walk { animation: heroWalk .5s steps(4, end) infinite; }
 .hero.search { animation: heroSearch .45s steps(2, end) infinite; }
 .hero.scared { animation: scared .3s steps(2, end) 3; }
-.cont { position: absolute; right: 0; top: 0; width: 42px; height: 42px; opacity: 0; filter: drop-shadow(1px 1px 0 #2a1f1a); }
+.cont { position: absolute; right: 0; top: 0; width: 28px; height: 28px; opacity: 0; filter: drop-shadow(1px 1px 0 #2a1f1a); }
 .cont.on { opacity: 1; }
-.cont img { width: 42px; height: 42px; image-rendering: pixelated; display: block; }
+.cont img { width: 28px; height: 28px; image-rendering: pixelated; display: block; }
 .cont.enter { animation: enter .35s steps(5, end); }
 .cont.searching { animation: enter .35s steps(5, end), rummage .5s steps(2, end) .35s infinite; }
 .cont.mimic-reveal { animation: shudder .25s steps(2, end) infinite; }
 .fly {
-  position: absolute; right: 7px; top: 7px; width: 28px; height: 28px; image-rendering: pixelated;
+  position: absolute; right: 0; top: 0; width: 28px; height: 28px; image-rendering: pixelated;
   animation: fly 1.2s steps(10, end) forwards;
 }
 .fly.r2 { filter: drop-shadow(0 0 3px rgba(80,160,220,.9)); }
@@ -126,7 +126,6 @@ export const OVERLAY_CSS = `
 .gauge-inner .cell { flex: 1 1 0; background: #3a2c20; }
 .gauge-inner .cell.on { background: #f6d44c; box-shadow: inset 0 -1px 0 #b8870f; }
 
-.today { white-space: pre; text-align: center; font-size: 10px; line-height: 1.3; padding: 3px 3px; }
 
 .pops { position: fixed; top: 38%; right: ${CONFIG.OVERLAY_WIDTH_PX + 10}px; z-index: 2147483647; pointer-events: none; }
 .pop {
@@ -147,8 +146,8 @@ export const OVERLAY_CSS = `
 .pop.r3 .stars { color: #f6d44c; }
 .pop.r3 .ico img { filter: drop-shadow(0 0 4px rgba(255,210,70,.95)); }
 
-@keyframes heroWalk { from { background-position-x: 0; } to { background-position-x: -168px; } }
-@keyframes heroSearch { from { background-position-x: 0; } to { background-position-x: -84px; } }
+@keyframes heroWalk { from { background-position-x: 0; } to { background-position-x: -176px; } }
+@keyframes heroSearch { from { background-position-x: 0; } to { background-position-x: -88px; } }
 @keyframes scared { 0% { transform: translateX(0); } 50% { transform: translateX(-3px); } 100% { transform: translateX(0); } }
 @keyframes enter { 0% { transform: translateY(-10px) scale(.4); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
 @keyframes rummage { 0% { transform: translateX(0); } 50% { transform: translateX(-1px) rotate(-3deg); } 100% { transform: translateX(1px) rotate(3deg); } }

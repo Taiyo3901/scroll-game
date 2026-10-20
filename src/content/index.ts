@@ -3,10 +3,8 @@ import { areaAt, findItem } from '../core/catalog';
 import { classifyHost } from '../core/genre';
 import { isHostDisabled, isHostQuery, type HostReply } from '../core/hosts';
 import { formatBadge } from '../core/format';
-import { findsToday } from '../core/game';
 import { diagnoseJob, sumGenreFinds } from '../core/job';
 import type { GameEvent } from '../core/state';
-import { localDayKey } from '../core/week';
 import { spriteUri } from '../core/sprites';
 import { CATALOG } from '../data';
 import { createDebug } from './debug';
@@ -97,7 +95,6 @@ function main(): void {
         depthM: state.depthM,
         strataName: area.name,
         strataColor: area.color,
-        todayFinds: findsToday(state, localDayKey(new Date())),
         phase: m.phase,
         gauge: m.gauge,
         container: m.container,

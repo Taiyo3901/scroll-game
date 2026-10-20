@@ -44,12 +44,13 @@ N = 12
 
 
 class Art:
-    def __init__(self):
-        self.g = [['.'] * N for _ in range(N)]
+    def __init__(self, n=N):
+        self.n = n
+        self.g = [['.'] * n for _ in range(n)]
 
     def P(self, x, y, c):
         x, y = int(round(x)), int(round(y))
-        if 0 <= x < N and 0 <= y < N:
+        if 0 <= x < self.n and 0 <= y < self.n:
             self.g[y][x] = c
 
     def R(self, x0, y0, x1, y1, c):
@@ -69,44 +70,44 @@ class Art:
                 self.P(x, y + 1, c)
 
     def D(self, cx, cy, r, c):
-        for y in range(N):
-            for x in range(N):
+        for y in range(self.n):
+            for x in range(self.n):
                 if (x - cx) ** 2 + (y - cy) ** 2 <= r * r + 0.3:
                     self.P(x, y, c)
 
     def E(self, cx, cy, rx, ry, c):
-        for y in range(N):
-            for x in range(N):
+        for y in range(self.n):
+            for x in range(self.n):
                 if ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1.05:
                     self.P(x, y, c)
 
     def ring(self, cx, cy, r0, r1, c):
-        for y in range(N):
-            for x in range(N):
+        for y in range(self.n):
+            for x in range(self.n):
                 d2 = (x - cx) ** 2 + (y - cy) ** 2
                 if r0 * r0 < d2 <= r1 * r1 + 0.3:
                     self.P(x, y, c)
 
     def cut(self, pred):
-        for y in range(N):
-            for x in range(N):
+        for y in range(self.n):
+            for x in range(self.n):
                 if pred(x, y):
                     self.g[y][x] = '.'
 
     def rows(self):
-        """縁取りを付けた 14x14 の文字列。"""
-        big = [['.'] * (N + 2) for _ in range(N + 2)]
-        for y in range(N):
-            for x in range(N):
+        """縁取りを付けた (n+2)x(n+2) の文字列。"""
+        big = [['.'] * (self.n + 2) for _ in range(self.n + 2)]
+        for y in range(self.n):
+            for x in range(self.n):
                 big[y + 1][x + 1] = self.g[y][x]
         out = [row[:] for row in big]
-        for y in range(N + 2):
-            for x in range(N + 2):
+        for y in range(self.n + 2):
+            for x in range(self.n + 2):
                 if big[y][x] != '.':
                     continue
                 for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
                     nx, ny = x + dx, y + dy
-                    if 0 <= nx < N + 2 and 0 <= ny < N + 2 and big[ny][nx] != '.':
+                    if 0 <= nx < self.n + 2 and 0 <= ny < self.n + 2 and big[ny][nx] != '.':
                         out[y][x] = 'k'
                         break
         return [''.join(r) for r in out]
