@@ -26,9 +26,11 @@ import { syncNow } from '../firebase/sync';
 import { loadSync, saveSettings } from '../storage';
 import { mount } from '../ui/mount';
 import { Torch } from '../ui/parts';
+import { Ranking } from './Ranking';
 import { useView } from '../ui/store';
 
-type Stage = 'loading' | 'unconfigured' | 'signed-out' | 'no-profile' | 'ready';
+type Stage = 'loading' | 'unconfigured' | 'signed-out' | 'no-profile' | 'ready' | 'error';
+type Tab = 'ranking' | 'friends';
 
 /** 失敗の理由を、利用者向けの文にする。 */
 function messageOf(e: unknown): string {
@@ -50,6 +52,7 @@ function FriendsPage() {
   const [nickname, setNickname] = useState('');
   const [code, setCode] = useState('');
   const [lastSync, setLastSync] = useState<number | null>(null);
+  const [tab, setTab] = useState<Tab>('ranking');
 
   const say = (kind: 'ok' | 'error', text: string) => setNotice({ kind, text });
 
@@ -74,8 +77,9 @@ function FriendsPage() {
       setStage('ready');
       setLastSync((await loadSync())?.at ?? null);
     } catch (e) {
-      setStage('signed-out');
+      // 通信の失敗などで読み込めなかっただけなら、ログアウト扱いにしない（前の内容が残っていれば、それを見せたままにする）
       say('error', messageOf(e));
+      setStage((s) => (s === 'ready' ? 'ready' : 'error'));
     }
   }, []);
 
@@ -126,7 +130,7 @@ function FriendsPage() {
       <header>
         <h1>
           <Torch />
-          フレンド
+          ランキング・フレンド
           <Torch />
         </h1>
       </header>
@@ -142,6 +146,19 @@ function FriendsPage() {
         <section className="card">
           <h2>この拡張機能では、フレンド機能がまだ使えません</h2>
           <p>Firebase の設定がありません。README の「フレンド機能の準備」の手順で、設定してからビルドし直してください。</p>
+        </section>
+      )}
+
+      {stage === 'error' && (
+        <section className="card">
+          <h2>読み込めませんでした</h2>
+          <p>ログインはしたままです。通信を確認して、もう一度試してください。</p>
+          <button type="button" className="primary" disabled={busy} onClick={() => void run(async () => undefined)}>
+            もう一度読み込む
+          </button>
+          <button type="button" disabled={busy} onClick={() => void run(async () => void (await signOutAll()))}>
+            ログアウトする
+          </button>
         </section>
       )}
 
@@ -189,6 +206,23 @@ function FriendsPage() {
 
       {stage === 'ready' && overview && (
         <>
+          <div role="tablist" className="tabs sub-tabs">
+            {(
+              [
+                ['ranking', 'ランキング'],
+                ['friends', 'フレンド・アカウント'],
+              ] as [Tab, string][]
+            ).map(([id, label]) => (
+              <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)}>
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {tab === 'ranking' && <Ranking overview={overview} state={state} busy={busy} onReload={() => void run(async () => void (await syncNow()))} />}
+
+          {tab === 'friends' && (
+          <>
           <section className="card">
             <h2>あなたのフレンドコード</h2>
             <p className="code">{formatFriendCode(overview.me.friendCode)}</p>
@@ -421,6 +455,8 @@ function FriendsPage() {
               アカウントを削除する
             </button>
           </section>
+          </>
+          )}
         </>
       )}
     </main>

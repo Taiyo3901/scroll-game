@@ -187,3 +187,20 @@ input[type="text"], input:not([type]) {
 .hide-list legend { padding: 0 4px; grid-column: 1 / -1; }
 button.danger { background: #6a1f17; color: #fff; }
 .warn { color: var(--accent); }
+
+/* ランキング */
+.sub-tabs { margin: 6px 6px 10px; }
+table.ranking { width: 100%; margin: 8px 0; }
+table.ranking th, table.ranking td { text-align: left; white-space: nowrap; }
+table.ranking td.name { white-space: normal; }
+table.ranking tr.me { background: rgba(246, 212, 76, .14); }
+table.ranking tr.sel { background: rgba(79, 128, 220, .2); }
+table.ranking tr.pick { cursor: pointer; }
+table.ranking tr.pick:hover { background: rgba(255, 255, 255, .06); }
+.rank { font-weight: 800; }
+.rank.r1 { color: #f6d44c; text-shadow: 1px 1px 0 var(--edge); }
+.rank.r2 { color: #dfe6ee; }
+.rank.r3 { color: #e0a060; }
+button.linkish { background: none; box-shadow: none; margin: 0; padding: 0; font-weight: 700; color: var(--fg); text-decoration: underline; text-underline-offset: 3px; }
+button.linkish:hover:not(:disabled) { background: none; box-shadow: none; color: var(--accent); }
+.big { font-size: 24px; color: var(--accent); text-shadow: 1px 1px 0 var(--edge); }

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { CONFIG } from '../config';
 import { areaAt, findItem } from '../core/catalog';
 import { findsToday } from '../core/game';
@@ -16,6 +17,8 @@ function openPage(file: string): void {
 
 function Popup() {
   const { loaded, state, settings, profile, now } = useView();
+  const [effects, setEffects] = useState(true);
+  useEffect(() => setEffects(settings.effects), [settings.effects]);
   if (!loaded) return <main className="popup-main" aria-busy="true" />;
 
   const area = areaAt(CATALOG.areas, state.depthM);
@@ -79,15 +82,18 @@ function Popup() {
           図鑑を開く
         </button>
         <button type="button" onClick={() => openPage('friends.html')}>
-          フレンド
+          ランキング
         </button>
       </nav>
 
       <label className="toggle">
         <input
           type="checkbox"
-          checked={settings.effects}
-          onChange={(e) => void saveSettings({ effects: e.target.checked })}
+          checked={effects}
+          onChange={(e) => {
+            setEffects(e.target.checked); // 保存の完了を待たずに、チェックの見た目を切り替える
+            void saveSettings({ effects: e.target.checked });
+          }}
         />
         画面右端の演出を表示する
       </label>

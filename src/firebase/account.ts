@@ -201,8 +201,11 @@ export async function loadFriendsOverview(): Promise<FriendsOverview | null> {
             readable.add(f);
             data.push(parsed);
           }
-        } catch {
-          // 読めない（まだ相手側が反映していない、または解除された）
+        } catch (e) {
+          // 「読めない」と言えるのは、権限がないときだけ（まだ相手側が反映していない、または解除された）。
+          // 通信の失敗などは、読めないのではなく「分からない」ので、友達を外す判断に使わず、読み込み全体を失敗にする。
+          const code = typeof e === 'object' && e !== null && 'code' in e ? String((e as { code: unknown }).code) : '';
+          if (!code.includes('permission-denied') && !code.includes('not-found')) throw e;
         }
       }),
     );
@@ -214,9 +217,17 @@ export async function loadFriendsOverview(): Promise<FriendsOverview | null> {
   let friendUids = me.friendUids;
   if (plan.add.length > 0 || plan.remove.length > 0) {
     const ref = doc(db(), 'users', uid);
-    for (const a of plan.add) await updateDoc(ref, { friendUids: arrayUnion(a) }); // ルール上、1人ずつ足す
+    const added: string[] = [];
+    for (const a of plan.add) {
+      try {
+        await updateDoc(ref, { friendUids: arrayUnion(a) }); // ルール上、1人ずつ足す
+        added.push(a);
+      } catch {
+        // 相手が申請を取り消した直後などで、足せないことがある。この人だけ見送り、次の機会にやり直す
+      }
+    }
     if (plan.remove.length > 0) await updateDoc(ref, { friendUids: arrayRemove(...plan.remove) });
-    friendUids = [...me.friendUids.filter((u) => !plan.remove.includes(u)), ...plan.add];
+    friendUids = [...me.friendUids.filter((u) => !plan.remove.includes(u)), ...added];
     ({ readable, data } = await read(friendUids));
   }
   return {
