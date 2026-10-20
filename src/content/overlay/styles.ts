@@ -91,17 +91,17 @@ export const OVERLAY_CSS = `
   position: absolute; right: -6px; top: 0; bottom: 0; width: 3px;
   background: repeating-linear-gradient(180deg, rgba(245,240,230,.55) 0 2px, transparent 2px 10%);
 }
-.stage { position: absolute; left: 0; top: 0; width: 46px; height: 90px; transition: transform .25s steps(5, end); will-change: transform; }
-.scene { position: relative; width: 46px; height: 72px; }
+.stage { position: absolute; left: 0; top: 0; width: 46px; height: 79px; transition: transform .25s steps(5, end); will-change: transform; }
+.scene { position: relative; width: 46px; height: 61px; }
 .marks { position: absolute; inset: 0; }
 .mark { position: absolute; right: -3px; top: 0; width: 18px; height: 18px; opacity: .85; }
 .mark img { width: 18px; height: 18px; image-rendering: pixelated; display: block; filter: drop-shadow(1px 1px 0 #2a1f1a); }
 .mark.r2 img { filter: drop-shadow(0 0 2px rgba(80,160,220,.9)); }
 .mark.r3 img { filter: drop-shadow(0 0 3px rgba(255,210,70,1)); }
 
-/* 場面: 下に探索者（22マス x 2px = 44px）、上に入れ物（14マス x 2px = 28px） */
+/* 場面: 下に探索者（22マス x 1.5px = 33px）、上に入れ物（14マス x 2px = 28px） */
 .hero {
-  position: absolute; left: 0; bottom: 0; width: 44px; height: 44px;
+  position: absolute; left: 0; bottom: 0; width: 33px; height: 33px;
   background-repeat: no-repeat; image-rendering: pixelated; filter: drop-shadow(1px 1px 0 #2a1f1a);
 }
 .hero.walk { animation: heroWalk .5s steps(4, end) infinite; }
@@ -146,8 +146,8 @@ export const OVERLAY_CSS = `
 .pop.r3 .stars { color: #f6d44c; }
 .pop.r3 .ico img { filter: drop-shadow(0 0 4px rgba(255,210,70,.95)); }
 
-@keyframes heroWalk { from { background-position-x: 0; } to { background-position-x: -176px; } }
-@keyframes heroSearch { from { background-position-x: 0; } to { background-position-x: -88px; } }
+@keyframes heroWalk { from { background-position-x: 0; } to { background-position-x: -132px; } }
+@keyframes heroSearch { from { background-position-x: 0; } to { background-position-x: -66px; } }
 @keyframes scared { 0% { transform: translateX(0); } 50% { transform: translateX(-3px); } 100% { transform: translateX(0); } }
 @keyframes enter { 0% { transform: translateY(-10px) scale(.4); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
 @keyframes rummage { 0% { transform: translateX(0); } 50% { transform: translateX(-1px) rotate(-3deg); } 100% { transform: translateX(1px) rotate(3deg); } }

@@ -55,8 +55,8 @@ const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls: string): HTMLEle
   return e;
 };
 
-/** ドット絵1マスの大きさ(px)。探索者は 22マス x 2px = 44px、入れ物は 14マス x 2px = 28px */
-const CELL = 2;
+/** 探索者のドット絵1マスの大きさ(px)。22マス x 1.5px = 33px（入れ物は 14マス x 2px = 28px で、CSS 側で決める） */
+const HERO_CELL = 1.5;
 /** ゲージの目盛りの数 */
 const GAUGE_CELLS = 6;
 /** 帯に残す目印の数の上限 */
@@ -142,7 +142,7 @@ export function createOverlay(): Overlay {
   };
 
   // 帯の長さ（探索者が動ける高さ）。大きさが変わったときだけ測り直す
-  const STAGE_H = 90;
+  const STAGE_H = 79;
   const MARK_H = 18;
   let trackH = 0;
   let progress = 0;
@@ -190,7 +190,7 @@ export function createOverlay(): Overlay {
       set('hero', `${v.job}|${pose}`, () => {
         const sheet = heroSheet(v.job, pose);
         hero.style.backgroundImage = `url("${sheet.uri}")`;
-        hero.style.backgroundSize = `${sheet.frames * HERO_SIZE * CELL}px ${HERO_SIZE * CELL}px`;
+        hero.style.backgroundSize = `${sheet.frames * HERO_SIZE * HERO_CELL}px ${HERO_SIZE * HERO_CELL}px`;
         hero.className = `hero ${pose}`;
       });
       set('shake', String(v.phase === 'done' && v.container === 'mimic'), () =>
