@@ -1,6 +1,6 @@
 import { CONFIG } from '../config';
 import { findItem } from '../core/catalog';
-import { bandVariant } from '../core/band';
+import { BAND_STEP_CALM_M, BAND_STEP_M, bandVariant } from '../core/band';
 import { classifyHost } from '../core/genre';
 import { isHostDisabled, isHostQuery, type HostReply } from '../core/hosts';
 import { formatBadge } from '../core/format';
@@ -80,6 +80,7 @@ function main(): void {
   // 同じタブの中でページが切り替わったら（ページの再読み込みなしの移動を含む）、帯の目印を消す。
   // 比べるのはメモリ上の値だけで、保存も送信もしない。
   let lastHref = location.href;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   const tick = () => {
     if (location.href !== lastHref) {
@@ -101,7 +102,8 @@ function main(): void {
         depthText: formatBadge(state.depthM),
         roomId: ROOM_ID,
         depthM: state.depthM,
-        bandVariant: bandVariant(state.depthM),
+        // 「視覚効果を減らす」設定のときは、切り替わりを、ゆるやかにする
+        bandVariant: bandVariant(state.depthM, reducedMotion.matches ? BAND_STEP_CALM_M : BAND_STEP_M),
         phase: m.phase,
         gauge: m.gauge,
         container: m.container,

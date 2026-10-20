@@ -1,17 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { BAND_STEP_M, BAND_TINTS, BAND_VARIANTS, BAND_VARIANT_NAMES, bandVariant } from '../src/core/band';
+import { BAND_STEP_CALM_M, BAND_STEP_M, BAND_TINTS, BAND_VARIANTS, BAND_VARIANT_NAMES, bandVariant } from '../src/core/band';
 
 const STEP = BAND_STEP_M;
 const LOOP = BAND_STEP_M * BAND_VARIANTS;
 
 describe('bandVariant', () => {
-  it('changes every step (25 m), through 6 variants', () => {
-    expect(BAND_STEP_M).toBe(25);
+  it('changes every step (1 m), through 6 variants', () => {
+    expect(BAND_STEP_M).toBe(1);
     expect(BAND_VARIANTS).toBe(6);
     const edges = [0, STEP - 0.1, STEP, 2 * STEP - 0.1, 2 * STEP, 3 * STEP - 1, 3 * STEP, 4 * STEP - 1, 4 * STEP, 5 * STEP - 1, 5 * STEP, LOOP - 0.1];
     expect(edges.map(bandVariant)).toEqual([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5]);
   });
-  it('loops back to the first after one full round (150 m)', () => {
+  it('loops back to the first after one full round (6 m)', () => {
     expect(bandVariant(LOOP)).toBe(0);
     expect(bandVariant(LOOP + STEP - 0.1)).toBe(0);
     expect(bandVariant(LOOP + STEP)).toBe(1);
@@ -27,6 +27,14 @@ describe('bandVariant', () => {
     }
     expect(bandVariant(-5)).toBe(0);
     expect(bandVariant(Number.NaN)).toBe(0);
+  });
+  it('a calmer step can be used for reduced-motion settings, and bad steps fall back to the first variant', () => {
+    expect(BAND_STEP_CALM_M).toBeGreaterThan(BAND_STEP_M);
+    expect(bandVariant(24, BAND_STEP_CALM_M)).toBe(0);
+    expect(bandVariant(25, BAND_STEP_CALM_M)).toBe(1);
+    expect(bandVariant(100, 0)).toBe(0);
+    expect(bandVariant(100, -5)).toBe(0);
+    expect(bandVariant(100, Number.NaN)).toBe(0);
   });
   it('has a name and a distinct colour for every variant', () => {
     expect(BAND_VARIANT_NAMES).toHaveLength(BAND_VARIANTS);
