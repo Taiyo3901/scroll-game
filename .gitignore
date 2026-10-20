@@ -9,3 +9,6 @@ desktop.ini
 
 __pycache__/
 *.pyc
+
+# 設定値のメモ（Firebase・OAuth）。リポジトリには入れない
+firebaseConfig.txt
