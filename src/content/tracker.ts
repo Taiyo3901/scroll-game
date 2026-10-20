@@ -30,7 +30,12 @@ function progressOf(el: Element): number {
   return max > 0 ? Math.max(0, Math.min(1, el.scrollTop / max)) : 0;
 }
 
-export function startTracker(): Tracker {
+export interface TrackerOptions {
+  /** false を返す間（サイトごとの無効化など）は、スクロールを数えない */
+  isEnabled?: () => boolean;
+}
+
+export function startTracker(opts: TrackerOptions = {}): Tracker {
   const lastTop = new WeakMap<Element, number>();
   let lastInputAt: number | null = null;
   let pointerDown = false;
@@ -97,6 +102,8 @@ export function startTracker(): Tracker {
       const cur = el.scrollTop;
       const prev = lastTop.get(el);
       lastTop.set(el, cur);
+
+      if (opts.isEnabled && !opts.isEnabled()) return; // 無効なサイトでは、距離も「最後のスクロール」も記録しない
 
       // 縦に動いていないスクロール（横に自動で流れるバナー、カルーセル等）は無視する。
       // これを「最後のスクロール」に含めると、物色の待ち時間が満たされなくなる。

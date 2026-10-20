@@ -1,4 +1,4 @@
-import { CONFIG } from '../config';
+import { CONFIG, configFor } from '../config';
 import { pxToMeters } from '../core/depth';
 import { areaAt, findGenre } from '../core/catalog';
 import { classifyHost } from '../core/genre';
@@ -51,7 +51,7 @@ export function createDebug(): DebugView {
     setEnabled: (on) => (on ? show() : hide()),
     update(t, m) {
       if (!box) return;
-      const { state } = getView();
+      const { state, settings } = getView();
       const dayKey = localDayKey(new Date());
       const day = state.days[dayKey];
       const todayPx = (day?.scrollPx ?? 0) + t.pendingPx;
@@ -62,7 +62,7 @@ export function createDebug(): DebugView {
         `今日の総スクロール: ${todayPx.toFixed(0)} px（実距離 ${pxToMeters(todayPx).toFixed(2)} m）`,
         `深度: ${state.depthM.toFixed(1)} m  ${areaAt(CATALOG.areas, state.depthM).name}`,
         `この部屋: ${genre?.name ?? '-'}`,
-        `場面: ${m.phase}  入れ物: ${m.container ?? '-'}(${m.skin || '-'})  ${Math.round(m.gauge * 100)}%  今日 ${findsToday(state, dayKey)}/${CONFIG.MAX_FINDS_PER_DAY}回`,
+        `場面: ${m.phase}  入れ物: ${m.container ?? '-'}(${m.skin || '-'})  ${Math.round(m.gauge * 100)}%  今日 ${findsToday(state, dayKey)}/${configFor(settings.demoMode).MAX_FINDS_PER_DAY}回${settings.demoMode ? '  [デモ]' : ''}`,
         `条件: ${checks}`,
       ].join('\n');
     },

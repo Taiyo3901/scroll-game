@@ -262,7 +262,7 @@ function Stats({ days }: { days: Record<string, DayStats> }) {
 }
 
 function Collection() {
-  const { loaded, state, profile, now } = useView();
+  const { loaded, state, profile, now, demo } = useView();
   const [tab, setTab] = useState<Tab>('book');
   if (!loaded) return <main aria-busy="true" />;
 
@@ -287,12 +287,13 @@ function Collection() {
           ))}
         </div>
       </header>
+      {demo && <p className="flash error">デモモード中です。ここに出ているのは、デモ用のデータです（本番のデータとは別です）。</p>}
       {tab === 'book' && <Book collection={state.collection} days={state.days} now={now} />}
       {tab === 'showcase' && (
         <Showcase
           collection={state.collection}
           showcase={profile.showcase}
-          onToggle={(id) => void saveProfile(toggleShowcase(profile, id, state.collection))}
+          onToggle={(id) => void saveProfile(toggleShowcase(profile, id, state.collection), demo)}
         />
       )}
       {tab === 'stats' && <Stats days={state.days} />}

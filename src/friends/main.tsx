@@ -44,7 +44,8 @@ function messageOf(e: unknown): string {
 }
 
 function FriendsPage() {
-  const { loaded, state, profile, settings } = useView();
+  // ランキングとフレンドは、デモモード中でも、いつも本番のデータで動く
+  const { loaded, state, profile, settings } = useView({ real: true });
   const [stage, setStage] = useState<Stage>('loading');
   const [overview, setOverview] = useState<FriendsOverview | null>(null);
   const [busy, setBusy] = useState(false);

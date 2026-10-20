@@ -1,4 +1,4 @@
-import { CONFIG } from '../config';
+import { configFor } from '../config';
 import { areaAt } from '../core/catalog';
 import { rollContainer, type ContainerKind } from '../core/containers';
 import { classifyHost } from '../core/genre';
@@ -7,7 +7,7 @@ import { evaluateConditions, type ConditionResult } from '../core/mining';
 import { localDayKey } from '../core/week';
 import { CATALOG } from '../data';
 import type { FindCompleteMessage } from '../messages';
-import { RULES } from '../rules';
+import { rulesFor } from '../rules';
 import { sendToBackground } from './send';
 import { getView } from './store';
 import type { TrackerSnapshot } from './tracker';
@@ -62,7 +62,8 @@ export class Miner {
 
   /** 軽い間隔(約250ms)で呼ぶ。ページが見えていないときは呼ばなくてよい。 */
   step(now: number, snap: TrackerSnapshot): MinerSnapshot {
-    const { state } = getView();
+    const { state, settings } = getView();
+    const cfg = configFor(settings.demoMode);
     // タイマーが止まっていた（タブが隠れていた等）あとに、古い開始時刻で満タン扱いにしない
     if (now - this.lastStepAt > STALE_STEP_MS) this.startedAt = null;
     this.lastStepAt = now;
@@ -75,8 +76,8 @@ export class Miner {
     const foundThisStop = this.doneMark !== null;
 
     const wasSearching = this.startedAt !== null;
-    const delayMs = CONFIG.FIND_START_DELAY_SEC * 1000;
-    const durationMs = CONFIG.FIND_DURATION_SEC * 1000;
+    const delayMs = cfg.FIND_START_DELAY_SEC * 1000;
+    const durationMs = cfg.FIND_DURATION_SEC * 1000;
 
     // 物色中は「始めてからスクロールしていない」ことを条件にする
     const msSinceScroll = wasSearching
@@ -90,7 +91,7 @@ export class Miner {
       startDelayMs: wasSearching ? 0 : delayMs,
       visible: document.visibilityState === 'visible',
       findsToday: findsToday(state, localDayKey(new Date())),
-      maxFindsPerDay: CONFIG.MAX_FINDS_PER_DAY,
+      maxFindsPerDay: cfg.MAX_FINDS_PER_DAY,
       foundThisStop,
     });
 
@@ -100,7 +101,7 @@ export class Miner {
     } else if (this.startedAt === null) {
       // 物色の開始: 入れ物を決める
       this.startedAt = now;
-      this.container = rollContainer(RULES.containers, Math.random);
+      this.container = rollContainer(rulesFor(settings.demoMode).containers, Math.random);
       const genreId = classifyHost(location.hostname, CATALOG.genres);
       this.skin =
         this.container === 'box' ? genreId : areaAt(CATALOG.areas, state.depthM).id;

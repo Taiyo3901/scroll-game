@@ -3,9 +3,6 @@
  * 値は暫定。実際に遊んでから決め直す（SPEC 12章）。
  */
 
-/** true で発表向けのデモ設定に切り替わる（Phase 6 で実行時に切替できるようにする） */
-export const DEMO_MODE = false;
-
 const BASE = {
   // --- 深度 ---
   /** 実際の距離(m)に掛ける倍率。1000px ≒ 0.26m */
@@ -52,11 +49,26 @@ const BASE = {
   DEBUG_OVERLAY_DEFAULT: false,
 };
 
-/** デモモードで上書きする値（短時間で見せるため） */
+/**
+ * デモモードで上書きする値（発表で、短い時間に見せるため）。
+ * 深度は20倍の速さで進み、物色は2秒、宝箱とミミックが出やすい。
+ * デモ中のデータは、本番のデータとは別の場所に保存し、ランキングにも送らない。
+ */
 const DEMO_OVERRIDES: Partial<typeof BASE> = {
   DEPTH_MULTIPLIER: 600,
   FIND_START_DELAY_SEC: 1,
   FIND_DURATION_SEC: 2,
+  MAX_FINDS_PER_DAY: 9999,
+  CONTAINER_WEIGHTS: { pot: 25, box: 30, chest: 45 },
+  MIMIC_IN_CHEST: 0.3,
 };
 
-export const CONFIG = { ...BASE, ...(DEMO_MODE ? DEMO_OVERRIDES : {}) };
+export type Config = typeof BASE;
+
+/** 設定値。demo が true ならデモ用の値で上書きする（実行中に切り替えられる）。 */
+export function configFor(demo: boolean): Config {
+  return demo ? { ...BASE, ...DEMO_OVERRIDES } : BASE;
+}
+
+/** 本番の設定値 */
+export const CONFIG: Config = configFor(false);

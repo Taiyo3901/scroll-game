@@ -27,6 +27,8 @@ export interface OverlayView {
   job: string;
   /** ページ（スクロールしている枠）の中での位置 0〜1。帯の中の探索者の高さになる */
   progress: number;
+  /** デモモード（帯の上に「DEMO」を出す） */
+  demo: boolean;
 }
 
 export interface PopSpec {
@@ -87,6 +89,8 @@ export function createOverlay(): Overlay {
 
   const band = el('div', 'band');
   const depth = el('div', 'depth panel');
+  const demoTag = el('div', 'demo-tag');
+  demoTag.textContent = 'DEMO';
   const strataName = el('div', 'strata-name');
   const track = el('div', 'track');
   const ruler = el('div', 'ruler');
@@ -110,7 +114,7 @@ export function createOverlay(): Overlay {
   const foot = el('div', 'foot');
   foot.append(strataName, today);
   const col = el('div', 'col');
-  col.append(depth);
+  col.append(demoTag, depth);
   const rock = el('div', 'rock');
   const shade = el('div', 'shade');
   const tint = el('div', 'tint');
@@ -165,6 +169,7 @@ export function createOverlay(): Overlay {
   return {
     update(v) {
       set('depth', v.depthText, () => (depth.textContent = v.depthText));
+      set('demo', String(v.demo), () => demoTag.classList.toggle('on', v.demo));
       set('strata', v.areaId + v.strataName, () => {
         strataName.textContent = v.strataName;
         band.style.setProperty('--area', v.strataColor); // 階層は、壁にかぶせる色で表す

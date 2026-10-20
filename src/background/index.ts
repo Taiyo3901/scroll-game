@@ -7,13 +7,13 @@ import { localDayKey } from '../core/week';
 import { CATALOG } from '../data';
 import { isContentMessage } from '../messages';
 import { syncNow } from '../firebase/sync';
-import { RULES } from '../rules';
-import { loadState, saveState } from '../storage';
+import { rulesFor } from '../rules';
+import { loadSettings, loadState, saveState } from '../storage';
 
 // ゲーム状態の正は chrome.storage.local。service worker はいつ止まってもよいように、
 // メモリには何も持たず、更新のたびに「読む → 純粋関数で計算 → 書く」を行う。
 
-const env = (): Env => ({ rules: RULES, catalog: CATALOG, rng: Math.random });
+const envFor = (demo: boolean): Env => ({ rules: rulesFor(demo), catalog: CATALOG, rng: Math.random });
 
 async function refreshBadge(state: GameState): Promise<void> {
   await chrome.action.setBadgeText({ text: formatBadge(state.depthM) });
@@ -24,12 +24,16 @@ async function refreshBadge(state: GameState): Promise<void> {
 // 同時に届いた更新が互いの書き込みを上書きしないよう、直列に処理する
 let queue: Promise<void> = Promise.resolve();
 
-function update(f: (s: GameState, now: number, day: string) => GameState): Promise<void> {
+/**
+ * 状態を更新する。デモモードのときは、デモ用の状態とデモ用の規則（速い進み）で更新し、本番のデータには触れない。
+ */
+function update(f: (s: GameState, now: number, day: string, env: Env) => GameState): Promise<void> {
   queue = queue
     .then(async () => {
       const now = Date.now();
-      const next = f(await loadState(), now, localDayKey(new Date(now)));
-      await saveState(next);
+      const { demoMode } = await loadSettings();
+      const next = f(await loadState(demoMode), now, localDayKey(new Date(now)), envFor(demoMode));
+      await saveState(next, demoMode);
       await refreshBadge(next);
     })
     .catch((e) => console.error('update failed', e));
@@ -39,9 +43,9 @@ function update(f: (s: GameState, now: number, day: string) => GameState): Promi
 chrome.runtime.onMessage.addListener((message: unknown) => {
   if (!isContentMessage(message)) return false;
   if (message.type === 'scroll-batch') {
-    void update((s, _now, day) => applyScroll(s, { px: message.px }, day, env()));
+    void update((s, _now, day, env) => applyScroll(s, { px: message.px }, day, env));
   } else {
-    void update((s, now, day) => applyFind(s, message.genreId, now, day, env(), message.container));
+    void update((s, now, day, env) => applyFind(s, message.genreId, now, day, env, message.container));
   }
   return false;
 });

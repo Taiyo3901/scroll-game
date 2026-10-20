@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { addDisabledHost, isHostDisabled, removeDisabledHost, type HostReply } from '../core/hosts';
 import { CONFIG } from '../config';
 import { areaAt, findItem } from '../core/catalog';
 import { findsToday } from '../core/game';
@@ -13,6 +14,55 @@ import { useView } from '../ui/store';
 function openPage(file: string): void {
   void chrome.tabs.create({ url: chrome.runtime.getURL(file) });
   window.close();
+}
+
+/**
+ * 「このサイトで、ゲームを動かさない」の切り替え。いま開いているタブのサイト名は、そのタブの content script に尋ねる
+ * （tabs 権限を増やさないため）。chrome:// など、content script が動かないページでは、使えない。
+ */
+function SiteToggle({ disabled }: { disabled: string[] }) {
+  const [host, setHost] = useState<string | null | undefined>(undefined); // undefined: 確認中 / null: 使えないページ
+  useEffect(() => {
+    void (async () => {
+      try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (tab?.id === undefined) return setHost(null);
+        const reply = (await chrome.tabs.sendMessage(tab.id, { type: 'get-host' })) as HostReply | undefined;
+        setHost(reply?.host ? reply.host : null);
+      } catch {
+        setHost(null);
+      }
+    })();
+  }, []);
+
+  if (host === undefined) return null;
+  if (host === null) return <p className="muted small">このページでは、ゲームは動きません。</p>;
+
+  const entry = disabled.find((d) => host === d || host.endsWith(`.${d}`));
+  const off = isHostDisabled(host, disabled);
+  return (
+    <div>
+      <label className="toggle">
+        <input
+          type="checkbox"
+          checked={off}
+          onChange={(e) => {
+            if (e.target.checked) {
+              const r = addDisabledHost(disabled, host);
+              if (r.ok) void saveSettings({ disabledHosts: r.hosts });
+            } else if (entry) {
+              void saveSettings({ disabledHosts: removeDisabledHost(disabled, entry) });
+            }
+          }}
+        />
+        このサイトでは、ゲームを動かさない
+      </label>
+      <p className="muted small">
+        {host}
+        {off && entry && entry !== host ? `（「${entry}」の登録によって、無効です）` : ''}
+      </p>
+    </div>
+  );
 }
 
 function Popup() {
@@ -33,6 +83,11 @@ function Popup() {
 
   return (
     <main className="popup-main">
+      {settings.demoMode && (
+        <button type="button" className="demo-banner" onClick={() => openPage('settings.html')}>
+          デモモード中です（記録は本番に入りません）
+        </button>
+      )}
       {!profile.onboarded && (
         <button type="button" className="notice" onClick={() => openPage('welcome.html')}>
           はじめに：何を記録するかを確認する
@@ -84,7 +139,12 @@ function Popup() {
         <button type="button" onClick={() => openPage('friends.html')}>
           ランキング
         </button>
+        <button type="button" onClick={() => openPage('settings.html')}>
+          設定
+        </button>
       </nav>
+
+      <SiteToggle disabled={settings.disabledHosts} />
 
       <label className="toggle">
         <input

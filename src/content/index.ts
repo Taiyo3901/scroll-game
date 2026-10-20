@@ -1,6 +1,7 @@
 import { CONFIG } from '../config';
 import { areaAt, findItem } from '../core/catalog';
 import { classifyHost } from '../core/genre';
+import { isHostDisabled, isHostQuery, type HostReply } from '../core/hosts';
 import { formatBadge } from '../core/format';
 import { findsToday } from '../core/game';
 import { diagnoseJob, sumGenreFinds } from '../core/job';
@@ -55,7 +56,9 @@ function currentJob(): string {
 const ROOM_ID = classifyHost(location.hostname, CATALOG.genres);
 
 function main(): void {
-  const tracker = startTracker();
+  /** このサイトは、自分で「ゲームを動かさない」と登録したサイトか（ホスト名はここで照合するだけで、送らない） */
+  const isDisabledHere = () => isHostDisabled(location.hostname, getView().settings.disabledHosts);
+  const tracker = startTracker({ isEnabled: () => !isDisabledHere() });
   const miner = new Miner();
   const debug = createDebug();
   const reserver = createSpaceReserver();
@@ -64,7 +67,7 @@ function main(): void {
   let lastSeenSeq = -1;
 
   const syncOverlay = () => {
-    const wantOverlay = getView().settings.effects;
+    const wantOverlay = getView().settings.effects && !isDisabledHere();
     if (wantOverlay && !overlay) overlay = createOverlay();
     if (!wantOverlay && overlay) {
       overlay.destroy();
@@ -76,6 +79,10 @@ function main(): void {
   };
 
   const tick = () => {
+    if (isDisabledHere()) {
+      miner.reset();
+      return;
+    }
     const now = performance.now();
     const t = tracker.snapshot();
     const m = miner.step(now, t);
@@ -97,6 +104,7 @@ function main(): void {
         skin: m.skin,
         job: currentJob(),
         progress: t.progress,
+        demo: getView().settings.demoMode,
       });
     }
     debug.update(t, m);
@@ -133,6 +141,14 @@ function main(): void {
     }
   };
   document.addEventListener('visibilitychange', syncTimer);
+
+  // ポップアップが、いま開いているタブのサイト名を尋ねる（「このサイトで無効にする」のため）。拡張機能自身からの問い合わせにだけ答える。
+  chrome.runtime.onMessage.addListener((message: unknown, sender, sendResponse) => {
+    if (!isHostQuery(message) || sender.id !== chrome.runtime.id) return false;
+    const reply: HostReply = { host: location.hostname };
+    sendResponse(reply);
+    return false;
+  });
 
   onViewChange(() => {
     syncOverlay();
