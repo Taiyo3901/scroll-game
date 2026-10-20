@@ -131,24 +131,6 @@ export const OVERLAY_CSS = `
 .gauge-inner .cell.on { background: #f6d44c; box-shadow: inset 0 -1px 0 #b8870f; }
 
 
-.pops { position: fixed; top: 38%; right: ${CONFIG.OVERLAY_WIDTH_PX + 10}px; z-index: 2147483647; pointer-events: none; }
-.pop {
-  position: absolute; right: 0; top: 0; white-space: nowrap;
-  display: flex; align-items: center; gap: 8px;
-  padding: 6px 10px 6px 6px; background: #1b1410; color: #f5f0e6;
-  box-shadow: 0 0 0 2px #2a1f1a, 0 0 0 4px #7a6040, 4px 4px 0 4px rgba(0,0,0,.35);
-  font: 700 13px/1.3 system-ui, "Hiragino Sans", "Yu Gothic UI", sans-serif;
-  opacity: 0; animation: popIn 2.6s steps(12, end) forwards;
-}
-.pop .ico { flex: none; width: 42px; height: 42px; background: #3a2c20; display: grid; place-items: center; }
-.pop .ico img { width: 42px; height: 42px; image-rendering: pixelated; display: block; }
-.pop .sub { display: block; font-weight: 400; font-size: 11px; opacity: .8; }
-.pop.r1 .stars { color: #cfd8dc; }
-.pop.r2 .stars { color: #81d4fa; }
-.pop.r2 .ico img { filter: drop-shadow(0 0 3px rgba(80,160,220,.9)); }
-.pop.r3 { font-size: 15px; box-shadow: 0 0 0 2px #2a1f1a, 0 0 0 4px #f6d44c, 4px 4px 0 4px rgba(0,0,0,.35), 0 0 14px 4px rgba(246,212,76,.6); animation: popInBig 3.4s steps(14, end) forwards; }
-.pop.r3 .stars { color: #f6d44c; }
-.pop.r3 .ico img { filter: drop-shadow(0 0 4px rgba(255,210,70,.95)); }
 
 @keyframes heroWalk { from { background-position-x: 0; } to { background-position-x: -132px; } }
 @keyframes heroSearch { from { background-position-x: 0; } to { background-position-x: -66px; } }
@@ -165,19 +147,6 @@ export const OVERLAY_CSS = `
 @keyframes flameA { 0% { opacity: 1; } 50% { opacity: 0; } }
 @keyframes flameB { 0% { opacity: 0; } 50% { opacity: 1; } }
 @keyframes halo { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
-@keyframes popIn {
-  0% { opacity: 0; transform: translateY(8px); }
-  10% { opacity: 1; transform: translateY(0); }
-  80% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(-8px); }
-}
-@keyframes popInBig {
-  0% { opacity: 0; transform: translateY(10px) scale(.85); }
-  8% { opacity: 1; transform: translateY(0) scale(1.1); }
-  14% { opacity: 1; transform: translateY(0) scale(1); }
-  85% { opacity: 1; transform: translateY(0) scale(1); }
-  100% { opacity: 0; transform: translateY(-10px) scale(1); }
-}
 
 /* 動きを控えめにする: 振り・炎のちらつきをやめ、ゲージは即時に動かす */
 @media (prefers-reduced-motion: reduce) {
@@ -186,7 +155,5 @@ export const OVERLAY_CSS = `
   .fly { opacity: 0; }
   .torch svg .f1 { opacity: 1; }
   .torch svg .f2 { opacity: 0; }
-  .pop, .pop.r3 { animation: popFade 2.6s linear forwards; }
-}
-@keyframes popFade { 0% { opacity: 0; } 8% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; } }
+  }
 `;

@@ -1,7 +1,5 @@
 import { CONFIG } from '../config';
-import { areaAt } from '../core/catalog';
 import { applyFind, applyScroll, type Env } from '../core/game';
-import { formatBadge } from '../core/format';
 import type { GameState } from '../core/state';
 import { localDayKey } from '../core/week';
 import { CATALOG } from '../data';
@@ -14,12 +12,6 @@ import { loadSettings, loadState, saveState } from '../storage';
 // メモリには何も持たず、更新のたびに「読む → 純粋関数で計算 → 書く」を行う。
 
 const envFor = (demo: boolean): Env => ({ rules: rulesFor(demo), catalog: CATALOG, rng: Math.random });
-
-async function refreshBadge(state: GameState): Promise<void> {
-  await chrome.action.setBadgeText({ text: formatBadge(state.depthM) });
-  // 背景色は階層の色（文字は白）
-  await chrome.action.setBadgeBackgroundColor({ color: areaAt(CATALOG.areas, state.depthM).color });
-}
 
 // 同時に届いた更新が互いの書き込みを上書きしないよう、直列に処理する
 let queue: Promise<void> = Promise.resolve();
@@ -34,7 +26,6 @@ function update(f: (s: GameState, now: number, day: string, env: Env) => GameSta
       const { demoMode } = await loadSettings();
       const next = f(await loadState(demoMode), now, localDayKey(new Date(now)), envFor(demoMode));
       await saveState(next, demoMode);
-      await refreshBadge(next);
     })
     .catch((e) => console.error('update failed', e));
   return queue;
@@ -49,6 +40,9 @@ chrome.runtime.onMessage.addListener((message: unknown) => {
   }
   return false;
 });
+
+// 以前のバージョンが付けた、アイコンの深さの表示（バッジ）を消す。service worker が起動するたびに消すので、更新のあとも残らない
+void chrome.action.setBadgeText({ text: '' });
 
 // 初めてインストールしたとき、何を記録するかの説明画面を開く
 chrome.runtime.onInstalled.addListener((details) => {
@@ -70,7 +64,7 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 });
 
 function boot(): void {
-  void update((s) => s); // 古い保存データを新しい形にそろえ、バッジを更新する
+  void update((s) => s); // 古い保存データを新しい形にそろえる
   void ensureSyncAlarm();
 }
 chrome.runtime.onInstalled.addListener(boot);

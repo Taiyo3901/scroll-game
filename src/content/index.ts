@@ -5,7 +5,6 @@ import { classifyHost } from '../core/genre';
 import { isHostDisabled, isHostQuery, type HostReply } from '../core/hosts';
 import { formatBadge } from '../core/format';
 import { diagnoseJob, sumGenreFinds } from '../core/job';
-import type { GameEvent } from '../core/state';
 import { spriteUri } from '../core/sprites';
 import { CATALOG } from '../data';
 import { createDebug } from './debug';
@@ -17,28 +16,6 @@ import { startTracker } from './tracker';
 
 const TICK_MS = 250;
 const EVENT_MAX_AGE_MS = 10_000;
-
-function describeEvent(e: GameEvent): Parameters<Overlay['pop']>[0] | null {
-  const item = findItem(CATALOG, e.itemId);
-  if (!item) return null;
-  const count = getView().state.collection[item.id] ?? 0;
-  if (item.mimic) {
-    return {
-      text: 'ミミックだ！',
-      sub: count <= 1 ? `${item.name}を手に入れた（新発見）` : `${item.name}を手に入れた`,
-      tone: `r${item.rarity}` as 'r1' | 'r2' | 'r3',
-      stars: item.rarity,
-      iconUri: spriteUri(item.id) ?? undefined,
-    };
-  }
-  return {
-    text: item.name,
-    tone: `r${item.rarity}` as 'r1' | 'r2' | 'r3',
-    stars: item.rarity,
-    iconUri: spriteUri(item.id) ?? undefined,
-    sub: count <= 1 ? '新発見！ 図鑑に追加' : `図鑑 ${count}個目`,
-  };
-}
 
 /** 診断した職業（探索者の見た目になる）。保存データが変わったときだけ計算し直す。 */
 let jobCache: { state: unknown; job: string } | null = null;
@@ -123,10 +100,9 @@ function main(): void {
     for (const e of events) {
       if (e.seq <= lastSeenSeq) continue;
       if (now - e.at < EVENT_MAX_AGE_MS && document.visibilityState === 'visible') {
-        const pop = describeEvent(e);
         const item = findItem(CATALOG, e.itemId);
-        if (pop) overlay?.pop(pop);
-        if (pop?.iconUri && item) overlay?.reveal(pop.iconUri, item.rarity);
+        const icon = item ? spriteUri(item.id) : null;
+        if (item && icon) overlay?.reveal(icon, item.rarity); // 品は、入れ物から跳び出すだけ（名前などの説明は出さない）
         // 見つけた場所（ページ内の位置）に、開けた入れ物の目印を残す。メモリだけで、保存しない
         const box = miner.snapshot;
         const markUri = box.container ? openedContainerUri(box.container, box.skin) : null;

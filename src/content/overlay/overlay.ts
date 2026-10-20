@@ -28,19 +28,8 @@ export interface OverlayView {
   demo: boolean;
 }
 
-export interface PopSpec {
-  text: string;
-  sub?: string;
-  /** レア度 1〜3 の品、または一般のお知らせ / 警告 */
-  tone: 'r1' | 'r2' | 'r3' | 'info' | 'warn';
-  stars?: number;
-  /** 発見品のドットアイコン（data URI） */
-  iconUri?: string;
-}
-
 export interface Overlay {
   update(v: OverlayView): void;
-  pop(p: PopSpec): void;
   /** 入れ物から品が跳び出す演出 */
   reveal(iconUri: string, rarity: 1 | 2 | 3): void;
   /** 品を見つけた場所（ページ内の位置）に、開けた入れ物の目印を残す。このページを開いている間だけ（保存しない） */
@@ -129,8 +118,7 @@ export function createOverlay(): Overlay {
     band.append(torch);
   }
   band.append(track, col);
-  const pops = el('div', 'pops');
-  root.append(style, band, pops);
+  root.append(style, band);
   document.documentElement.append(host);
 
   const cache: Record<string, string> = {};
@@ -251,37 +239,6 @@ export function createOverlay(): Overlay {
       fly.alt = '';
       fly.addEventListener('animationend', () => fly.remove());
       stage.append(fly);
-    },
-
-    pop(p) {
-      const e = el('div', `pop ${p.tone}`);
-      if (p.iconUri) {
-        const ico = el('span', 'ico');
-        const img = document.createElement('img');
-        img.src = p.iconUri;
-        img.alt = '';
-        ico.append(img);
-        e.append(ico);
-      }
-      const text = el('span', 'txt');
-      if (p.stars) {
-        const stars = el('span', 'stars');
-        stars.textContent = '★'.repeat(p.stars) + ' ';
-        text.append(stars);
-      }
-      text.append(document.createTextNode(p.text));
-      if (p.sub) {
-        const sub = el('span', 'sub');
-        sub.textContent = p.sub;
-        text.append(sub);
-      }
-      e.append(text);
-      e.addEventListener('animationend', (ev) => {
-        // r3 は枠の拡大アニメーションも持つので、本体のアニメーション終了だけで消す
-        if (ev.target === e && /^pop/.test((ev as AnimationEvent).animationName)) e.remove();
-      });
-      // 同時に出すと重なるので、前のものは消す
-      pops.replaceChildren(e);
     },
 
     destroy() {
