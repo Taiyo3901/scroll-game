@@ -48,12 +48,14 @@ export class Miner {
   private skin = '';
   /** 品を見つけたときの「最後のスクロール」の時刻。これが変わる（新しくスクロールする）まで、次は見つからない */
   private doneMark: { at: number | null } | null = null;
+  /** このページで、すでに入れ物を開けた場所（キーは tracker の spotKey）と、そのときの入れ物。メモリだけで、保存しない */
+  private readonly opened = new Map<string, { container: ContainerKind; skin: string }>();
   private last: MinerSnapshot = {
     phase: 'idle',
     gauge: 0,
     container: null,
     skin: '',
-    checks: { stopped: false, visible: false, underDailyCap: true, oncePerStop: true },
+    checks: { stopped: false, visible: false, underDailyCap: true, oncePerStop: true, newSpot: true },
   };
 
   get snapshot(): MinerSnapshot {
@@ -93,6 +95,7 @@ export class Miner {
       findsToday: findsToday(state, localDayKey(new Date())),
       maxFindsPerDay: cfg.MAX_FINDS_PER_DAY,
       foundThisStop,
+      spotOpened: this.opened.has(snap.spotKey),
     });
 
     if (!result.ok) {
@@ -115,25 +118,42 @@ export class Miner {
         genreId: classifyHost(location.hostname, CATALOG.genres),
         container: this.container,
       };
+      const spot = snap.spotKey;
+      this.opened.set(spot, { container: this.container, skin: this.skin });
       this.startedAt = null;
       this.doneMark = { at: snap.lastScrollAt };
       gauge = 1;
-      void sendToBackground(msg);
+      // 報告が届かなかったときは、その場所をまた開けられるようにする（品が付かないまま使い切らない）
+      void sendToBackground(msg).then((ok) => {
+        if (!ok) this.opened.delete(spot);
+      });
     }
 
+    // 動いている間は歩く。止まっていて、この場所をすでに開けているなら、開けた入れ物が残っている
+    const here = this.opened.get(snap.spotKey);
     let phase: Phase;
     if (this.doneMark) phase = 'done';
     else if (this.startedAt !== null) phase = 'search';
-    else phase = snap.msSinceLastScroll < delayMs ? 'walk' : 'idle';
+    else if (snap.msSinceLastScroll < delayMs) phase = 'walk';
+    else phase = here ? 'done' : 'idle';
 
+    const shown = this.doneMark || this.startedAt !== null ? this.container : here ? here.container : null;
     this.last = {
       phase,
       gauge,
-      container: phase === 'search' || phase === 'done' ? this.container : null,
-      skin: this.skin,
+      container: phase === 'search' || phase === 'done' ? shown : null,
+      skin: this.doneMark || this.startedAt !== null ? this.skin : (here?.skin ?? this.skin),
       checks: result.checks,
     };
     return this.last;
+  }
+
+  /** ページが切り替わったとき（同じタブの中での移動を含む）、開けた場所の記録を捨てる */
+  resetSpots(): void {
+    this.opened.clear();
+    this.doneMark = null;
+    this.startedAt = null;
+    this.container = null;
   }
 
   /** ページが見えなくなったときなど、進行中の物色を捨てる */

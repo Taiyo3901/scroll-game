@@ -6,13 +6,11 @@ import { TORCH_SVG, wallUri } from './wall';
 
 export interface OverlayView {
   depthText: string;
-  /** 階層のID（帯の色合いに使う） */
-  areaId: string;
   /** 閲覧中のサイトの種類（部屋）のID。壁の絵を選ぶ */
   roomId: string;
   /** 背景の岩肌を流す量に使う（m） */
   depthM: number;
-  strataName: string;
+  /** 階層の色。壁に薄くかぶせる（階層の名前は、表示しない） */
   strataColor: string;
   /** 場面: 歩く / 立ち止まり / 物色中 / 見つけ終わった */
   phase: Phase;
@@ -46,6 +44,8 @@ export interface Overlay {
   reveal(iconUri: string, rarity: 1 | 2 | 3): void;
   /** 品を見つけた場所（ページ内の位置）に、開けた入れ物の目印を残す。このページを開いている間だけ（保存しない） */
   mark(progress: number, iconUri: string, rarity: 1 | 2 | 3): void;
+  /** 目印をすべて消す（ページが切り替わったとき） */
+  clearMarks(): void;
   destroy(): void;
 }
 
@@ -92,7 +92,6 @@ export function createOverlay(): Overlay {
   const depth = el('div', 'depth panel');
   const demoTag = el('div', 'demo-tag');
   demoTag.textContent = 'DEMO';
-  const strataName = el('div', 'strata-name');
   const track = el('div', 'track');
   const ruler = el('div', 'ruler');
   const marks = el('div', 'marks');
@@ -111,8 +110,6 @@ export function createOverlay(): Overlay {
   gauge.append(gaugeInner);
   stage.append(scene, gauge);
   track.append(ruler, marks, stage);
-  const foot = el('div', 'foot');
-  foot.append(strataName);
   const col = el('div', 'col');
   col.append(demoTag, depth);
   const rock = el('div', 'rock');
@@ -129,7 +126,7 @@ export function createOverlay(): Overlay {
     torch.append(halo, holder);
     band.append(torch);
   }
-  band.append(track, foot, col);
+  band.append(track, col);
   const pops = el('div', 'pops');
   root.append(style, band, pops);
   document.documentElement.append(host);
@@ -170,10 +167,7 @@ export function createOverlay(): Overlay {
     update(v) {
       set('depth', v.depthText, () => (depth.textContent = v.depthText));
       set('demo', String(v.demo), () => demoTag.classList.toggle('on', v.demo));
-      set('strata', v.areaId + v.strataName, () => {
-        strataName.textContent = v.strataName;
-        band.style.setProperty('--area', v.strataColor); // 階層は、壁にかぶせる色で表す
-      });
+      set('area', v.strataColor, () => band.style.setProperty('--area', v.strataColor)); // 階層は、壁にかぶせる色で表す
       set('room', v.roomId, () => band.style.setProperty('--wall', wallUri(v.roomId)));
       // 深く進むほど石壁が上へ流れる（1mあたり3px。タイル1枚ぶんでひと回り）
       const shift = Math.floor(v.depthM * 3) % TILE_HEIGHT_PX;
@@ -224,6 +218,10 @@ export function createOverlay(): Overlay {
       set('gauge', String(lit), () => gaugeCells.forEach((c, i) => c.classList.toggle('on', i < lit)));
       const glowOpacity = (0.25 + 0.6 * g).toFixed(2);
       set('glow', glowOpacity, () => (glow.style.opacity = glowOpacity));
+    },
+
+    clearMarks() {
+      for (const m of placed.splice(0)) m.el.remove();
     },
 
     mark(p, iconUri, rarity) {

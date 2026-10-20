@@ -80,11 +80,9 @@ export const OVERLAY_CSS = `
 .demo-tag { display: none; font-size: 9px; letter-spacing: .1em; padding: 1px 4px; margin-bottom: 4px; background: #b3261e; color: #fff; box-shadow: 0 0 0 2px #2a1f1a; }
 .demo-tag.on { display: block; }
 .depth { font-size: 10px; letter-spacing: -0.05em; padding: 2px 2px; white-space: nowrap; }
-.strata-name { writing-mode: vertical-rl; font-size: 11px; letter-spacing: .08em; }
-.foot { position: absolute; left: 13px; right: 3px; bottom: 14px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
 
 /* 帯の長さ = ページの長さ。探索者は、読み進めるほど上から下へ降りていく */
-.track { position: absolute; left: 12px; right: 6px; top: 46px; bottom: 124px; }
+.track { position: absolute; left: 12px; right: 6px; top: 46px; bottom: 24px; }
 .band:has(.demo-tag.on) .track { top: 66px; }
 /* 10% ごとの目盛り（スクロールバーのすぐ内側） */
 .ruler {

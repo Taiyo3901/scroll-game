@@ -76,7 +76,16 @@ function main(): void {
     debug.setEnabled(getView().settings.debugOverlay);
   };
 
+  // 同じタブの中でページが切り替わったら（ページの再読み込みなしの移動を含む）、開けた場所と目印を忘れる。
+  // 比べるのはメモリ上の値だけで、保存も送信もしない。
+  let lastHref = location.href;
+
   const tick = () => {
+    if (location.href !== lastHref) {
+      lastHref = location.href;
+      miner.resetSpots();
+      overlay?.clearMarks();
+    }
     if (isDisabledHere()) {
       miner.reset();
       return;
@@ -90,10 +99,8 @@ function main(): void {
       const area = areaAt(CATALOG.areas, state.depthM);
       overlay.update({
         depthText: formatBadge(state.depthM),
-        areaId: area.id,
         roomId: ROOM_ID,
         depthM: state.depthM,
-        strataName: area.name,
         strataColor: area.color,
         phase: m.phase,
         gauge: m.gauge,
