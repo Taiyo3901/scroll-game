@@ -11,8 +11,8 @@ from PIL import Image, ImageDraw, ImageFont
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 data = json.load(open(os.path.join(root, 'src', 'data', 'actors.json'), encoding='utf-8'))
 pal = data['palette']
-K = 5  # 1マスを何pxで描くか
-SIZE = 22
+K = 4  # 1マスを何pxで描くか
+SIZE = 34
 LABEL_W = 130
 BG = (58, 50, 70)
 

@@ -103,9 +103,9 @@ export const OVERLAY_CSS = `
 .mark.r2 img { filter: drop-shadow(0 0 2px rgba(80,160,220,.9)); }
 .mark.r3 img { filter: drop-shadow(0 0 3px rgba(255,210,70,1)); }
 
-/* 場面: 下に探索者（22マス x 1.5px = 33px）、上に入れ物（14マス x 2px = 28px） */
+/* 場面: 下に探索者（34マス x 1px = 34px）、上に入れ物（14マス x 2px = 28px） */
 .hero {
-  position: absolute; left: 0; bottom: 0; width: 33px; height: 33px;
+  position: absolute; left: 0; bottom: 0; width: 34px; height: 34px;
   background-repeat: no-repeat; image-rendering: pixelated; filter: drop-shadow(1px 1px 0 #2a1f1a);
 }
 .hero.walk { animation: heroWalk .5s steps(4, end) infinite; }
@@ -132,8 +132,8 @@ export const OVERLAY_CSS = `
 
 
 
-@keyframes heroWalk { from { background-position-x: 0; } to { background-position-x: -132px; } }
-@keyframes heroSearch { from { background-position-x: 0; } to { background-position-x: -66px; } }
+@keyframes heroWalk { from { background-position-x: 0; } to { background-position-x: -136px; } }
+@keyframes heroSearch { from { background-position-x: 0; } to { background-position-x: -68px; } }
 @keyframes scared { 0% { transform: translateX(0); } 50% { transform: translateX(-3px); } 100% { transform: translateX(0); } }
 @keyframes enter { 0% { transform: translateY(-10px) scale(.4); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
 @keyframes rummage { 0% { transform: translateX(0); } 50% { transform: translateX(-1px) rotate(-3deg); } 100% { transform: translateX(1px) rotate(3deg); } }

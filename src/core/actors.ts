@@ -11,7 +11,7 @@ const { palette, containers, heroes } = data as ActorData;
 
 /** 入れ物の絵の1辺のマス数（縁取りを含む）。探索者は、もっと細かい */
 export const CONTAINER_SIZE = 14;
-export const HERO_SIZE = 22;
+export const HERO_SIZE = 34;
 export type HeroPose = Pose;
 
 function rects(rows: string[], xOffset: number): string {

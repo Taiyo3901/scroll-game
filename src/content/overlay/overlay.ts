@@ -49,8 +49,8 @@ const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls: string): HTMLEle
   return e;
 };
 
-/** 探索者のドット絵1マスの大きさ(px)。22マス x 1.5px = 33px（入れ物は 14マス x 2px = 28px で、CSS 側で決める） */
-const HERO_CELL = 1.5;
+/** 探索者のドット絵1マスの大きさ(px)。34マス x 1px = 34px（入れ物は 14マス x 2px = 28px で、CSS 側で決める） */
+const HERO_CELL = 1;
 /** ゲージの目盛りの数 */
 const GAUGE_CELLS = 6;
 /** 壁が上へ流れる速さ: 深さ1mあたりのpx */
