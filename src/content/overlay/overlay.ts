@@ -2,17 +2,13 @@ import { HERO_SIZE, containerFrameUri, heroSheet, type HeroPose } from '../../co
 import type { ContainerKind } from '../../core/containers';
 import type { Phase } from '../miner';
 import { OVERLAY_CSS, TILE_HEIGHT_PX } from './styles';
-import { BAND_TINTS } from '../../core/band';
+import { BAND_STEP_CALM_M, BAND_STEP_M, BAND_TINTS, bandPosition } from '../../core/band';
+import { formatBadge } from '../../core/format';
 import { TORCH_SVG, decoUri, wallUri } from './wall';
 
 export interface OverlayView {
-  depthText: string;
   /** 閲覧中のサイトの種類（部屋）のID。壁の絵を選ぶ */
   roomId: string;
-  /** 背景の岩肌を流す量に使う（m） */
-  depthM: number;
-  /** 深さに応じた背景の変化の番号（0〜5。50mごとに変わり、使い切ると最初に戻る） */
-  bandVariant: number;
   /** 場面: 歩く / 立ち止まり / 物色中 / 見つけ終わった */
   phase: Phase;
   /** 物色の進み具合 0〜1 */
@@ -30,6 +26,11 @@ export interface OverlayView {
 
 export interface Overlay {
   update(v: OverlayView): void;
+  /**
+   * 深さに合わせて、背景（壁の流れ、色、飾り）と深度の数字を更新する。スクロールのたびに呼べるよう、軽くしてある。
+   * calm が true（視覚効果を減らす設定）のときは、間隔を広げ、混ぜずに切り替える。
+   */
+  setDepth(depthM: number, calm: boolean): void;
   /** 入れ物から品が跳び出す演出 */
   reveal(iconUri: string, rarity: 1 | 2 | 3): void;
   /** 品を見つけた場所（ページ内の位置）に、開けた入れ物の目印を残す。このページを開いている間だけ（保存しない） */
@@ -103,11 +104,12 @@ export function createOverlay(): Overlay {
   const col = el('div', 'col');
   col.append(demoTag, depth);
   const rock = el('div', 'rock');
-  const deco = el('div', 'deco');
+  const decoA = el('div', 'deco');
+  const decoB = el('div', 'deco');
   const shade = el('div', 'shade');
   const tint = el('div', 'tint');
   const glow = el('div', 'glow');
-  band.append(rock, tint, deco, shade, glow);
+  band.append(rock, tint, decoA, decoB, shade, glow);
   for (const pos of ['t1', 't2']) {
     // 壁の松明（飾り）。SVG は自前の固定文字列で、ページの内容は入らない
     const torch = el('div', `torch ${pos}`);
@@ -155,20 +157,8 @@ export function createOverlay(): Overlay {
 
   return {
     update(v) {
-      set('depth', v.depthText, () => (depth.textContent = v.depthText));
       set('demo', String(v.demo), () => demoTag.classList.toggle('on', v.demo));
-      // 深さに応じた背景の変化: 壁に重ねる色と、その変化ごとの飾り
-      set('variant', String(v.bandVariant), () => {
-        band.style.setProperty('--area', BAND_TINTS[v.bandVariant] ?? BAND_TINTS[0]);
-        band.style.setProperty('--deco', decoUri(v.bandVariant));
-      });
       set('room', v.roomId, () => band.style.setProperty('--wall', wallUri(v.roomId)));
-      // 深く進むほど石壁が上へ流れる（1mあたり3px。タイル1枚ぶんでひと回り）
-      const shift = Math.floor(v.depthM * 3) % TILE_HEIGHT_PX;
-      set('rock', String(shift), () => {
-        rock.style.transform = `translateY(${-shift}px)`;
-        deco.style.transform = `translateY(${-shift}px)`;
-      });
 
       // 探索者は、ページの読み進み具合に合わせて、帯を上から下へ進む
       if (Math.abs(v.progress - progress) > 0.001) {
@@ -215,6 +205,33 @@ export function createOverlay(): Overlay {
       set('gauge', String(lit), () => gaugeCells.forEach((c, i) => c.classList.toggle('on', i < lit)));
       const glowOpacity = (0.25 + 0.6 * g).toFixed(2);
       set('glow', glowOpacity, () => (glow.style.opacity = glowOpacity));
+    },
+
+    setDepth(depthM, calm) {
+      const d = Math.max(0, Number.isFinite(depthM) ? depthM : 0);
+      const text = formatBadge(d);
+      set('depth', text, () => (depth.textContent = text));
+
+      // 背景は、深さに合わせて、少しずつ変わる（いまの変化と、次の変化を、混ぜ合わせる）
+      const pos = bandPosition(d, calm ? BAND_STEP_CALM_M : BAND_STEP_M);
+      const frac = calm ? 0 : Math.round(pos.fraction * 64) / 64; // 細かすぎる更新を避ける
+      set('decoA', String(pos.index), () => decoA.style.setProperty('--deco', decoUri(pos.index)));
+      set('decoB', String(pos.next), () => decoB.style.setProperty('--deco', decoUri(pos.next)));
+      set('mix', `${pos.index}|${frac}`, () => {
+        const a = BAND_TINTS[pos.index] ?? BAND_TINTS[0];
+        const b = BAND_TINTS[pos.next] ?? BAND_TINTS[0];
+        band.style.setProperty('--area', `color-mix(in srgb, ${a} ${(1 - frac) * 100}%, ${b} ${frac * 100}%)`);
+        decoA.style.opacity = String(1 - frac);
+        decoB.style.opacity = String(frac);
+      });
+
+      // 深く進むほど石壁が上へ流れる（1mあたり3px。タイル1枚ぶんでひと回り）
+      const shift = Math.floor(d * 3) % TILE_HEIGHT_PX;
+      set('rock', String(shift), () => {
+        rock.style.transform = `translateY(${-shift}px)`;
+        decoA.style.transform = `translateY(${-shift}px)`;
+        decoB.style.transform = `translateY(${-shift}px)`;
+      });
     },
 
     clearMarks() {

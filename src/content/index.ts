@@ -1,9 +1,9 @@
 import { CONFIG } from '../config';
 import { findItem } from '../core/catalog';
-import { BAND_STEP_CALM_M, BAND_STEP_M, bandVariant } from '../core/band';
+import { pxToDepth } from '../core/depth';
 import { classifyHost } from '../core/genre';
 import { isHostDisabled, isHostQuery, type HostReply } from '../core/hosts';
-import { formatBadge } from '../core/format';
+import { rulesFor } from '../rules';
 import { diagnoseJob, sumGenreFinds } from '../core/job';
 import { spriteUri } from '../core/sprites';
 import { CATALOG } from '../data';
@@ -59,6 +59,27 @@ function main(): void {
   let lastHref = location.href;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
+  /**
+   * いまの深さ。保存された深度に、まだ反映されていないスクロール量（送る前のもの、送ったが反映待ちのもの）を足して、
+   * スクロールした分が、すぐ帯に出るようにする。
+   */
+  const liveDepth = (): number => {
+    const { state, settings } = getView();
+    const extra = pxToDepth(tracker.snapshot().unconfirmedPx, rulesFor(settings.demoMode).depthMultiplier);
+    return state.depthM + extra;
+  };
+
+  // スクロールのたびに、背景（壁の流れ・色・飾り）を、次の描画に合わせて更新する（動いている間だけ）
+  let depthFrame = 0;
+  const scheduleDepth = () => {
+    if (depthFrame !== 0 || !overlay || isDisabledHere()) return;
+    depthFrame = requestAnimationFrame(() => {
+      depthFrame = 0;
+      overlay?.setDepth(liveDepth(), reducedMotion.matches);
+    });
+  };
+  document.addEventListener('scroll', scheduleDepth, { capture: true, passive: true });
+
   const tick = () => {
     if (location.href !== lastHref) {
       lastHref = location.href;
@@ -72,15 +93,11 @@ function main(): void {
     const now = performance.now();
     const t = tracker.snapshot();
     const m = miner.step(now, t);
-    const { state } = getView();
 
     if (overlay) {
+      overlay.setDepth(liveDepth(), reducedMotion.matches);
       overlay.update({
-        depthText: formatBadge(state.depthM),
         roomId: ROOM_ID,
-        depthM: state.depthM,
-        // 「視覚効果を減らす」設定のときは、切り替わりを、ゆるやかにする
-        bandVariant: bandVariant(state.depthM, reducedMotion.matches ? BAND_STEP_CALM_M : BAND_STEP_M),
         phase: m.phase,
         gauge: m.gauge,
         container: m.container,
@@ -132,7 +149,13 @@ function main(): void {
     return false;
   });
 
+  let lastStateDepth = -1;
   onViewChange(() => {
+    // 保存された深度が更新されたら、送った分が反映されたので、反映待ちを数え直す
+    if (getView().state.depthM !== lastStateDepth) {
+      lastStateDepth = getView().state.depthM;
+      tracker.confirmFlushed();
+    }
     syncOverlay();
     showNewEvents();
   });

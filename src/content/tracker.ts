@@ -12,10 +12,14 @@ export interface TrackerSnapshot {
   progress: number;
   /** まだ service worker に送っていない距離 */
   pendingPx: number;
+  /** 送ったが、保存された深度にまだ反映されていない距離も含めた、反映待ちの距離（帯の深度をリアルタイムにするために使う） */
+  unconfirmedPx: number;
 }
 
 export interface Tracker {
   snapshot: () => TrackerSnapshot;
+  /** 保存された深度が更新されたとき（送った分が反映されたとき）に呼ぶ */
+  confirmFlushed: () => void;
 }
 
 const USER_INPUT_EVENTS = ['wheel', 'touchmove', 'keydown', 'pointerdown'] as const;
@@ -42,6 +46,7 @@ export function startTracker(opts: TrackerOptions = {}): Tracker {
   let lastAnyScrollAt: number | null = null;
   let lastScroller: Element | null = null;
   let pendingPx = 0;
+  let inflightPx = 0;
   let flushTimer: ReturnType<typeof setTimeout> | null = null;
 
   const rootEl = (): Element => document.scrollingElement ?? document.documentElement;
@@ -79,10 +84,12 @@ export function startTracker(opts: TrackerOptions = {}): Tracker {
     if (pendingPx === 0) return;
     const msg: ScrollBatchMessage = { type: 'scroll-batch', px: pendingPx };
     pendingPx = 0;
+    inflightPx += msg.px;
     // 届かなかった分は、次の送信にまわす（拡張機能の再読み込み後などは捨てる）
     void sendToBackground(msg).then((ok) => {
       if (ok || !chrome.runtime?.id) return;
       pendingPx += msg.px;
+      inflightPx = Math.max(0, inflightPx - msg.px);
       scheduleFlush();
     });
   };
@@ -137,6 +144,10 @@ export function startTracker(opts: TrackerOptions = {}): Tracker {
       lastScrollAt: lastAnyScrollAt,
       progress: progressOf(lastScroller ?? rootEl()),
       pendingPx,
+      unconfirmedPx: pendingPx + inflightPx,
     }),
+    confirmFlushed: () => {
+      inflightPx = 0;
+    },
   };
 }

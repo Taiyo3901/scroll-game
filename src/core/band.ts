@@ -19,3 +19,22 @@ export function bandVariant(depthM: number, stepM: number = BAND_STEP_M): number
   if (!Number.isFinite(depthM) || depthM <= 0 || !Number.isFinite(stepM) || stepM <= 0) return 0;
   return Math.floor(depthM / stepM) % BAND_VARIANTS;
 }
+
+export interface BandPosition {
+  /** いまの変化の番号 */
+  index: number;
+  /** 次の変化の番号（最後の次は、最初に戻る） */
+  next: number;
+  /** いまの変化から次の変化への進み具合 0 以上 1 未満。スクロールに合わせて、少しずつ変わる */
+  fraction: number;
+}
+
+/** 深さ（m）から、背景の移り変わりの連続的な位置を求める。色や飾りを、滑らかに混ぜるのに使う。 */
+export function bandPosition(depthM: number, stepM: number = BAND_STEP_M): BandPosition {
+  if (!Number.isFinite(depthM) || depthM <= 0 || !Number.isFinite(stepM) || stepM <= 0) {
+    return { index: 0, next: 1 % BAND_VARIANTS, fraction: 0 };
+  }
+  const pos = depthM / stepM;
+  const whole = Math.floor(pos);
+  return { index: whole % BAND_VARIANTS, next: (whole + 1) % BAND_VARIANTS, fraction: pos - whole };
+}
