@@ -1,11 +1,11 @@
 /**
  * 帯の背景の移り変わり。深さが BAND_STEP_M 進むごとに、背景の色合いと飾りが変わる。
- * BAND_VARIANTS 種類を使い切ると、最初に戻って、繰り返す（既定は 50m ごと、6種類で 300m ひと回り）。
+ * BAND_VARIANTS 種類を使い切ると、最初に戻って、繰り返す（既定は 100m ごと、6種類で 600m ひと回り）。
  * 階層（見つかる品のレア度や入れ物の見た目）とは別のしくみ。
  */
-export const BAND_STEP_M = 50;
+export const BAND_STEP_M = 100;
 /** 「視覚効果を減らす」設定のときの間隔。目まぐるしい切り替わりを避ける */
-export const BAND_STEP_CALM_M = 100;
+export const BAND_STEP_CALM_M = 200;
 export const BAND_VARIANTS = 6;
 
 /** 背景の変化の名前（0 から順に）。 */
