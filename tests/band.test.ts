@@ -5,13 +5,13 @@ const STEP = BAND_STEP_M;
 const LOOP = BAND_STEP_M * BAND_VARIANTS;
 
 describe('bandVariant', () => {
-  it('changes every step (1 m), through 6 variants', () => {
-    expect(BAND_STEP_M).toBe(1);
+  it('changes every step (50 m), through 6 variants', () => {
+    expect(BAND_STEP_M).toBe(50);
     expect(BAND_VARIANTS).toBe(6);
     const edges = [0, STEP - 0.1, STEP, 2 * STEP - 0.1, 2 * STEP, 3 * STEP - 1, 3 * STEP, 4 * STEP - 1, 4 * STEP, 5 * STEP - 1, 5 * STEP, LOOP - 0.1];
     expect(edges.map((d) => bandVariant(d))).toEqual([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5]);
   });
-  it('loops back to the first after one full round (6 m)', () => {
+  it('loops back to the first after one full round (300 m)', () => {
     expect(bandVariant(LOOP)).toBe(0);
     expect(bandVariant(LOOP + STEP - 0.1)).toBe(0);
     expect(bandVariant(LOOP + STEP)).toBe(1);
@@ -30,8 +30,8 @@ describe('bandVariant', () => {
   });
   it('a calmer step can be used for reduced-motion settings, and bad steps fall back to the first variant', () => {
     expect(BAND_STEP_CALM_M).toBeGreaterThan(BAND_STEP_M);
-    expect(bandVariant(24, BAND_STEP_CALM_M)).toBe(0);
-    expect(bandVariant(25, BAND_STEP_CALM_M)).toBe(1);
+    expect(bandVariant(BAND_STEP_CALM_M - 1, BAND_STEP_CALM_M)).toBe(0);
+    expect(bandVariant(BAND_STEP_CALM_M, BAND_STEP_CALM_M)).toBe(1);
     expect(bandVariant(100, 0)).toBe(0);
     expect(bandVariant(100, -5)).toBe(0);
     expect(bandVariant(100, Number.NaN)).toBe(0);
