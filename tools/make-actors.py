@@ -450,21 +450,18 @@ def hero(job, pose, t):
     if hold and pose != 'search':
         _held(a, hold, x + 11, 6 if cheer else 15 + u, o)
 
-    # ---- 頭（顔）
-    a.R(x + 1, 3 + u, x + 8, 9 + u, 'S')
-    a.R(x + 8, 4 + u, x + 8, 9 + u, 'T')
-    a.R(x, 5 + u, x, 8 + u, 'S')
+    # ---- 頭（顔）。顔全体は描かない: 髪や帽子の影に隠れて、小さな目だけが見える（口や鼻、ほおは描かない）
+    a.R(x + 1, 3 + u, x + 8, 9 + u, 'T')
+    a.R(x, 5 + u, x, 8 + u, 'T')
     a.R(x + 9, 5 + u, x + 9, 8 + u, 'T')
+    a.R(x + 1, 6 + u, x + 8, 9 + u, 'S')  # 目より下だけが、明るい肌
+    a.R(x + 1, 6 + u, x + 8, 6 + u, 'T')
     for ex in (2, 6):
-        a.R(x + ex, 5 + u, x + ex + 1, 6 + u, 'k')
-        a.P(x + ex, 5 + u, 'w')
-    a.P(x + 1, 7 + u, 'm')
-    a.P(x + 8, 7 + u, 'm')
-    if cheer:
-        a.R(x + 3, 8 + u, x + 6, 8 + u, 'k')
-        a.R(x + 4, 9 + u, x + 5, 9 + u, 'R')
-    else:
-        a.R(x + 4, 8 + u, x + 5, 8 + u, 'R')
+        a.R(x + ex, 6 + u, x + ex + 1, 6 + u, 'k')
+        a.P(x + ex + 1, 6 + u, 'w') if pose == 'cheer' else None
+    # 口もとは、襟（えり）で隠す
+    a.R(x + 1, 8 + u, x + 8, 9 + u, body)
+    a.R(x + 1, 8 + u, x + 8, 8 + u, dark)
 
     # ---- 髪
     h = o.get('hat')
