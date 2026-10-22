@@ -123,7 +123,7 @@ function main(): void {
         // 見つけた場所（ページ内の位置）に、開けた入れ物の目印を残す。メモリだけで、保存しない
         const box = miner.snapshot;
         const markUri = box.container ? openedContainerUri(box.container, box.skin) : null;
-        if (item && markUri) overlay?.mark(tracker.snapshot().progress, markUri, item.rarity);
+        if (item && markUri) overlay?.mark(markUri, item.rarity);
       }
     }
     lastSeenSeq = events[events.length - 1]?.seq ?? lastSeenSeq;

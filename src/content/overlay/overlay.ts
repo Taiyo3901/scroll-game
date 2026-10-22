@@ -33,8 +33,11 @@ export interface Overlay {
   setDepth(depthM: number, calm: boolean): void;
   /** 入れ物から品が跳び出す演出 */
   reveal(iconUri: string, rarity: 1 | 2 | 3): void;
-  /** 品を見つけた場所（ページ内の位置）に、開けた入れ物の目印を残す。このページを開いている間だけ（保存しない） */
-  mark(progress: number, iconUri: string, rarity: 1 | 2 | 3): void;
+  /**
+   * 品を見つけた場所に、開けた入れ物の目印を残す。目印は壁にくっついていて、深く進むほど、壁と同じ速さで上へ流れ、
+   * 帯の上から出ると消える。このページを開いている間だけで、保存しない。
+   */
+  mark(iconUri: string, rarity: 1 | 2 | 3): void;
   /** 目印をすべて消す（ページが切り替わったとき） */
   clearMarks(): void;
   destroy(): void;
@@ -50,6 +53,8 @@ const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls: string): HTMLEle
 const HERO_CELL = 1.5;
 /** ゲージの目盛りの数 */
 const GAUGE_CELLS = 6;
+/** 壁が上へ流れる速さ: 深さ1mあたりのpx */
+const WALL_PX_PER_M = 3;
 /** 帯に残す目印の数の上限 */
 const MAX_MARKS = 40;
 
@@ -135,11 +140,25 @@ export function createOverlay(): Overlay {
   const MARK_H = 18;
   let trackH = 0;
   let progress = 0;
-  const placed: { el: HTMLElement; p: number }[] = [];
+  /** 目印: 置いたときの高さ(px)と深さ(m)を覚えておき、いまの深さとの差から、いまの高さを求める */
+  const placed: { el: HTMLElement; y0: number; depth0: number }[] = [];
+  let currentDepth = 0;
+  const markY = (m: { y0: number; depth0: number }) => m.y0 - (currentDepth - m.depth0) * WALL_PX_PER_M;
+  const updateMarks = () => {
+    for (let i = placed.length - 1; i >= 0; i--) {
+      const m = placed[i] as (typeof placed)[number];
+      const y = markY(m);
+      if (y < -MARK_H - 4) {
+        m.el.remove(); // 帯の上から出た
+        placed.splice(i, 1);
+      } else {
+        m.el.style.transform = `translateY(${Math.round(y)}px)`;
+      }
+    }
+  };
   const yOf = (p: number, h: number) => Math.round(Math.max(0, trackH - h) * Math.max(0, Math.min(1, p)));
   const layout = () => {
     stage.style.transform = `translateY(${yOf(progress, STAGE_H)}px)`;
-    for (const m of placed) m.el.style.transform = `translateY(${yOf(m.p, MARK_H)}px)`;
   };
   const resizer = new ResizeObserver(() => {
     trackH = track.clientHeight;
@@ -225,8 +244,10 @@ export function createOverlay(): Overlay {
         decoB.style.opacity = String(frac);
       });
 
-      // 深く進むほど石壁が上へ流れる（1mあたり3px。タイル1枚ぶんでひと回り）
-      const shift = Math.floor(d * 3) % TILE_HEIGHT_PX;
+      // 深く進むほど石壁が上へ流れる（1mあたり WALL_PX_PER_M px。タイル1枚ぶんでひと回り）。目印も、同じ速さで流れる
+      currentDepth = d;
+      updateMarks();
+      const shift = Math.floor(d * WALL_PX_PER_M) % TILE_HEIGHT_PX;
       set('rock', String(shift), () => {
         rock.style.transform = `translateY(${-shift}px)`;
         decoA.style.transform = `translateY(${-shift}px)`;
@@ -238,16 +259,17 @@ export function createOverlay(): Overlay {
       for (const m of placed.splice(0)) m.el.remove();
     },
 
-    mark(p, iconUri, rarity) {
+    mark(iconUri, rarity) {
       const m = el('div', `mark r${rarity}`);
       const img = document.createElement('img');
       img.src = iconUri;
       img.alt = '';
       m.append(img);
       marks.append(m);
-      placed.push({ el: m, p });
+      // 探索者のいる高さ（入れ物のあたり）に置く
+      placed.push({ el: m, y0: yOf(progress, STAGE_H) + 4, depth0: currentDepth });
       while (placed.length > MAX_MARKS) placed.shift()?.el.remove();
-      m.style.transform = `translateY(${yOf(p, MARK_H)}px)`;
+      updateMarks();
     },
 
     reveal(iconUri, rarity) {
