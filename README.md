@@ -321,4 +321,3 @@ chrome.storage.local.clear()                      // 全消去
 
 - [`docs/CONCEPT-DUNGEON.md`](docs/CONCEPT-DUNGEON.md): ゲームの企画（部屋、発見品、職業、入れ物）
 - [`docs/PHASE4.md`](docs/PHASE4.md): ログインとフレンド、ランキングの設計
-- [`docs/SPEC.md`](docs/SPEC.md): 最初の実装指示書（冒頭に、改訂のお知らせがあります）
