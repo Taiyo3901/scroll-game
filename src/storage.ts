@@ -1,4 +1,3 @@
-import { CONFIG } from './config';
 import { defaultBandLayout, normalizeBandLayout, type BandSide } from './core/bandLayout';
 import { normalizeTimeMode, type TimeMode } from './core/timeband';
 import { safePhotoUrl } from './core/friendData';
@@ -21,7 +20,6 @@ export const stateKeyFor = (demo: boolean): string => (demo ? DEMO_STATE_KEY : S
 export const profileKeyFor = (demo: boolean): string => (demo ? DEMO_PROFILE_KEY : PROFILE_KEY);
 
 export interface Settings {
-  debugOverlay: boolean;
   /** 画面右端の演出 */
   effects: boolean;
   /** 帯を置く側（右 / 左） */
@@ -43,7 +41,6 @@ export interface Settings {
 }
 
 export const defaultSettings = (): Settings => ({
-  debugOverlay: CONFIG.DEBUG_OVERLAY_DEFAULT,
   effects: true,
   bandSide: defaultBandLayout().side,
   bandWidth: defaultBandLayout().width,
@@ -72,9 +69,8 @@ export function normalizeSettings(raw: unknown): Settings {
     bandTime: normalizeTimeMode(r.bandTime),
     share: normalizeShare(r.share, GENRE_IDS),
     disabledHosts: normalizeDisabledHosts(r.disabledHosts),
-    // デモモードとデバッグ表示は、設定画面から外した。以前にオンにしていても、オフに戻す
+    // デモモードは、設定画面から外した。以前にオンにしていても、オフに戻す
     demoMode: false,
-    debugOverlay: false,
   };
 }
 

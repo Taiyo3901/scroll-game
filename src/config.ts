@@ -44,9 +44,6 @@ const BASE = {
   // --- 画面右端の演出 ---
   /** 帯の幅(px)。ページ側にも同じ幅の余白を取る */
   OVERLAY_WIDTH_PX: 56,
-
-  // --- デバッグ表示 ---
-  DEBUG_OVERLAY_DEFAULT: false,
 };
 
 /**

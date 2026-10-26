@@ -274,7 +274,7 @@ npm run dev        # 開発用（変更が自動で反映される。dist/ を�
 | `src/data/` | 階層（`areas.json`）、部屋とサイトの辞書（`genres.json`）、発見品（`items.json`）、ドット絵（`sprites.json`、`actors.json`） |
 | `src/config.ts` | 調整できる数値のすべて（下記） |
 | `tools/` | 生成ツール |
-| `firestore/` | セキュリティルール（`firestore.rules`。自動生成）とインデックスの設定。`firebase.json` から参照 |
+| `firestore/` | セキュリティルール（`firestore.rules`。自動生成）。`firebase.json` から参照 |
 | `docs/` | 仕様・企画・設計のメモと、職業の見た目の一覧（`docs/images/`） |
 
 ### 調整できる値（`src/config.ts`）

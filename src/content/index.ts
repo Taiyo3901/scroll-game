@@ -6,7 +6,6 @@ import { rulesFor } from '../rules';
 import { diagnoseJob, sumGenreFinds } from '../core/job';
 import { spriteUri } from '../core/sprites';
 import { CATALOG } from '../data';
-import { createDebug } from './debug';
 import { Miner } from './miner';
 import { createOverlay, openedContainerUri, type Overlay } from './overlay/overlay';
 import { createSpaceReserver } from './overlay/reserve';
@@ -36,7 +35,6 @@ function main(): void {
   const isDisabledHere = () => isHostDisabled(location.hostname, getView().settings.disabledHosts);
   const tracker = startTracker({ isEnabled: () => !isDisabledHere() });
   const miner = new Miner();
-  const debug = createDebug();
   const reserver = createSpaceReserver();
   let overlay: Overlay | null = null;
   let timer: ReturnType<typeof setInterval> | null = null;
@@ -49,12 +47,10 @@ function main(): void {
       overlay.destroy();
       overlay = null;
     }
-    const { bandSide, bandWidth, bandTop, reserveSpace, debugOverlay } = getView().settings;
+    const { bandSide, bandWidth, bandTop, reserveSpace } = getView().settings;
     overlay?.setLayout({ side: bandSide, width: bandWidth, top: bandTop });
     // 帯と同じ幅の余白を、帯を置いた側のページに取る（サイトと重ならないように）
     reserver.set(wantOverlay && reserveSpace, bandWidth, bandSide);
-    debug.setBand(bandSide, bandWidth);
-    debug.setEnabled(debugOverlay);
   };
 
   // 同じタブの中でページが切り替わったら（ページの再読み込みなしの移動を含む）、帯の目印を消す。
@@ -111,7 +107,6 @@ function main(): void {
         demo: getView().settings.demoMode,
       });
     }
-    debug.update(t, m);
   };
 
   // 新しい出来事（品を見つけた）を演出する。ページを開いた時点の古いものは出さない。
