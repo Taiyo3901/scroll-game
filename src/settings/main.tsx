@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { createOverlay, type Overlay } from '../content/overlay/overlay';
-import { configFor } from '../config';
 import {
   BAND_TOP_MAX,
   BAND_TOP_MIN,
@@ -11,7 +10,7 @@ import {
 } from '../core/bandLayout';
 import { TIME_MODES, TIME_MODE_LABELS, normalizeTimeMode, timeLookFor, type TimeMode } from '../core/timeband';
 import { MAX_DISABLED_HOSTS, addDisabledHost, removeDisabledHost } from '../core/hosts';
-import { clearDemoData, saveSettings } from '../storage';
+import { saveSettings } from '../storage';
 import { mount } from '../ui/mount';
 import { Torch } from '../ui/parts';
 import { useView } from '../ui/store';
@@ -59,13 +58,10 @@ function BandPreview(props: { side: 'right' | 'left'; width: number; top: number
 }
 
 function Settings() {
-  const { loaded, settings, state, demo } = useView();
+  const { loaded, settings } = useView();
   const [host, setHost] = useState('');
   const [notice, setNotice] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
   if (!loaded) return <main className="page narrow" aria-busy="true" />;
-
-  const real = configFor(false);
-  const demoCfg = configFor(true);
 
   const add = () => {
     const r = addDisabledHost(settings.disabledHosts, host);
@@ -130,40 +126,6 @@ function Settings() {
         <p className="small muted">
           {settings.disabledHosts.length} / {MAX_DISABLED_HOSTS} 件。ポップアップの「このサイトでは、ゲームを動かさない」からも、登録できます。
         </p>
-      </section>
-
-      <section className="card">
-        <h2>デモモード</h2>
-        <p className="small muted">発表で、短い時間に見せるためのモードです。次のように変わります。</p>
-        <ul className="small">
-          <li>
-            深さが {demoCfg.DEPTH_MULTIPLIER / real.DEPTH_MULTIPLIER} 倍の速さで進みます（階層が、すぐ変わります）。
-          </li>
-          <li>
-            物色が {real.FIND_DURATION_SEC} 秒から {demoCfg.FIND_DURATION_SEC} 秒になります。
-          </li>
-          <li>宝箱とミミックが、出やすくなります。</li>
-          <li>帯の上に「DEMO」と出ます。</li>
-        </ul>
-        <p>
-          <strong>デモ中の記録は、本番のデータとは別に保存します。</strong>
-          本番の図鑑やポイントは増えず、ランキングにも送りません。ランキングとフレンドの画面は、デモ中でも本番のデータです。
-        </p>
-        <label className="toggle">
-          <input type="checkbox" checked={settings.demoMode} onChange={(e) => void saveSettings({ demoMode: e.target.checked })} />
-          デモモードにする
-        </label>
-        <button
-          type="button"
-          onClick={() => {
-            if (window.confirm('デモ用の記録（深さ・図鑑・飾り棚）をすべて消して、最初からやり直します。本番のデータは消えません。よろしいですか？')) {
-              void clearDemoData().then(() => setNotice({ kind: 'ok', text: 'デモのデータを消しました。' }));
-            }
-          }}
-        >
-          デモのデータを消して、最初から
-        </button>
-        {demo && <p className="small muted">いまのデモの深さ: {state.depthM.toFixed(0)} m</p>}
       </section>
 
       <section className="card">
@@ -247,10 +209,6 @@ function Settings() {
             onChange={(e) => void saveSettings({ reserveSpace: e.target.checked })}
           />
           帯の幅ぶん、帯のある側のページに余白を取る（サイトと重ならないようにする）
-        </label>
-        <label className="toggle">
-          <input type="checkbox" checked={settings.debugOverlay} onChange={(e) => void saveSettings({ debugOverlay: e.target.checked })} />
-          デバッグ表示を出す（開発用）
         </label>
       </section>
     </main>

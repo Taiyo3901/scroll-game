@@ -71,7 +71,9 @@ export function normalizeSettings(raw: unknown): Settings {
     bandTime: normalizeTimeMode(r.bandTime),
     share: normalizeShare(r.share, GENRE_IDS),
     disabledHosts: normalizeDisabledHosts(r.disabledHosts),
-    demoMode: r.demoMode === true,
+    // デモモードとデバッグ表示は、設定画面から外した。以前にオンにしていても、オフに戻す
+    demoMode: false,
+    debugOverlay: false,
   };
 }
 
