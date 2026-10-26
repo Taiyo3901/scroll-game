@@ -12,7 +12,6 @@ import { TIME_MODES, TIME_MODE_LABELS, normalizeTimeMode, timeLookFor, type Time
 import { addDisabledHost, removeDisabledHost } from '../core/hosts';
 import { saveSettings } from '../storage';
 import { mount } from '../ui/mount';
-import { Torch } from '../ui/parts';
 import { useView } from '../ui/store';
 
 /**
@@ -74,11 +73,7 @@ function Settings() {
   return (
     <main className="page narrow">
       <header>
-        <h1>
-          <Torch />
-          設定
-          <Torch />
-        </h1>
+        <h1>設定</h1>
       </header>
 
       {notice && (

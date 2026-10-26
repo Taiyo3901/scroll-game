@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { dailyRows, toCsv, weeklyRows } from '../src/core/stats';
+import { dailyRows, weeklyRows } from '../src/core/stats';
 import { emptyDay, type DayStats } from '../src/core/state';
 import { defaultProfile, normalizeProfile, toggleShowcase } from '../src/core/profile';
-import { CATALOG } from '../src/data';
 
 const day = (o: Partial<DayStats>): DayStats => ({ ...emptyDay(), ...o });
 
@@ -29,32 +28,6 @@ describe('stats rows', () => {
   it('empty data gives no rows', () => {
     expect(dailyRows({})).toEqual([]);
     expect(weeklyRows({})).toEqual([]);
-  });
-});
-
-describe('toCsv', () => {
-  const csv = toCsv(dailyRows(days), CATALOG.genres);
-  const lines = csv.trim().split('\r\n');
-  it('has a header (with one column per room) and one line per row, CRLF separated', () => {
-    expect(lines).toHaveLength(4);
-    const head = lines[0]!.split(',');
-    expect(head.slice(0, 5)).toEqual(['期間', '発見数', '獲得ポイント', '総スクロール距離(px)', '実距離(m)']);
-    expect(head.slice(5, 9)).toEqual(['壺', '箱', '宝箱', 'ミミック']);
-    expect(head.slice(9)).toEqual(CATALOG.genres.map((g) => g.name));
-  });
-  it('writes room counts in the matching columns', () => {
-    const head = lines[0]!.split(',');
-    const row = lines[2]!.split(','); // 2026-10-19
-    expect(row.slice(0, 5)).toEqual(['2026-10-19', '3', '5', '1000', '0.26']);
-    expect(row[head.indexOf('壺')]).toBe('2');
-    expect(row[head.indexOf('宝箱')]).toBe('1');
-    expect(row[head.indexOf('劇場')]).toBe('2');
-    expect(row[head.indexOf('工房')]).toBe('1');
-    expect(row[head.indexOf('酒場')]).toBe('0');
-  });
-  it('quotes cells that need it', () => {
-    const q = toCsv([{ label: 'a,"b"', finds: 0, points: 0, scrollPx: 0, genreFinds: {}, containers: {} }], []);
-    expect(q).toContain('"a,""b"""');
   });
 });
 

@@ -30,7 +30,7 @@
   "content_scripts": [
     {
       "js": [
-        "assets/index.ts-loader-B1auS6xY.js"
+        "assets/index.ts-loader-DyFvbzk-.js"
       ],
       "matches": [
         "<all_urls>"
@@ -56,11 +56,11 @@
         "assets/depth-PpLhwrWV.js",
         "assets/job-CfC_7-oG.js",
         "assets/storage-D0Sp_HqT.js",
-        "assets/wall-BV-QGcpw.js",
-        "assets/overlay-DKA-1nnF.js",
+        "assets/sprites-C-_tsd3W.js",
+        "assets/overlay-Y1Wdr9LJ.js",
         "assets/game-Bug-glvX.js",
         "assets/rules-Bkn3f-d_.js",
-        "assets/src-content-index.ts-BJLsyRCa.js"
+        "assets/src-content-index.ts-BOhQrHnl.js"
       ],
       "use_dynamic_url": false
     }

@@ -1,6 +1,3 @@
-import { pxToMeters } from './depth.ts';
-import type { GenreDef } from './catalog.ts';
-import { CONTAINER_KINDS, CONTAINER_LABELS } from './containers.ts';
 import type { DayStats } from './state.ts';
 import { isoWeekId } from './week.ts';
 
@@ -52,31 +49,4 @@ export function weeklyRows(days: Record<string, DayStats>): StatsRow[] {
     }
   }
   return [...byWeek.values()].sort((a, b) => a.label.localeCompare(b.label));
-}
-
-const csvCell = (v: string | number): string => {
-  const s = String(v);
-  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-};
-
-/** CSV本文（先頭の BOM は付けない。Excel向けの BOM は書き出し側で足す）。部屋ごとの発見数も列にする。 */
-export function toCsv(rows: StatsRow[], genres: GenreDef[]): string {
-  const header = ['期間', '発見数', '獲得ポイント', '総スクロール距離(px)', '実距離(m)', ...CONTAINER_KINDS.map((k) => CONTAINER_LABELS[k]), ...genres.map((g) => g.name)];
-  const lines = [header.map(csvCell).join(',')];
-  for (const r of rows) {
-    lines.push(
-      [
-        r.label,
-        r.finds,
-        r.points,
-        Math.round(r.scrollPx),
-        pxToMeters(r.scrollPx).toFixed(2),
-        ...CONTAINER_KINDS.map((k) => r.containers[k] ?? 0),
-        ...genres.map((g) => r.genreFinds[g.id] ?? 0),
-      ]
-        .map(csvCell)
-        .join(','),
-    );
-  }
-  return lines.join('\r\n') + '\r\n';
 }

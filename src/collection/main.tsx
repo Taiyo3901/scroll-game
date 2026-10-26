@@ -4,13 +4,13 @@ import { CONTAINER_KINDS, CONTAINER_LABELS } from '../core/containers';
 import { pxToMeters } from '../core/depth';
 import { JOB_MIN_FINDS, diagnoseJob, sumGenreFinds } from '../core/job';
 import { SHOWCASE_MAX, toggleShowcase } from '../core/profile';
-import { dailyRows, toCsv, weeklyRows, type StatsRow } from '../core/stats';
+import { dailyRows, weeklyRows, type StatsRow } from '../core/stats';
 import type { DayStats } from '../core/state';
 import { isoWeekId } from '../core/week';
 import { CATALOG } from '../data';
 import { saveProfile } from '../storage';
 import { mount } from '../ui/mount';
-import { GenreBar, ItemCard, JobBadge, Torch } from '../ui/parts';
+import { GenreBar, ItemCard, JobBadge } from '../ui/parts';
 import { useView } from '../ui/store';
 
 type Tab = 'book' | 'showcase' | 'stats';
@@ -190,16 +190,6 @@ function StatsTable({ rows }: { rows: StatsRow[] }) {
   );
 }
 
-function download(name: string, csv: string): void {
-  // Excel で文字化けしないよう BOM を付ける
-  const url = URL.createObjectURL(new Blob(['﻿', csv], { type: 'text/csv;charset=utf-8' }));
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = name;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
 function Stats({ days }: { days: Record<string, DayStats> }) {
   const [unit, setUnit] = useState<'day' | 'week'>('day');
   const rows = useMemo(() => (unit === 'day' ? dailyRows(days) : weeklyRows(days)), [days, unit]);
@@ -219,15 +209,6 @@ function Stats({ days }: { days: Record<string, DayStats> }) {
             週ごと
           </button>
         </div>
-        <button
-          type="button"
-          disabled={rows.length === 0}
-          onClick={() =>
-            download(`scroll-game-${unit === 'day' ? 'daily' : 'weekly'}.csv`, toCsv(rows, CATALOG.genres))
-          }
-        >
-          CSVで書き出す
-        </button>
       </div>
       {rows.length === 0 ? (
         <p className="muted">記録なし</p>
@@ -265,11 +246,7 @@ function Collection() {
   return (
     <main className="page">
       <header>
-        <h1>
-          <Torch />
-          図鑑
-          <Torch />
-        </h1>
+        <h1>図鑑</h1>
         <div role="tablist" className="tabs">
           {tabs.map(([id, label]) => (
             <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)}>
