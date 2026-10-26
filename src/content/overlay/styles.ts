@@ -45,7 +45,7 @@ export const OVERLAY_CSS = `
 
 .rock {
   position: absolute; left: 0; right: 0; top: 0; height: calc(100% + ${WALL_TILE_PX}px);
-  background-image: var(--wall); background-repeat: repeat-y; background-size: 100% ${WALL_TILE_PX}px;
+  background-image: var(--wall); background-repeat: repeat; background-size: ${CONFIG.OVERLAY_WIDTH_PX}px ${WALL_TILE_PX}px;
   image-rendering: pixelated; will-change: transform;
 }
 /* 深さの変化（50mごとに6種類、繰り返す）の色を、壁の明るさを残したまま、はっきり重ねる */
@@ -53,7 +53,7 @@ export const OVERLAY_CSS = `
 /* その変化ごとの飾り（壁と同じ速さで流れる） */
 .deco {
   position: absolute; left: 0; right: 0; top: 0; height: calc(100% + ${WALL_TILE_PX}px);
-  background-image: var(--deco); background-repeat: repeat-y; background-size: 100% ${WALL_TILE_PX}px;
+  background-image: var(--deco); background-repeat: repeat; background-size: ${CONFIG.OVERLAY_WIDTH_PX}px ${WALL_TILE_PX}px;
   image-rendering: pixelated; will-change: transform;
 }
 /* 時間帯の演出（朝の光・夕焼け・夜の暗さ）。色と濃さは、--time で決める */
@@ -113,8 +113,8 @@ export const OVERLAY_CSS = `
 }
 .band.left .ruler { right: auto; left: -${TRACK_OUTER_PX}px; }
 .band.left .mark { right: auto; left: -3px; }
-.stage { position: absolute; left: 0; top: 0; width: var(--stage-w, ${STAGE_WIDTH_PX}px); height: 79px; transition: transform .25s steps(5, end); will-change: transform; }
-.scene { position: relative; width: var(--stage-w, ${STAGE_WIDTH_PX}px); height: 61px; }
+.stage { position: absolute; left: 0; top: 0; width: ${STAGE_WIDTH_PX}px; height: 79px; transition: transform .25s steps(5, end); will-change: transform; }
+.scene { position: relative; width: ${STAGE_WIDTH_PX}px; height: 61px; }
 .marks { position: absolute; inset: 0; }
 .mark { position: absolute; right: -3px; top: 0; width: 18px; height: 18px; opacity: .85; }
 .mark img { width: 18px; height: 18px; image-rendering: pixelated; display: block; filter: drop-shadow(1px 1px 0 #2a1f1a); }
@@ -144,7 +144,7 @@ export const OVERLAY_CSS = `
 
 /* ゲージ: 目盛りは6つで固定。進むと、目盛りが1つずつ点く（伸び縮みしない） */
 /* 枠の左右に、影（3px）の分の余白を残して、帯の縁や目盛りにかぶらないようにする */
-.gauge { width: calc(var(--stage-w, ${STAGE_WIDTH_PX}px) - 10px); height: 9px; padding: 2px; margin: 6px 0 0 5px; }
+.gauge { width: ${STAGE_WIDTH_PX - 10}px; height: 9px; padding: 2px; margin: 6px 0 0 5px; }
 .gauge-inner { display: flex; gap: 1px; width: 100%; height: 100%; background: #1b1410; }
 .gauge-inner .cell { flex: 1 1 0; background: #3a2c20; }
 .gauge-inner .cell.on { background: #f6d44c; box-shadow: inset 0 -1px 0 #b8870f; }

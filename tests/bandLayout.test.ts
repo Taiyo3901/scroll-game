@@ -7,7 +7,6 @@ import {
   TRACK_OUTER_PX,
   defaultBandLayout,
   normalizeBandLayout,
-  stageWidth,
   trackInset,
 } from '../src/core/bandLayout';
 
@@ -29,16 +28,12 @@ describe('normalizeBandLayout', () => {
   });
 });
 
-describe('stageWidth', () => {
-  it('is the minimum on thin bands and grows with the band, so the gauge grows too', () => {
-    expect(stageWidth(BAND_WIDTH_MIN)).toBe(STAGE_WIDTH_PX);
-    expect(stageWidth(56)).toBe(STAGE_WIDTH_PX);
+describe('stage size', () => {
+  it('the stage and gauge keep their normal size however wide the band is; the extra width goes to the left margin', () => {
     expect(trackInset(BAND_WIDTH_MIN)).toBeGreaterThanOrEqual(12);
-    expect(stageWidth(96)).toBe(78);
-    for (let w = BAND_WIDTH_MIN; w < BAND_WIDTH_MAX; w += 4) expect(stageWidth(w + 4)).toBeGreaterThanOrEqual(stageWidth(w));
-  });
-  it('the stage always fits in the band', () => {
-    for (let w = BAND_WIDTH_MIN; w <= BAND_WIDTH_MAX; w += 4) expect(trackInset(w) + stageWidth(w) + TRACK_OUTER_PX).toBe(w);
+    expect(trackInset(56)).toBe(12);
+    expect(trackInset(96)).toBe(52);
+    for (let w = BAND_WIDTH_MIN; w <= BAND_WIDTH_MAX; w += 4) expect(trackInset(w) + STAGE_WIDTH_PX + TRACK_OUTER_PX).toBe(w);
   });
 });
 
