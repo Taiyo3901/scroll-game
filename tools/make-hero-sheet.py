@@ -1,5 +1,5 @@
 """
-全職業の探索者の見た目を、1枚の画像（hero-sheet.png）にして、ルートに置く。
+全職業の探索者の見た目を、1枚の画像（docs/images/hero-sheet.png）にする。
 `python tools/make-hero-sheet.py`（Pillow が必要。日本語のフォントは、Windows の Meiryo を使う）
 行ごとに職業、列は 立ち / 歩く(4コマ) / 物色(2コマ) / 喜ぶ。
 """
@@ -66,7 +66,7 @@ for r, job in enumerate(jobs):
     d.text((10, y0 + SIZE * K // 2 - 9), names.get(job, job), fill=(245, 215, 120), font=font(17))
     for c, (_, (pose, i)) in enumerate(cols):
         sheet.paste(render(unrle(data['heroes'][job][pose][i])), (LABEL_W + c * SIZE * K, y0))
-out = os.path.join(root, 'hero-sheet.png')
+out = os.path.join(root, 'docs', 'images', 'hero-sheet.png')
 sheet.save(out)
 print(len(jobs), 'jobs ->', out)
 
@@ -83,6 +83,6 @@ for n, job in enumerate(combo_names):
     grid.paste(render(unrle(data['heroes'][job]['idle'][0])), (cx + 8, cy))
     w = gd.textlength(job, font=gf)
     gd.text((cx + (CELL_W - w) / 2, cy + SIZE * K + 4), job, fill=(245, 215, 120), font=gf)
-out2 = os.path.join(root, 'hero-sheet-combos.png')
+out2 = os.path.join(root, 'docs', 'images', 'hero-sheet-combos.png')
 grid.save(out2)
 print(len(combo_names), 'combination jobs ->', out2)

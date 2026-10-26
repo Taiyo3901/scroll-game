@@ -122,10 +122,10 @@ function Popup() {
       </section>
 
       <nav className="links">
-        <button type="button" onClick={() => openPage('collection.html')}>
+        <button type="button" onClick={() => openPage('pages/collection.html')}>
           図鑑を開く
         </button>
-        <button type="button" onClick={() => openPage('friends.html')}>
+        <button type="button" onClick={() => openPage('pages/friends.html')}>
           ランキング
         </button>
       </nav>
@@ -146,13 +146,13 @@ function Popup() {
 
       <div className="popup-foot">
         {account ? (
-          <button type="button" className="avatar-btn" onClick={() => openPage('friends.html')} aria-label={`${account.nickname}（ランキング・フレンドを開く）`} title={account.nickname}>
+          <button type="button" className="avatar-btn" onClick={() => openPage('pages/friends.html')} aria-label={`${account.nickname}（ランキング・フレンドを開く）`} title={account.nickname}>
             <Avatar url={account.photoUrl} name={account.nickname} size={30} />
           </button>
         ) : (
           <span />
         )}
-        <button type="button" className="gear" onClick={() => openPage('settings.html')} aria-label="設定を開く" title="設定">
+        <button type="button" className="gear" onClick={() => openPage('pages/settings.html')} aria-label="設定を開く" title="設定">
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="3" />
             <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />

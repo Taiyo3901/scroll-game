@@ -79,7 +79,7 @@
 2. そうでなく、1つの部屋が4割以上なら、その部屋の職業になります。
 3. どちらでもなければ「勇者」です。
 
-「未踏の地」は、組み合わせに入りません。組み合わせの職業は、45通りあります。見た目は、部屋の並び順で先の職業の「髪・帽子・持ち物」と、後の職業の「服・背中・盾」を合わせたものです（一覧は `hero-sheet-combos.png`）。
+「未踏の地」は、組み合わせに入りません。組み合わせの職業は、45通りあります。見た目は、部屋の並び順で先の職業の「髪・帽子・持ち物」と、後の職業の「服・背中・盾」を合わせたものです（一覧は `docs/images/hero-sheet-combos.png`）。
 
 <details>
 <summary>組み合わせの職業の一覧（45通り）</summary>
@@ -216,7 +216,7 @@ OS の「視覚効果を減らす」設定がオンのときは、色を混ぜ�
 1. **Firebase プロジェクトを作る:** [Firebase コンソール](https://console.firebase.google.com/) →「プロジェクトを追加」。料金プランは Spark（無料）のままにします。
 2. **Authentication:** 左の「構築」→「Authentication」→「始める」→「ログイン方法」で **Google** を有効にし、プロジェクトのサポートメールを選んで保存します。
 3. **Firestore:** 「構築」→「Firestore Database」→「データベースを作成」。ロケーションは `asia-northeast1`（東京）、モードは**本番環境モード**にします。
-4. **セキュリティルール:** Firestore の「ルール」タブに、このリポジトリの `firestore.rules` の中身をすべて貼って「公開」します（Firebase CLI なら `firebase deploy --only firestore:rules`）。
+4. **セキュリティルール:** Firestore の「ルール」タブに、このリポジトリの `firestore/firestore.rules` の中身をすべて貼って「公開」します（Firebase CLI なら `firebase deploy --only firestore:rules`）。
 5. **ウェブアプリを登録:** 「プロジェクトの設定」→「全般」→「マイアプリ」で「ウェブ」（`</>`）を追加し、表示される設定値を控えます。
 6. **OAuth クライアント ID:** [Google Cloud コンソール](https://console.cloud.google.com/)で、同じプロジェクトを選びます。
    - 「API とサービス」→「OAuth 同意画面」: ユーザーの種類は「外部」。アプリ名・サポートメール・連絡先メールを入れます。スコープは `openid` `email` `profile` だけです。公開ステータスが「テスト」のままだと、**登録したテストユーザーしかログインできません**。誰でも使えるようにするには「本番環境に公開」にします（このスコープなら審査は不要です）。
@@ -268,13 +268,14 @@ npm run dev        # 開発用（変更が自動で反映される。dist/ を�
 | `src/core/` | 判定や計算の純粋な関数（深さ、抽選、入れ物、職業、ランキング、サイトの種類の判定など）。すべてテストがあります |
 | `src/content/` | ページに挿入されるコード（スクロールの計測、物色の進行、右端の帯） |
 | `src/background/` | service worker（状態の更新、15 分ごとの同期） |
-| `src/popup/` `src/collection/` `src/friends/` `src/settings/` | 拡張機能の画面（React） |
+| `pages/` | 拡張機能の画面の入り口（`popup.html` `collection.html` `friends.html` `settings.html`） |
+| `src/popup/` `src/collection/` `src/friends/` `src/settings/` | 拡張機能の画面の中身（React） |
 | `src/firebase/` | ログイン、フレンド、同期（Firebase） |
 | `src/data/` | 階層（`areas.json`）、部屋とサイトの辞書（`genres.json`）、発見品（`items.json`）、ドット絵（`sprites.json`、`actors.json`） |
 | `src/config.ts` | 調整できる数値のすべて（下記） |
 | `tools/` | 生成ツール |
-| `firestore.rules` | セキュリティルール（自動生成） |
-| `docs/` | 仕様・企画・設計のメモ |
+| `firestore/` | セキュリティルール（`firestore.rules`。自動生成）とインデックスの設定。`firebase.json` から参照 |
+| `docs/` | 仕様・企画・設計のメモと、職業の見た目の一覧（`docs/images/`） |
 
 ### 調整できる値（`src/config.ts`）
 
@@ -295,12 +296,12 @@ npm run dev        # 開発用（変更が自動で反映される。dist/ を�
 ```
 python tools/make-sprites.py   # 発見品のアイコン → src/data/sprites.json
 python tools/make-actors.py    # 入れ物と職業別の探索者 → src/data/actors.json
-python tools/make-hero-sheet.py # 全職業の見た目の一覧 → hero-sheet.png と hero-sheet-combos.png（Pillow が必要）
+python tools/make-hero-sheet.py # 全職業の見た目の一覧 → docs/images/hero-sheet.png と hero-sheet-combos.png（Pillow が必要）
 python tools/make-icons.py     # 拡張機能のアイコン → src/icons/（Pillow が必要）
-node tools/make-rules.mjs      # セキュリティルール → firestore.rules
+node tools/make-rules.mjs      # セキュリティルール → firestore/firestore.rules
 ```
 
-- 発見品や部屋を増やしたら、`firestore.rules` を作り直して、Firebase にも貼り直してください（`tests/rules.test.ts` が、最新かどうかを確かめます）。
+- 発見品や部屋を増やしたら、`firestore/firestore.rules` を作り直して、Firebase にも貼り直してください（`tests/rules.test.ts` が、最新かどうかを確かめます）。
 - ドット絵の共通の部品と、色の表は `tools/art.py` です。
 
 ### 保存データの確認

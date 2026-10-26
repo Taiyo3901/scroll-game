@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { CATALOG } from '../src/data';
 
-const rules = readFileSync('firestore.rules', 'utf8');
+const rules = readFileSync('firestore/firestore.rules', 'utf8');
 
 describe('firestore.rules', () => {
   it('is up to date with the data and settings (run: node tools/make-rules.mjs)', () => {

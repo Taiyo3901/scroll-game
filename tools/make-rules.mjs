@@ -1,9 +1,9 @@
 /**
- * Firestore のセキュリティルール（firestore.rules）を作る。
+ * Firestore のセキュリティルール（firestore/firestore.rules）を作る。
  * 発見品・部屋のID、1日の発見数の上限、ポイント、フレンドコードの文字、フレンドの上限は、
  * アプリ側と食い違わないよう、データと設定ファイルから読み取って埋め込む。
  *
- *   node tools/make-rules.mjs            firestore.rules を作り直す
+ *   node tools/make-rules.mjs            firestore/firestore.rules を作り直す
  *   node tools/make-rules.mjs --stdout   標準出力に出す（テスト用）
  */
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -193,6 +193,6 @@ ${perKey('g', genreIds, MAX_GENRE_FINDS)};
 if (process.argv.includes('--stdout')) {
   process.stdout.write(buildRules());
 } else {
-  writeFileSync(join(root, 'firestore.rules'), buildRules(), 'utf8');
-  console.log('firestore.rules を作りました（発見品', itemIds.length, '・部屋', genreIds.length, '）');
+  writeFileSync(join(root, 'firestore', 'firestore.rules'), buildRules(), 'utf8');
+  console.log('firestore/firestore.rules を作りました（発見品', itemIds.length, '・部屋', genreIds.length, '）');
 }

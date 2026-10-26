@@ -46,7 +46,7 @@ export default defineManifest(({ mode }) => {
     ],
     action: {
       default_title: GAME_NAME,
-      default_popup: 'popup.html',
+      default_popup: 'pages/popup.html',
       default_icon: {
         16: 'src/icons/icon16.png',
         32: 'src/icons/icon32.png',
