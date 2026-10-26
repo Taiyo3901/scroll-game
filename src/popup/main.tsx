@@ -7,8 +7,8 @@ import { localDayKey } from '../core/week';
 import { CATALOG } from '../data';
 import { saveSettings } from '../storage';
 import { mount } from '../ui/mount';
-import { ItemIcon, JobBadge, RARITY_LABEL } from '../ui/parts';
-import { useView } from '../ui/store';
+import { Avatar, ItemIcon, JobBadge, RARITY_LABEL } from '../ui/parts';
+import { useAccount, useView } from '../ui/store';
 
 function openPage(file: string): void {
   void chrome.tabs.create({ url: chrome.runtime.getURL(file) });
@@ -65,7 +65,8 @@ function SiteToggle({ disabled }: { disabled: string[] }) {
 }
 
 function Popup() {
-  const { loaded, state, settings, profile, now } = useView();
+  const { loaded, state, settings, now } = useView();
+  const account = useAccount();
   const [effects, setEffects] = useState(true);
   useEffect(() => setEffects(settings.effects), [settings.effects]);
   if (!loaded) return <main className="popup-main" aria-busy="true" />;
@@ -82,12 +83,6 @@ function Popup() {
 
   return (
     <main className="popup-main">
-      {!profile.onboarded && (
-        <button type="button" className="notice" onClick={() => openPage('welcome.html')}>
-          はじめに：何を記録するかを確認する
-        </button>
-      )}
-
       <section className="status" style={{ borderLeftColor: area.color }}>
         <div className="depth">
           {state.depthM.toFixed(1)}
@@ -150,6 +145,13 @@ function Popup() {
       </label>
 
       <div className="popup-foot">
+        {account ? (
+          <button type="button" className="avatar-btn" onClick={() => openPage('friends.html')} aria-label={`${account.nickname}（ランキング・フレンドを開く）`} title={account.nickname}>
+            <Avatar url={account.photoUrl} name={account.nickname} size={30} />
+          </button>
+        ) : (
+          <span />
+        )}
         <button type="button" className="gear" onClick={() => openPage('settings.html')} aria-label="設定を開く" title="設定">
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="3" />

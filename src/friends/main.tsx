@@ -25,9 +25,9 @@ import { STEP_LABELS, stepOf } from '../firebase/step';
 import { syncNow } from '../firebase/sync';
 import { loadSync, saveSettings } from '../storage';
 import { mount } from '../ui/mount';
-import { Torch } from '../ui/parts';
+import { Avatar, Torch } from '../ui/parts';
 import { Ranking } from './Ranking';
-import { useView } from '../ui/store';
+import { useAccount, useView } from '../ui/store';
 
 type Stage = 'loading' | 'unconfigured' | 'signed-out' | 'no-profile' | 'ready' | 'error';
 type Tab = 'ranking' | 'friends';
@@ -50,6 +50,7 @@ function messageOf(e: unknown): string {
 function FriendsPage() {
   // ランキングとフレンドは、デモモード中でも、いつも本番のデータで動く
   const { loaded, state, profile, settings } = useView({ real: true });
+  const account = useAccount();
   const [stage, setStage] = useState<Stage>('loading');
   const [overview, setOverview] = useState<FriendsOverview | null>(null);
   const [busy, setBusy] = useState(false);
@@ -169,9 +170,6 @@ function FriendsPage() {
         <section className="card">
           <h2>ログイン</h2>
           <p>Googleアカウントでログインします。他の人に見えるのはニックネームだけで、名前・メールアドレス・アイコンは見えません。</p>
-          <p className="small muted">
-            Firebase に送るのは、ニックネーム、フレンドコード、フレンドの一覧、今週のポイントと発見数、そして公開設定で許したもの（図鑑・飾り棚・部屋の分布）だけです。見たページのURL・サイト名・本文は送りません。
-          </p>
           <button type="button" className="primary" disabled={busy} onClick={() => void login()}>
             Googleでログイン
           </button>
@@ -209,6 +207,10 @@ function FriendsPage() {
 
       {stage === 'ready' && overview && (
         <>
+          <p className="me-line">
+            <Avatar url={account?.photoUrl} name={overview.me.nickname} size={30} />
+            <span>{overview.me.nickname}</span>
+          </p>
           <div role="tablist" className="tabs sub-tabs">
             {(
               [

@@ -30,7 +30,7 @@ import {
 import { parseFriendDoc, type FriendData } from '../core/friendData';
 import { buildPublicFields, limitsFor } from '../core/publicProfile';
 import { CATALOG } from '../data';
-import { loadProfile, loadSettings, loadState, saveAccount, type AccountCache } from '../storage';
+import { loadProfile, loadSettings, loadState, safePhotoUrl, saveAccount, type AccountCache } from '../storage';
 import { db } from './app';
 import { currentUser, signOutAll } from './auth';
 import { inStep } from './step';
@@ -98,7 +98,8 @@ export async function getMyProfile(): Promise<MyProfile | null> {
     friendCode: String(d.friendCode ?? ''),
     friendUids: strings(d.friendUids),
   };
-  const cache: AccountCache = { uid, nickname: me.nickname, friendCode: me.friendCode };
+  const photoUrl = safePhotoUrl((await currentUser())?.photoURL);
+  const cache: AccountCache = { uid, nickname: me.nickname, friendCode: me.friendCode, ...(photoUrl ? { photoUrl } : {}) };
   await saveAccount(cache);
   return me;
 }
@@ -131,7 +132,8 @@ export async function createMyProfile(nicknameInput: string): Promise<MyProfile>
           updatedAt: serverTimestamp(),
         });
       });
-      await saveAccount({ uid, nickname: check.nickname, friendCode: code });
+      const photoUrl = safePhotoUrl((await currentUser())?.photoURL);
+      await saveAccount({ uid, nickname: check.nickname, friendCode: code, ...(photoUrl ? { photoUrl } : {}) });
       return { uid, nickname: check.nickname, friendCode: code, friendUids: [] };
     } catch (e) {
       if (e instanceof FriendError && e.code === 'code-collision') continue;

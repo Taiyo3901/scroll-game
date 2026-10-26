@@ -82,7 +82,13 @@ export interface AccountCache {
   uid: string;
   nickname: string;
   friendCode: string;
+  /** ログイン中の Google アカウントのアイコン。自分の画面に出すだけで、Firestore には送らない */
+  photoUrl?: string;
 }
+
+/** アイコンの URL は、https のものだけ使う */
+export const safePhotoUrl = (raw: unknown): string | undefined =>
+  typeof raw === 'string' && raw.length <= 2048 && /^https:\/\//.test(raw) ? raw : undefined;
 
 /** 最後に Firestore へ送った内容（同じなら送り直さない）。 */
 export interface SyncRecord {
@@ -135,7 +141,7 @@ export async function loadAccount(): Promise<AccountCache | null> {
   const got = await chrome.storage.local.get(ACCOUNT_KEY);
   const a = got[ACCOUNT_KEY] as Partial<AccountCache> | undefined;
   return a && typeof a.uid === 'string' && typeof a.nickname === 'string' && typeof a.friendCode === 'string'
-    ? { uid: a.uid, nickname: a.nickname, friendCode: a.friendCode }
+    ? { uid: a.uid, nickname: a.nickname, friendCode: a.friendCode, ...(safePhotoUrl(a.photoUrl) ? { photoUrl: safePhotoUrl(a.photoUrl) } : {}) }
     : null;
 }
 

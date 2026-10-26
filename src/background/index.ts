@@ -44,11 +44,6 @@ chrome.runtime.onMessage.addListener((message: unknown) => {
 // 以前のバージョンが付けた、アイコンの深さの表示（バッジ）を消す。service worker が起動するたびに消すので、更新のあとも残らない
 void chrome.action.setBadgeText({ text: '' });
 
-// 初めてインストールしたとき、何を記録するかの説明画面を開く
-chrome.runtime.onInstalled.addListener((details) => {
-  if (details.reason === 'install') void chrome.tabs.create({ url: chrome.runtime.getURL('welcome.html') });
-});
-
 // フレンド機能: ログインしているときだけ、変化があれば15分ごとに集計結果を送る（未ログイン・未設定なら何もしない）
 const SYNC_ALARM = 'sync';
 

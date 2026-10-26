@@ -1,8 +1,23 @@
+import { useState } from 'react';
 import type { GenreDef, ItemDef } from '../core/catalog';
 import type { Job } from '../core/job';
 import { TORCH_SVG } from '../content/overlay/wall';
 import { masteryOf } from '../core/mastery';
 import { spriteUri } from '../core/sprites';
+
+/** ログイン中のアカウントのアイコン。画像が読めないときは、ニックネームの頭文字を出す。 */
+export function Avatar(props: { url?: string; name: string; size?: number }) {
+  const size = props.size ?? 32;
+  const [failed, setFailed] = useState(false);
+  const style = { width: size, height: size, fontSize: Math.round(size * 0.5) };
+  return props.url && !failed ? (
+    <img className="avatar-img" style={style} src={props.url} alt="" referrerPolicy="no-referrer" onError={() => setFailed(true)} />
+  ) : (
+    <span className="avatar-img avatar-fallback" style={style} aria-hidden="true">
+      {[...props.name][0] ?? '?'}
+    </span>
+  );
+}
 
 /** 見出しの横に置く松明（飾り）。SVG は自前の固定文字列。 */
 export function Torch() {

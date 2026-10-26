@@ -2,15 +2,18 @@ import { useEffect, useState } from 'react';
 import { defaultProfile, type Profile } from '../core/profile';
 import { initialGameState, type GameState } from '../core/state';
 import {
+  ACCOUNT_KEY,
   DEMO_PROFILE_KEY,
   DEMO_STATE_KEY,
   PROFILE_KEY,
   SETTINGS_KEY,
   STATE_KEY,
   defaultSettings,
+  loadAccount,
   loadProfile,
   loadSettings,
   loadState,
+  type AccountCache,
   type Settings,
 } from '../storage';
 
@@ -64,4 +67,23 @@ export function useView(opts: { real?: boolean } = {}): View {
   }, [real]);
 
   return v;
+}
+
+/** ログイン中のアカウントの控え（ログインしていなければ null）。変わったら更新する。 */
+export function useAccount(): AccountCache | null {
+  const [account, setAccount] = useState<AccountCache | null>(null);
+  useEffect(() => {
+    let alive = true;
+    const load = () => void loadAccount().then((a) => alive && setAccount(a));
+    load();
+    const onChanged = (changes: Record<string, unknown>) => {
+      if (ACCOUNT_KEY in changes) load();
+    };
+    chrome.storage.onChanged.addListener(onChanged);
+    return () => {
+      alive = false;
+      chrome.storage.onChanged.removeListener(onChanged);
+    };
+  }, []);
+  return account;
 }
