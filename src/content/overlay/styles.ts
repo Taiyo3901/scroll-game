@@ -41,6 +41,8 @@ export const OVERLAY_CSS = `
   background: #2b1f16;
 }
 .band.hidden { display: none; }
+/* 設定画面の見本: 画面ではなく、枠の中に置く */
+.band.preview { position: absolute; }
 .band.left { right: auto; left: 0; clip-path: ${stairEdge(true)}; }
 
 .rock {

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createOverlay, type Overlay } from '../content/overlay/overlay';
 import { configFor } from '../config';
 import {
   BAND_TOP_MAX,
@@ -8,12 +9,54 @@ import {
   BAND_WIDTH_STEP,
   defaultBandLayout,
 } from '../core/bandLayout';
-import { TIME_MODES, TIME_MODE_LABELS, normalizeTimeMode } from '../core/timeband';
+import { TIME_MODES, TIME_MODE_LABELS, normalizeTimeMode, timeLookFor, type TimeMode } from '../core/timeband';
 import { MAX_DISABLED_HOSTS, addDisabledHost, removeDisabledHost } from '../core/hosts';
 import { clearDemoData, saveSettings } from '../storage';
 import { mount } from '../ui/mount';
 import { Torch } from '../ui/parts';
 import { useView } from '../ui/store';
+
+/**
+ * 帯の見本。設定を変えると、実際の帯と同じ見た目が、すぐ変わる（位置・幅・上の余白・時間帯の演出・ページの余白）。
+ * ページの代わりに、ダミーの文章を置く。ゲームの記録は使わない。
+ */
+function BandPreview(props: { side: 'right' | 'left'; width: number; top: number; time: TimeMode; reserve: boolean; enabled: boolean }) {
+  const holder = useRef<HTMLDivElement>(null);
+  const overlay = useRef<Overlay | null>(null);
+
+  useEffect(() => {
+    if (!holder.current) return;
+    const o = createOverlay({ container: holder.current });
+    overlay.current = o;
+    o.setDepth(130, false);
+    o.update({ roomId: 'other', phase: 'search', gauge: 0.5, container: 'chest', skin: 'cave', job: '勇者', progress: 0.3, demo: false });
+    return () => {
+      o.destroy();
+      overlay.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    overlay.current?.setLayout({ side: props.side, width: props.width, top: props.top });
+    overlay.current?.setTime(timeLookFor(props.time, new Date()));
+  }, [props.side, props.width, props.top, props.time]);
+
+  // ページの余白: 余白を取る設定のときは、文章が、帯のぶん、反対側に寄る
+  const pad = props.enabled && props.reserve ? props.width : 0;
+  return (
+    <div className="bp" aria-label="帯の見本">
+      <div className="bp-view">
+        <div className="bp-page" style={props.side === 'left' ? { paddingLeft: pad } : { paddingRight: pad }}>
+          {Array.from({ length: 11 }, (_, i) => (
+            <div key={i} className="bp-line" style={{ width: `${[92, 78, 96, 60, 88, 70, 94, 82, 55, 90, 66][i]}%` }} />
+          ))}
+        </div>
+        <div ref={holder} className="bp-band" style={{ visibility: props.enabled ? 'visible' : 'hidden' }} />
+      </div>
+      <div className="bp-scroll" />
+    </div>
+  );
+}
 
 function Settings() {
   const { loaded, settings, state, demo } = useView();
@@ -125,7 +168,15 @@ function Settings() {
 
       <section className="card">
         <h2>帯の位置と大きさ</h2>
-        <p className="small muted">開いているページは、再読み込みしなくても、すぐに変わります。</p>
+        <p className="small muted">開いているページは、再読み込みしなくても、すぐに変わります。下の見本で、変わり方を確かめられます（見本の文章と帯は、ダミーです）。</p>
+        <BandPreview
+          side={settings.bandSide}
+          width={settings.bandWidth}
+          top={settings.bandTop}
+          time={settings.bandTime}
+          reserve={settings.reserveSpace}
+          enabled={settings.effects}
+        />
         <div className="form-grid">
           <label>
             <span className="small muted">帯を置く側</span>

@@ -187,6 +187,14 @@ th { font-size: 12px; color: var(--muted); font-weight: 600; }
 input[type="text"], input:not([type]) {
   font: inherit; color: var(--fg); background: #1a130e; border: 0; box-shadow: var(--px-small); padding: 7px 10px; margin: 3px; min-width: 0; width: 100%;
 }
+/* 設定画面の、帯の見本（ページの見立て） */
+.bp { display: flex; height: 250px; margin: 8px 0 12px; background: #f4f1ea; box-shadow: var(--px-small); overflow: hidden; }
+.bp-view { position: relative; flex: 1; min-width: 0; }
+.bp-page { height: 100%; padding: 14px 12px; display: flex; flex-direction: column; gap: 14px; box-sizing: content-box; }
+.bp-line { height: 8px; background: #c9c3b6; flex: none; }
+.bp-line:first-child { height: 14px; background: #a9a395; }
+.bp-band { position: absolute; inset: 0; pointer-events: none; }
+.bp-scroll { flex: none; width: 12px; background: #e3dfd6; border-left: 1px solid #cfc9bb; }
 .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 8px 0; }
 .form-grid label { display: flex; flex-direction: column; gap: 4px; }
 .form-grid select { font: inherit; color: var(--fg); background: #1a130e; border: 0; box-shadow: var(--px-small); padding: 7px 10px; }

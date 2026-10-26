@@ -84,7 +84,9 @@ export function openedContainerUri(kind: ContainerKind, skin: string): string | 
  * 画面右端の帯。Shadow DOM で包み、pointer-events: none でページの操作を邪魔しない。
  * 値が変わったところだけを書き換える。
  */
-export function createOverlay(): Overlay {
+export function createOverlay(opts: { container?: HTMLElement } = {}): Overlay {
+  /** 設定画面の見本: 画面ではなく、渡された枠の中に、置く（枠は position: relative にしておく） */
+  const preview = opts.container !== undefined;
   const host = document.createElement('div');
   const root = host.attachShadow({ mode: 'closed' });
   const style = document.createElement('style');
@@ -133,7 +135,13 @@ export function createOverlay(): Overlay {
   }
   band.append(track, col);
   root.append(style, band);
-  document.documentElement.append(host);
+  if (opts.container) {
+    host.style.cssText = 'position:absolute;inset:0;pointer-events:none;overflow:hidden';
+    band.classList.add('preview');
+    opts.container.append(host);
+  } else {
+    document.documentElement.append(host);
+  }
 
   const cache: Record<string, string> = {};
   const set = (key: string, value: string, apply: () => void) => {
@@ -237,7 +245,7 @@ export function createOverlay(): Overlay {
       set('layout', `${l.side}|${l.width}|${l.top}`, () => {
         band.classList.toggle('left', l.side === 'left');
         band.style.setProperty('--w', `${l.width}px`);
-        band.style.setProperty('--top', `${l.top}vh`);
+        band.style.setProperty('--top', `${l.top}${preview ? '%' : 'vh'}`);
         band.style.setProperty('--inset', `${trackInset(l.width)}px`);
       });
     },
