@@ -2,7 +2,7 @@ import { findItem } from '../core/catalog';
 import { pxToDepth } from '../core/depth';
 import { classifyHost } from '../core/genre';
 import { isHostDisabled, isHostQuery, type HostReply } from '../core/hosts';
-import { rulesFor } from '../rules';
+import { RULES } from '../rules';
 import { diagnoseJob, sumGenreFinds } from '../core/job';
 import { spriteUri } from '../core/sprites';
 import { CATALOG } from '../data';
@@ -63,8 +63,8 @@ function main(): void {
    * スクロールした分が、すぐ帯に出るようにする。
    */
   const liveDepth = (): number => {
-    const { state, settings } = getView();
-    const extra = pxToDepth(tracker.snapshot().unconfirmedPx, rulesFor(settings.demoMode).depthMultiplier);
+    const { state } = getView();
+    const extra = pxToDepth(tracker.snapshot().unconfirmedPx, RULES.depthMultiplier);
     return state.depthM + extra;
   };
 
@@ -104,7 +104,6 @@ function main(): void {
         skin: m.skin,
         job: currentJob(),
         progress: t.progress,
-        demo: getView().settings.demoMode,
       });
     }
   };

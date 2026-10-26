@@ -234,7 +234,7 @@ function Stats({ days }: { days: Record<string, DayStats> }) {
 }
 
 function Collection() {
-  const { loaded, state, profile, now, demo } = useView();
+  const { loaded, state, profile, now } = useView();
   const [tab, setTab] = useState<Tab>('book');
   if (!loaded) return <main aria-busy="true" />;
 
@@ -264,7 +264,7 @@ function Collection() {
         <Showcase
           collection={state.collection}
           showcase={profile.showcase}
-          onToggle={(id) => void saveProfile(toggleShowcase(profile, id, state.collection), demo)}
+          onToggle={(id) => void saveProfile(toggleShowcase(profile, id, state.collection))}
         />
       )}
       {tab === 'stats' && <Stats days={state.days} />}

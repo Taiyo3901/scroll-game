@@ -71,8 +71,5 @@ export const secretOf = (c: Catalog, areaId: string): ItemDef | undefined =>
 export const findItem = (c: Catalog, itemId: string): ItemDef | undefined =>
   c.items.find((i) => i.id === itemId);
 
-export const findGenre = (c: Catalog, genreId: string): GenreDef | undefined =>
-  c.genres.find((g) => g.id === genreId);
-
 export const isGenreId = (c: Catalog, genreId: unknown): genreId is string =>
   typeof genreId === 'string' && c.genres.some((g) => g.id === genreId);

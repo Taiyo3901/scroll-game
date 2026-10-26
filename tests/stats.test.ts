@@ -48,11 +48,10 @@ describe('showcase', () => {
   });
   it('normalize drops unowned, duplicate and excess ids and bad input', () => {
     const p = normalizeProfile(
-      { showcase: ['old-pouch', 'old-pouch', 'zzz', 'cracked-urn', 'mystery-key', 'guardian-ring'], onboarded: true },
+      { showcase: ['old-pouch', 'old-pouch', 'zzz', 'cracked-urn', 'mystery-key', 'guardian-ring'] },
       col,
     );
     expect(p.showcase).toEqual(['old-pouch', 'cracked-urn', 'mystery-key']);
-    expect(p.onboarded).toBe(true);
     expect(normalizeProfile('x', col)).toEqual(defaultProfile());
   });
 });

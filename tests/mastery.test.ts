@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MASTERY_TIERS, masteryOf, nextMastery } from '../src/core/mastery';
+import { MASTERY_TIERS, masteryOf } from '../src/core/mastery';
 
 describe('masteryOf', () => {
   it('rises with the number of finds', () => {
@@ -23,13 +23,5 @@ describe('masteryOf', () => {
   it('treats bad values as none', () => {
     expect(masteryOf(Number.NaN).level).toBe(0);
     expect(masteryOf(-5).level).toBe(0);
-  });
-});
-
-describe('nextMastery', () => {
-  it('says how many more finds are needed', () => {
-    expect(nextMastery(1)).toMatchObject({ remaining: 2, tier: { level: 1 } });
-    expect(nextMastery(3)).toMatchObject({ remaining: 7, tier: { level: 2 } });
-    expect(nextMastery(100)).toBeNull();
   });
 });

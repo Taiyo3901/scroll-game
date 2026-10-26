@@ -22,8 +22,6 @@ export interface OverlayView {
   job: string;
   /** ページ（スクロールしている枠）の中での位置 0〜1。帯の中の探索者の高さになる */
   progress: number;
-  /** デモモード（帯の上に「DEMO」を出す） */
-  demo: boolean;
 }
 
 export interface Overlay {
@@ -94,8 +92,6 @@ export function createOverlay(opts: { container?: HTMLElement } = {}): Overlay {
 
   const band = el('div', 'band');
   const depth = el('div', 'depth panel');
-  const demoTag = el('div', 'demo-tag');
-  demoTag.textContent = 'DEMO';
   const track = el('div', 'track');
   const ruler = el('div', 'ruler');
   const marks = el('div', 'marks');
@@ -115,7 +111,7 @@ export function createOverlay(opts: { container?: HTMLElement } = {}): Overlay {
   stage.append(scene, gauge);
   track.append(ruler, marks, stage);
   const col = el('div', 'col');
-  col.append(demoTag, depth);
+  col.append(depth);
   const rock = el('div', 'rock');
   const decoA = el('div', 'deco');
   const decoB = el('div', 'deco');
@@ -191,7 +187,6 @@ export function createOverlay(opts: { container?: HTMLElement } = {}): Overlay {
 
   return {
     update(v) {
-      set('demo', String(v.demo), () => demoTag.classList.toggle('on', v.demo));
       set('room', v.roomId, () => band.style.setProperty('--wall', wallUri(v.roomId)));
 
       // 探索者は、ページの読み進み具合に合わせて、帯を上から下へ進む

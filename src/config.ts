@@ -46,26 +46,7 @@ const BASE = {
   OVERLAY_WIDTH_PX: 56,
 };
 
-/**
- * デモモードで上書きする値（発表で、短い時間に見せるため）。
- * 深度は20倍の速さで進み、物色は2秒、宝箱とミミックが出やすい。
- * デモ中のデータは、本番のデータとは別の場所に保存し、ランキングにも送らない。
- */
-const DEMO_OVERRIDES: Partial<typeof BASE> = {
-  DEPTH_MULTIPLIER: 2000,
-  FIND_START_DELAY_SEC: 1,
-  FIND_DURATION_SEC: 2,
-  MAX_FINDS_PER_DAY: 9999,
-  CONTAINER_WEIGHTS: { pot: 25, box: 30, chest: 45 },
-  MIMIC_IN_CHEST: 0.3,
-};
-
 export type Config = typeof BASE;
 
-/** 設定値。demo が true ならデモ用の値で上書きする（実行中に切り替えられる）。 */
-export function configFor(demo: boolean): Config {
-  return demo ? { ...BASE, ...DEMO_OVERRIDES } : BASE;
-}
-
-/** 本番の設定値 */
-export const CONFIG: Config = configFor(false);
+/** 設定値 */
+export const CONFIG: Config = BASE;

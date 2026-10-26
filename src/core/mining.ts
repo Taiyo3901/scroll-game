@@ -8,13 +8,6 @@ export const CONDITION_KEYS = [
 
 export type ConditionKey = (typeof CONDITION_KEYS)[number];
 
-export const CONDITION_LABELS: Record<ConditionKey, string> = {
-  stopped: 'スクロール停止',
-  visible: '表示中',
-  underDailyCap: '今日の上限内',
-  oncePerStop: '今回はまだ未発見',
-};
-
 export interface MiningInput {
   /** 最後のスクロール（向きや原因を問わない）からの経過ms。一度もなければ Infinity */
   msSinceLastScroll: number;

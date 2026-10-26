@@ -1,0 +1,1 @@
+import{t as e}from"./config-DzQ5uOHf.js";var t={depthMultiplier:e.DEPTH_MULTIPLIER,maxFindsPerDay:e.MAX_FINDS_PER_DAY,minFindIntervalMs:e.FIND_DURATION_SEC*500,rarityPoints:e.RARITY_POINTS,containers:{weights:e.CONTAINER_WEIGHTS,rarityMult:e.CONTAINER_RARITY_MULT,mimicInChest:e.MIMIC_IN_CHEST}};export{t};

@@ -100,14 +100,11 @@ export const OVERLAY_CSS = `
 }
 .band.left .col { padding: 12px 13px 0 3px; }
 .panel { background: #1b1410; box-shadow: 0 0 0 2px #2a1f1a, 0 0 0 3px #7a6040; }
-.demo-tag { display: none; font-size: 9px; letter-spacing: .1em; padding: 1px 4px; margin-bottom: 4px; background: #b3261e; color: #fff; box-shadow: 0 0 0 2px #2a1f1a; }
-.demo-tag.on { display: block; }
 .depth { font-size: 10px; letter-spacing: -0.05em; padding: 2px 2px; white-space: nowrap; }
 
 /* 帯の長さ = ページの長さ。探索者は、読み進めるほど上から下へ降りていく */
 .track { position: absolute; left: var(--inset, ${trackInset(CONFIG.OVERLAY_WIDTH_PX)}px); right: ${TRACK_OUTER_PX}px; top: 46px; bottom: 24px; }
 .band.left .track { left: ${TRACK_OUTER_PX}px; right: var(--inset, ${trackInset(CONFIG.OVERLAY_WIDTH_PX)}px); }
-.band:has(.demo-tag.on) .track { top: 66px; }
 /* 10% ごとの目盛り（スクロールバーのすぐ内側） */
 .ruler {
   position: absolute; right: -6px; top: 0; bottom: 0; width: 3px;

@@ -7,10 +7,9 @@ export interface Profile {
   /** 飾り棚に飾る発見品ID（最大 SHOWCASE_MAX 個、重複なし） */
   showcase: string[];
   /** 初回の説明画面を確認した */
-  onboarded: boolean;
 }
 
-export const defaultProfile = (): Profile => ({ version: 1, showcase: [], onboarded: false });
+export const defaultProfile = (): Profile => ({ version: 1, showcase: [] });
 
 /** 保存データを読み込むときの整形。壊れた値や、図鑑にない品は取り除く。 */
 export function normalizeProfile(raw: unknown, collection: Record<string, number>): Profile {
@@ -24,7 +23,7 @@ export function normalizeProfile(raw: unknown, collection: Record<string, number
       if (showcase.length >= SHOWCASE_MAX) break;
     }
   }
-  return { ...base, showcase, onboarded: r.onboarded === true };
+  return { ...base, showcase };
 }
 
 /** 飾り棚への飾る/外すの切り替え。図鑑にない品、上限超えは変えない。 */

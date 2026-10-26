@@ -12,12 +12,6 @@ export const SETTINGS_KEY = 'settings';
 export const PROFILE_KEY = 'profile';
 export const ACCOUNT_KEY = 'account';
 export const SYNC_KEY = 'sync';
-/** デモモードのデータは、本番のデータとは別のキーに保存する（本番のデータとランキングに混ざらないように） */
-export const DEMO_STATE_KEY = 'demoState';
-export const DEMO_PROFILE_KEY = 'demoProfile';
-
-export const stateKeyFor = (demo: boolean): string => (demo ? DEMO_STATE_KEY : STATE_KEY);
-export const profileKeyFor = (demo: boolean): string => (demo ? DEMO_PROFILE_KEY : PROFILE_KEY);
 
 export interface Settings {
   /** 画面右端の演出 */
@@ -36,8 +30,6 @@ export interface Settings {
   share: ShareSettings;
   /** ゲームを動かさないサイト（自分で登録したホスト名。この端末にだけ保存し、外には送らない） */
   disabledHosts: string[];
-  /** 発表用のデモモード。データは本番とは別に保存し、ランキングには送らない */
-  demoMode: boolean;
 }
 
 export const defaultSettings = (): Settings => ({
@@ -49,7 +41,6 @@ export const defaultSettings = (): Settings => ({
   reserveSpace: true,
   share: defaultShare(),
   disabledHosts: [],
-  demoMode: false,
 });
 
 const GENRE_IDS = CATALOG.genres.map((g) => g.id);
@@ -61,16 +52,14 @@ export function normalizeSettings(raw: unknown): Settings {
   const r = raw as Partial<Settings>;
   const layout = normalizeBandLayout({ side: r.bandSide, width: r.bandWidth, top: r.bandTop });
   return {
-    ...base,
-    ...r,
+    effects: typeof r.effects === 'boolean' ? r.effects : base.effects,
+    reserveSpace: typeof r.reserveSpace === 'boolean' ? r.reserveSpace : base.reserveSpace,
     bandSide: layout.side,
     bandWidth: layout.width,
     bandTop: layout.top,
     bandTime: normalizeTimeMode(r.bandTime),
     share: normalizeShare(r.share, GENRE_IDS),
     disabledHosts: normalizeDisabledHosts(r.disabledHosts),
-    // デモモードは、設定画面から外した。以前にオンにしていても、オフに戻す
-    demoMode: false,
   };
 }
 
@@ -92,15 +81,14 @@ export interface SyncRecord {
   at: number;
 }
 
-/** ゲームの状態。demo が true ならデモ用（既定は本番）。 */
-export async function loadState(demo = false): Promise<GameState> {
-  const key = stateKeyFor(demo);
-  const got = await chrome.storage.local.get(key);
-  return normalizeState(got[key]);
+/** ゲームの状態 */
+export async function loadState(): Promise<GameState> {
+  const got = await chrome.storage.local.get(STATE_KEY);
+  return normalizeState(got[STATE_KEY]);
 }
 
-export async function saveState(state: GameState, demo = false): Promise<void> {
-  await chrome.storage.local.set({ [stateKeyFor(demo)]: state });
+export async function saveState(state: GameState): Promise<void> {
+  await chrome.storage.local.set({ [STATE_KEY]: state });
 }
 
 export async function loadSettings(): Promise<Settings> {
@@ -112,24 +100,14 @@ export async function saveSettings(patch: Partial<Settings>): Promise<void> {
   await chrome.storage.local.set({ [SETTINGS_KEY]: { ...(await loadSettings()), ...patch } });
 }
 
-/** 飾り棚と初回確認。飾り棚は図鑑にある発見品だけに整える。demo が true ならデモ用（既定は本番）。 */
-export async function loadProfile(demo = false): Promise<Profile> {
-  const pk = profileKeyFor(demo);
-  const sk = stateKeyFor(demo);
-  const got = await chrome.storage.local.get([pk, sk]);
-  const profile = normalizeProfile(got[pk], normalizeState(got[sk]).collection);
-  // 初回の説明画面の確認は、デモでも本番と同じ（確認済みなら、デモで再び出さない）
-  if (demo) profile.onboarded = (await loadProfile(false)).onboarded;
-  return profile;
+/** 飾り棚。図鑑にある発見品だけに整える。 */
+export async function loadProfile(): Promise<Profile> {
+  const got = await chrome.storage.local.get([PROFILE_KEY, STATE_KEY]);
+  return normalizeProfile(got[PROFILE_KEY], normalizeState(got[STATE_KEY]).collection);
 }
 
-export async function saveProfile(profile: Profile, demo = false): Promise<void> {
-  await chrome.storage.local.set({ [profileKeyFor(demo)]: profile });
-}
-
-/** デモのデータ（状態と飾り棚）を消す。本番のデータには触れない。 */
-export async function clearDemoData(): Promise<void> {
-  await chrome.storage.local.remove([DEMO_STATE_KEY, DEMO_PROFILE_KEY]);
+export async function saveProfile(profile: Profile): Promise<void> {
+  await chrome.storage.local.set({ [PROFILE_KEY]: profile });
 }
 
 export async function loadAccount(): Promise<AccountCache | null> {

@@ -5,27 +5,24 @@ import { localDayKey } from '../core/week';
 import { CATALOG } from '../data';
 import { isContentMessage } from '../messages';
 import { syncNow } from '../firebase/sync';
-import { rulesFor } from '../rules';
-import { loadSettings, loadState, saveState } from '../storage';
+import { RULES } from '../rules';
+import { loadState, saveState } from '../storage';
 
 // ゲーム状態の正は chrome.storage.local。service worker はいつ止まってもよいように、
 // メモリには何も持たず、更新のたびに「読む → 純粋関数で計算 → 書く」を行う。
 
-const envFor = (demo: boolean): Env => ({ rules: rulesFor(demo), catalog: CATALOG, rng: Math.random });
+const ENV: Env = { rules: RULES, catalog: CATALOG, rng: Math.random };
 
 // 同時に届いた更新が互いの書き込みを上書きしないよう、直列に処理する
 let queue: Promise<void> = Promise.resolve();
 
-/**
- * 状態を更新する。デモモードのときは、デモ用の状態とデモ用の規則（速い進み）で更新し、本番のデータには触れない。
- */
+/** 状態を更新する。 */
 function update(f: (s: GameState, now: number, day: string, env: Env) => GameState): Promise<void> {
   queue = queue
     .then(async () => {
       const now = Date.now();
-      const { demoMode } = await loadSettings();
-      const next = f(await loadState(demoMode), now, localDayKey(new Date(now)), envFor(demoMode));
-      await saveState(next, demoMode);
+      const next = f(await loadState(), now, localDayKey(new Date(now)), ENV);
+      await saveState(next);
     })
     .catch((e) => console.error('update failed', e));
   return queue;
@@ -59,6 +56,7 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 });
 
 function boot(): void {
+  void chrome.storage.local.remove(['demoState', 'demoProfile']); // 以前のバージョンが保存した、デモ用のデータを消す
   void update((s) => s); // 古い保存データを新しい形にそろえる
   void ensureSyncAlarm();
 }

@@ -1,13 +1,13 @@
-import { configFor } from '../config';
+import { CONFIG } from '../config';
 import { areaAt } from '../core/catalog';
 import { rollContainer, type ContainerKind } from '../core/containers';
 import { classifyHost } from '../core/genre';
 import { findsToday } from '../core/game';
-import { evaluateConditions, type ConditionResult } from '../core/mining';
+import { evaluateConditions } from '../core/mining';
 import { localDayKey } from '../core/week';
 import { CATALOG } from '../data';
 import type { FindCompleteMessage } from '../messages';
-import { rulesFor } from '../rules';
+import { RULES } from '../rules';
 import { sendToBackground } from './send';
 import { getView } from './store';
 import type { TrackerSnapshot } from './tracker';
@@ -29,7 +29,6 @@ export interface MinerSnapshot {
   container: ContainerKind | null;
   /** 入れ物の見た目を決める名前: 箱は部屋のID、それ以外は階層のID */
   skin: string;
-  checks: ConditionResult;
 }
 
 const STALE_STEP_MS = 2000;
@@ -53,7 +52,6 @@ export class Miner {
     gauge: 0,
     container: null,
     skin: '',
-    checks: { stopped: false, visible: false, underDailyCap: true, oncePerStop: true },
   };
 
   get snapshot(): MinerSnapshot {
@@ -62,8 +60,8 @@ export class Miner {
 
   /** 軽い間隔(約250ms)で呼ぶ。ページが見えていないときは呼ばなくてよい。 */
   step(now: number, snap: TrackerSnapshot): MinerSnapshot {
-    const { state, settings } = getView();
-    const cfg = configFor(settings.demoMode);
+    const { state } = getView();
+    const cfg = CONFIG;
     // タイマーが止まっていた（タブが隠れていた等）あとに、古い開始時刻で満タン扱いにしない
     if (now - this.lastStepAt > STALE_STEP_MS) this.startedAt = null;
     this.lastStepAt = now;
@@ -101,7 +99,7 @@ export class Miner {
     } else if (this.startedAt === null) {
       // 物色の開始: 入れ物を決める
       this.startedAt = now;
-      this.container = rollContainer(rulesFor(settings.demoMode).containers, Math.random);
+      this.container = rollContainer(RULES.containers, Math.random);
       const genreId = classifyHost(location.hostname, CATALOG.genres);
       this.skin =
         this.container === 'box' ? genreId : areaAt(CATALOG.areas, state.depthM).id;
@@ -131,7 +129,6 @@ export class Miner {
       gauge,
       container: phase === 'search' || phase === 'done' ? this.container : null,
       skin: this.skin,
-      checks: result.checks,
     };
     return this.last;
   }

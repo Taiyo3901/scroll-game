@@ -8,17 +8,8 @@ export const BAND_STEP_M = 100;
 export const BAND_STEP_CALM_M = 200;
 export const BAND_VARIANTS = 6;
 
-/** 背景の変化の名前（0 から順に）。 */
-export const BAND_VARIANT_NAMES = ['土と根', '水と苔', '坑道の梁', '水晶', '溶岩', '深い闇'] as const;
-
 /** 変化ごとに、壁に重ねる色。はっきり違う色合いにする。 */
 export const BAND_TINTS = ['#c8843a', '#2f7fe0', '#d2a62a', '#22c4d6', '#ee4a1f', '#8a45e0'] as const;
-
-/** 深さ（m）から、背景の変化の番号（0〜BAND_VARIANTS-1）を求める。負の値・不正な値は 0。 */
-export function bandVariant(depthM: number, stepM: number = BAND_STEP_M): number {
-  if (!Number.isFinite(depthM) || depthM <= 0 || !Number.isFinite(stepM) || stepM <= 0) return 0;
-  return Math.floor(depthM / stepM) % BAND_VARIANTS;
-}
 
 export interface BandPosition {
   /** いまの変化の番号 */

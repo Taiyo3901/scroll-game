@@ -219,8 +219,6 @@ input[type="text"], input:not([type]) {
 button.danger { background: #6a1f17; color: #fff; }
 .warn { color: var(--accent); }
 
-/* デモモード */
-.demo-banner { background: #7a1612; color: #fff; text-align: left; width: calc(100% - 6px); }
 
 /* ランキング */
 .sub-tabs { margin: 6px 6px 10px; }

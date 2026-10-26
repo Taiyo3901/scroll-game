@@ -289,7 +289,7 @@ npm run dev        # 開発用（変更が自動で反映される。dist/ を�
 | `SYNC_INTERVAL_MIN` | 同期の間隔 | 15分 |
 | `OVERLAY_WIDTH_PX` | 帯の幅 | 56px |
 
-発表用のデモモード（`DEMO_OVERRIDES`）の値も、同じファイルにありますが、設定画面からは外してあり、常にオフです。背景が移り変わる間隔は、`src/core/band.ts` の `BAND_STEP_M`（100m）です。
+背景が移り変わる間隔は、`src/core/band.ts` の `BAND_STEP_M`（100m）です。
 
 ### 生成ツール
 

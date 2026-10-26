@@ -26,10 +26,3 @@ export function masteryOf(count: number): MasteryTier {
   for (const t of MASTERY_TIERS) if (n >= t.need && t.level > 0) tier = t;
   return tier;
 }
-
-/** 次の段階（最後なら null）と、あと何個か。 */
-export function nextMastery(count: number): { tier: MasteryTier; remaining: number } | null {
-  const cur = masteryOf(count);
-  const next = MASTERY_TIERS.find((t) => t.level === cur.level + 1);
-  return next ? { tier: next, remaining: Math.max(0, next.need - (Number.isFinite(count) ? count : 0)) } : null;
-}

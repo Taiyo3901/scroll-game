@@ -28,7 +28,7 @@ function BandPreview(props: { side: 'right' | 'left'; width: number; top: number
     const o = createOverlay({ container: holder.current });
     overlay.current = o;
     o.setDepth(130, false);
-    o.update({ roomId: 'other', phase: 'search', gauge: 0.5, container: 'chest', skin: 'cave', job: '勇者', progress: 0.3, demo: false });
+    o.update({ roomId: 'other', phase: 'search', gauge: 0.5, container: 'chest', skin: 'cave', job: '勇者', progress: 0.3 });
     return () => {
       o.destroy();
       overlay.current = null;
