@@ -62,7 +62,6 @@ function FriendDetail({ friend, row }: { friend: FriendData; row: RankRow }) {
           <h2>
             図鑑 <small>公開分で {found} 種類</small>
           </h2>
-          <p className="small muted">見せない設定の部屋の発見品は、含まれていません。</p>
 
           <h2>飾り棚</h2>
           {shelf.length === 0 ? (
@@ -160,7 +159,7 @@ export function Ranking(props: { overview: FriendsOverview; state: GameState; bu
             ))}
           </tbody>
         </table>
-        {overview.friends.length === 0 && <p className="muted">まだフレンドがいません。「フレンド・アカウント」で、フレンドコードを交換して申請してみましょう。</p>}
+        {overview.friends.length === 0 && <p className="muted">まだフレンドがいません。</p>}
         <button type="button" disabled={busy} onClick={onReload}>
           最新の状態に更新
         </button>

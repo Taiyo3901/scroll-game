@@ -9,7 +9,7 @@ import {
   defaultBandLayout,
 } from '../core/bandLayout';
 import { TIME_MODES, TIME_MODE_LABELS, normalizeTimeMode, timeLookFor, type TimeMode } from '../core/timeband';
-import { MAX_DISABLED_HOSTS, addDisabledHost, removeDisabledHost } from '../core/hosts';
+import { addDisabledHost, removeDisabledHost } from '../core/hosts';
 import { saveSettings } from '../storage';
 import { mount } from '../ui/mount';
 import { Torch } from '../ui/parts';
@@ -89,9 +89,6 @@ function Settings() {
 
       <section className="card">
         <h2>ゲームを動かさないサイト</h2>
-        <p className="small muted">
-          登録したサイトでは、帯を出さず、スクロールも数えず、品も見つかりません。サブドメインも含みます（<code>example.com</code> を登録すると、<code>www.example.com</code> も無効です）。この一覧は、この端末にだけ保存し、外には送りません。
-        </p>
         <form
           className="form-row"
           onSubmit={(e) => {
@@ -100,7 +97,7 @@ function Settings() {
           }}
         >
           <label>
-            <span className="small muted">サイト名（URL を貼ってもよい）</span>
+            <span className="small muted">サイト名</span>
             <input value={host} onChange={(e) => setHost(e.target.value)} placeholder="example.com" autoComplete="off" spellCheck={false} />
           </label>
           <button type="submit" className="primary" disabled={host.trim() === ''}>
@@ -123,14 +120,10 @@ function Settings() {
             ))}
           </ul>
         )}
-        <p className="small muted">
-          {settings.disabledHosts.length} / {MAX_DISABLED_HOSTS} 件。ポップアップの「このサイトでは、ゲームを動かさない」からも、登録できます。
-        </p>
       </section>
 
       <section className="card">
         <h2>帯の位置と大きさ</h2>
-        <p className="small muted">開いているページは、再読み込みしなくても、すぐに変わります。下の見本で、変わり方を確かめられます（見本の文章と帯は、ダミーです）。</p>
         <BandPreview
           side={settings.bandSide}
           width={settings.bandWidth}
@@ -182,7 +175,6 @@ function Settings() {
             </select>
           </label>
         </div>
-        <p className="small muted">「時刻に合わせる」は、この端末の時計を使います（朝 5〜10 時、昼 10〜16 時、夕方 16〜19 時、夜 19〜5 時。間はなめらかにつなぎます）。時刻は、保存も送信もしません。</p>
         <button
           type="button"
           disabled={!settings.effects}

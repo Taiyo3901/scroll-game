@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { CONFIG } from '../config';
 import { diagnoseJob } from '../core/job';
 import { NICKNAME_MAX, formatFriendCode, type FriendRequest } from '../core/friends';
-import { buildPublicFields, weeklyTotals, type ShareSettings } from '../core/publicProfile';
+import { buildPublicFields, type ShareSettings } from '../core/publicProfile';
 import { isoWeekId } from '../core/week';
 import { CATALOG } from '../data';
 import {
@@ -123,7 +122,6 @@ function FriendsPage() {
     });
 
   const week = isoWeekId(new Date());
-  const mine = weeklyTotals(state.days, new Date());
   const preview = useMemo(
     () => buildPublicFields({ state, profile, share: settings.share, catalog: CATALOG, now: new Date(), limits: LIMITS }),
     [state, profile, settings.share],
@@ -273,7 +271,7 @@ function FriendsPage() {
             </label>
             {settings.share.enabled && (
               <fieldset className="hide-list">
-                <legend className="small muted">見せない部屋（その部屋の発見品は「？」で伏せ、分布にも含めません）</legend>
+                <legend className="small muted">見せない部屋</legend>
                 {CATALOG.genres.map((g) => (
                   <label key={g.id} className="toggle">
                     <input
@@ -384,7 +382,7 @@ function FriendsPage() {
             </h2>
             {overview.waiting > 0 && <p className="small muted">相手側の反映を待っている人が{overview.waiting}人います。少ししてから、開き直してください。</p>}
             {overview.friends.length === 0 ? (
-              <p className="muted">まだフレンドがいません。フレンドコードを交換して、申請してみましょう。</p>
+              <p className="muted">まだフレンドがいません。</p>
             ) : (
               <ul className="people">
                 {overview.friends.map((f) => (
@@ -418,17 +416,11 @@ function FriendsPage() {
                 ))}
               </ul>
             )}
-            <p className="small muted">
-              ランキングと、フレンドの図鑑を見る画面は、次のバージョンで追加します。あなたの今週: {mine.points}点・{mine.finds}個。
-            </p>
           </section>
 
           <section className="card">
             <h2>同期とアカウント</h2>
-            <p className="small muted">
-              集計結果は、変化があるとき、{CONFIG.SYNC_INTERVAL_MIN}分ごとに自動で送ります。
-              {lastSync ? `最後に送ったのは ${new Date(lastSync).toLocaleString('ja-JP')} です。` : 'まだ送っていません。'}
-            </p>
+            <p className="small muted">{lastSync ? `最後に送った時刻: ${new Date(lastSync).toLocaleString('ja-JP')}` : 'まだ送っていません。'}</p>
             <button
               type="button"
               disabled={busy}

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { addDisabledHost, isHostDisabled, removeDisabledHost, type HostReply } from '../core/hosts';
-import { CONFIG } from '../config';
 import { areaAt, findItem } from '../core/catalog';
 import { findsToday } from '../core/game';
 import { JOB_MIN_FINDS, diagnoseJob, sumGenreFinds } from '../core/job';
@@ -36,7 +35,7 @@ function SiteToggle({ disabled }: { disabled: string[] }) {
   }, []);
 
   if (host === undefined) return null;
-  if (host === null) return <p className="muted small">このページでは、ゲームは動きません。</p>;
+  if (host === null) return null;
 
   const entry = disabled.find((d) => host === d || host.endsWith(`.${d}`));
   const off = isHostDisabled(host, disabled);
@@ -111,7 +110,7 @@ function Popup() {
           最近の発見 <small>今日 {findsToday(state, localDayKey(new Date(now)))}個</small>
         </h2>
         {recent.length === 0 ? (
-          <p className="muted">ページをスクロールして止めると、品が見つかります。</p>
+          <p className="muted">まだありません。</p>
         ) : (
           <ul className="bag">
             {recent.map((item, i) => (
@@ -123,7 +122,7 @@ function Popup() {
           </ul>
         )}
         <p className="muted small">
-          図鑑 {found} / {CATALOG.items.length}　（1日の上限 {CONFIG.MAX_FINDS_PER_DAY}個）
+          図鑑 {found} / {CATALOG.items.length}
         </p>
       </section>
 

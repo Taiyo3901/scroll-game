@@ -111,7 +111,6 @@ function Showcase(props: { collection: Record<string, number>; showcase: string[
   const slots = Array.from({ length: SHOWCASE_MAX }, (_, i) => props.showcase[i]);
   return (
     <>
-      <p className="lead">お気に入りの品を{SHOWCASE_MAX}つまで飾れます。</p>
       <div className="shelf" aria-label="飾り棚">
         {slots.map((id, i) => {
           const item = id ? findItem(CATALOG, id) : undefined;
@@ -127,9 +126,7 @@ function Showcase(props: { collection: Record<string, number>; showcase: string[
         })}
       </div>
       <h2>飾る品を選ぶ</h2>
-      {owned.length === 0 ? (
-        <p className="muted">品を見つけると、ここから選べます。</p>
-      ) : (
+      {owned.length > 0 && (
         <div className="item-grid">
           {owned.map((i) => (
             <ItemCard
@@ -144,9 +141,6 @@ function Showcase(props: { collection: Record<string, number>; showcase: string[
           ))}
         </div>
       )}
-      <p className="muted small">
-        もう一度押すと外せます。{props.showcase.length >= SHOWCASE_MAX && 'いっぱいのときは、先に1つ外してください。'}
-      </p>
     </>
   );
 }
@@ -236,7 +230,7 @@ function Stats({ days }: { days: Record<string, DayStats> }) {
         </button>
       </div>
       {rows.length === 0 ? (
-        <p className="muted">まだ記録がありません。スクロールして止めると、ここに推移が出ます。</p>
+        <p className="muted">まだ記録がありません。</p>
       ) : (
         <>
           <div className="charts">
@@ -254,9 +248,6 @@ function Stats({ days }: { days: Record<string, DayStats> }) {
           <StatsTable rows={rows} />
         </>
       )}
-      <p className="muted small">
-        URL・ページのタイトル・本文は記録していません。ここにあるのは、回数・距離・部屋ごとの発見数だけです（CSVには部屋ごとの発見数も入ります）。
-      </p>
     </>
   );
 }

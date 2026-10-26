@@ -59,7 +59,6 @@ export function ItemCard(props: {
           </div>
         )}
         {found && !compact && <p className="item-desc">{item.description}</p>}
-        {!found && !compact && <p className="item-desc muted">まだ見つけていない品</p>}
       </div>
     </>
   );
@@ -101,7 +100,7 @@ export function JobBadge(props: { job: Job | null; genres: GenreDef[]; label: st
 /** 部屋ごとの発見数の割合を、帯グラフにする。 */
 export function GenreBar(props: { finds: Record<string, number>; genres: GenreDef[] }) {
   const total = Object.values(props.finds).reduce((a, b) => a + b, 0);
-  if (total === 0) return <p className="muted small">発見すると、ここに分布が出ます。</p>;
+  if (total === 0) return null;
   const parts = props.genres
     .map((g) => ({ g, n: props.finds[g.id] ?? 0 }))
     .filter((x) => x.n > 0)
