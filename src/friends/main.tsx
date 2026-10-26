@@ -35,12 +35,12 @@ type Tab = 'ranking' | 'friends';
 /** 失敗の理由を、利用者向けの文にする。 */
 function messageOf(e: unknown): string {
   if (e instanceof FriendError) return e.message;
-  if (e instanceof NotConfiguredError) return 'Firebase が未設定。README の手順で設定すること。';
+  if (e instanceof NotConfiguredError) return 'Firebase が未設定。docs/FRIENDS.md の手順で設定すること。';
   const code = typeof e === 'object' && e !== null && 'code' in e ? String((e as { code: unknown }).code) : '';
   if (code.includes('permission-denied')) {
     const step = stepOf(e);
     const where = step ? `（${STEP_LABELS[step]}）` : '';
-    return `操作が拒否された${where}。再ログインするか、Firestore のルールが最新か（README の手順 4）を確認すること。`;
+    return `操作が拒否された${where}。再ログインするか、Firestore のルールが最新か（docs/FRIENDS.md の手順 4）を確認すること。`;
   }
   if (code.includes('unavailable') || code.includes('network')) return '通信に失敗。ネットワークを確認して再試行すること。';
   if (e instanceof Error && /canceled|cancelled|did not approve|closed/i.test(e.message)) return 'ログインを取り消した。';
@@ -148,7 +148,7 @@ function FriendsPage() {
       {stage === 'unconfigured' && (
         <section className="card">
           <h2>フレンド機能は利用不可</h2>
-          <p>Firebase が未設定。README の「フレンド機能の準備」に従って設定し、再ビルドすること。</p>
+          <p>Firebase が未設定。docs/FRIENDS.md に従って設定し、再ビルドすること。</p>
         </section>
       )}
 
