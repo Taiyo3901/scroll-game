@@ -100,4 +100,16 @@ describe('buildRanking', () => {
     expect(Object.keys(row)).not.toContain('depthM');
     expect(Object.keys(row)).not.toContain('scrollPx');
   });
+
+  it('carries each person icon into the row', () => {
+    const rows = buildRanking(
+      { ...me, photoUrl: 'https://x.test/me.png' },
+      [friend({ uid: 'a', photoUrl: 'https://x.test/a.png' }), friend({ uid: 'b' })],
+      WEEK,
+      CATALOG,
+    );
+    expect(rows.find((r) => r.isMe)?.photoUrl).toBe('https://x.test/me.png');
+    expect(rows.find((r) => r.uid === 'a')?.photoUrl).toBe('https://x.test/a.png');
+    expect(rows.find((r) => r.uid === 'b')?.photoUrl).toBeUndefined();
+  });
 });

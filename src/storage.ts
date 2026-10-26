@@ -1,6 +1,7 @@
 import { CONFIG } from './config';
 import { defaultBandLayout, normalizeBandLayout, type BandSide } from './core/bandLayout';
 import { normalizeTimeMode, type TimeMode } from './core/timeband';
+import { safePhotoUrl } from './core/friendData';
 import { normalizeProfile, type Profile } from './core/profile';
 import { defaultShare, normalizeShare, type ShareSettings } from './core/publicProfile';
 import { normalizeDisabledHosts } from './core/hosts';
@@ -82,13 +83,11 @@ export interface AccountCache {
   uid: string;
   nickname: string;
   friendCode: string;
-  /** ログイン中の Google アカウントのアイコン。自分の画面に出すだけで、Firestore には送らない */
+  /** ログイン中の Google アカウントのアイコン（フレンドにも見える） */
   photoUrl?: string;
 }
 
-/** アイコンの URL は、https のものだけ使う */
-export const safePhotoUrl = (raw: unknown): string | undefined =>
-  typeof raw === 'string' && raw.length <= 2048 && /^https:\/\//.test(raw) ? raw : undefined;
+export { safePhotoUrl };
 
 /** 最後に Firestore へ送った内容（同じなら送り直さない）。 */
 export interface SyncRecord {

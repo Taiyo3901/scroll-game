@@ -112,6 +112,7 @@ export async function createMyProfile(nicknameInput: string): Promise<MyProfile>
 
   const [state, profile, settings] = await Promise.all([loadState(), loadProfile(), loadSettings()]);
   const fields = buildPublicFields({ state, profile, share: settings.share, catalog: CATALOG, now: new Date(), limits: LIMITS });
+  const photo = safePhotoUrl((await currentUser())?.photoURL);
 
   for (let attempt = 0; attempt < 6; attempt++) {
     const code = generateFriendCode(randomInt);
@@ -129,11 +130,11 @@ export async function createMyProfile(nicknameInput: string): Promise<MyProfile>
           ...(fields.collection ? { collection: fields.collection } : {}),
           ...(fields.showcase ? { showcase: fields.showcase } : {}),
           ...(fields.genreFinds ? { genreFinds: fields.genreFinds } : {}),
+          ...(photo ? { photoUrl: photo } : {}),
           updatedAt: serverTimestamp(),
         });
       });
-      const photoUrl = safePhotoUrl((await currentUser())?.photoURL);
-      await saveAccount({ uid, nickname: check.nickname, friendCode: code, ...(photoUrl ? { photoUrl } : {}) });
+      await saveAccount({ uid, nickname: check.nickname, friendCode: code, ...(photo ? { photoUrl: photo } : {}) });
       return { uid, nickname: check.nickname, friendCode: code, friendUids: [] };
     } catch (e) {
       if (e instanceof FriendError && e.code === 'code-collision') continue;

@@ -1,10 +1,19 @@
 import type { Catalog } from './catalog.ts';
 import type { PublicLimits, WeeklyTotals } from './publicProfile.ts';
 
+/** アイコンの URL の長さの上限（Firestore のルールと同じ） */
+export const PHOTO_URL_MAX = 512;
+
+/** アイコンの URL は、https のものだけ使う。それ以外は捨てる */
+export const safePhotoUrl = (raw: unknown): string | undefined =>
+  typeof raw === 'string' && raw.length <= PHOTO_URL_MAX && /^https:\/\/[^\s]+$/.test(raw) ? raw : undefined;
+
 /** フレンドの公開データ（Firestore から受け取ったものを、安全な形に整えたもの）。 */
 export interface FriendData {
   uid: string;
   nickname: string;
+  /** Google アカウントのアイコン（https の URL）。なければ未設定 */
+  photoUrl?: string;
   weekly: WeeklyTotals | null;
   /** 図鑑などを見せる設定になっている */
   shared: boolean;
@@ -67,6 +76,7 @@ export function parseFriendDoc(uid: string, raw: unknown, limits: PublicLimits, 
   return {
     uid,
     nickname: raw.nickname.slice(0, 64),
+    ...(safePhotoUrl(raw.photoUrl) ? { photoUrl: safePhotoUrl(raw.photoUrl) } : {}),
     weekly,
     shared: raw.shared === true,
     collection,

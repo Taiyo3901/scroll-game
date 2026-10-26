@@ -1,4 +1,5 @@
 import { deleteField, doc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { safePhotoUrl } from '../core/friendData';
 import { buildPublicFields } from '../core/publicProfile';
 import { CATALOG } from '../data';
 import { loadAccount, loadProfile, loadSettings, loadState, loadSync, saveSync } from '../storage';
@@ -29,7 +30,7 @@ export async function syncNow(force = false): Promise<SyncResult> {
 
   const [state, profile, settings, last] = await Promise.all([loadState(), loadProfile(), loadSettings(), loadSync()]);
   const fields = buildPublicFields({ state, profile, share: settings.share, catalog: CATALOG, now: new Date(), limits: LIMITS });
-  const json = JSON.stringify(fields);
+  const json = JSON.stringify({ ...fields, photoUrl: safePhotoUrl(user.photoURL) ?? null });
   if (!force && last && last.uid === user.uid && last.json === json) return 'unchanged';
 
   // 見せない設定にしたものは、Firestore 上からも消す
@@ -40,6 +41,7 @@ export async function syncNow(force = false): Promise<SyncResult> {
       collection: fields.collection ?? deleteField(),
       showcase: fields.showcase ?? deleteField(),
       genreFinds: fields.genreFinds ?? deleteField(),
+      photoUrl: safePhotoUrl(user.photoURL) ?? deleteField(),
       updatedAt: serverTimestamp(),
     }),
   );

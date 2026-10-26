@@ -29,7 +29,7 @@ function FriendDetail({ friend, row }: { friend: FriendData; row: RankRow }) {
   return (
     <section className="card" aria-label={`${friend.nickname} の詳細`}>
       <h2>
-        {friend.nickname}
+        <Avatar url={friend.photoUrl} name={friend.nickname} size={26} /> {friend.nickname}
         {friend.suspicious && (
           <span className="warn" title="上限を超える値を検出">
             ⚠
@@ -94,6 +94,7 @@ export function Ranking(props: { overview: FriendsOverview; state: GameState; ph
       {
         uid: overview.me.uid,
         nickname: overview.me.nickname,
+        photoUrl,
         weekly: weeklyTotals(state.days, new Date()),
         collectionCount: owned,
         jobName: diagnoseJob(sumGenreFinds(Object.values(state.days)), CATALOG.genres)?.name ?? null,
@@ -102,7 +103,7 @@ export function Ranking(props: { overview: FriendsOverview; state: GameState; ph
       week,
       CATALOG,
     );
-  }, [overview, state, week]);
+  }, [overview, state, week, photoUrl]);
 
   const chosen = overview.friends.find((f) => f.uid === selected);
   const chosenRow = rows.find((r) => r.uid === selected);
@@ -135,7 +136,7 @@ export function Ranking(props: { overview: FriendsOverview; state: GameState; ph
                   <RankBadge rank={r.rank} />
                 </td>
                 <td className="name">
-                  <Avatar url={r.isMe ? photoUrl : undefined} name={r.nickname} size={22} />{' '}
+                  <Avatar url={r.photoUrl} name={r.nickname} size={22} />{' '}
                   {r.isMe ? (
                     <>
                       {r.nickname} <small className="muted">（あなた）</small>

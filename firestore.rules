@@ -119,8 +119,11 @@ service cloud.firestore {
       (!('other' in g) || (g['other'] is int && g['other'] >= 0 && g['other'] <= 99999));
     }
 
+    // Google アカウントのアイコン: https の URL だけ（長さの上限つき）
+    function validPhotoUrl(u) { return u is string && u.size() <= 512 && u.matches('^https://[^ ]+$'); }
+
     function validUser(d) {
-      return d.keys().hasOnly(['nickname', 'friendCode', 'friendUids', 'weekly', 'shared', 'collection', 'showcase', 'genreFinds', 'updatedAt']) &&
+      return d.keys().hasOnly(['nickname', 'friendCode', 'friendUids', 'weekly', 'shared', 'collection', 'showcase', 'genreFinds', 'photoUrl', 'updatedAt']) &&
         d.keys().hasAll(['nickname', 'friendCode', 'friendUids', 'weekly', 'shared', 'updatedAt']) &&
         validNickname(d.nickname) &&
         d.friendCode is string && d.friendCode.matches('^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{8}$') &&
@@ -130,6 +133,7 @@ service cloud.firestore {
         (!('collection' in d) || validCollection(d.collection)) &&
         (!('showcase' in d) || (d.showcase is list && d.showcase.size() <= 3)) &&
         (!('genreFinds' in d) || validGenreFinds(d.genreFinds)) &&
+        (!('photoUrl' in d) || validPhotoUrl(d.photoUrl)) &&
         d.updatedAt is timestamp;
     }
 

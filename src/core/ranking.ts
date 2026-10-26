@@ -7,6 +7,8 @@ import type { WeeklyTotals } from './publicProfile.ts';
 export interface RankRow {
   uid: string;
   nickname: string;
+  /** Google アカウントのアイコン */
+  photoUrl?: string;
   isMe: boolean;
   /** 同じポイントは同じ順位（1位, 1位, 3位 ...） */
   rank: number;
@@ -27,6 +29,7 @@ export interface RankRow {
 export interface RankingMe {
   uid: string;
   nickname: string;
+  photoUrl?: string;
   weekly: WeeklyTotals;
   collectionCount: number;
   jobName: string | null;
@@ -42,6 +45,7 @@ export function buildRanking(me: RankingMe, friends: FriendData[], weekId: strin
     {
       uid: me.uid,
       nickname: me.nickname,
+      ...(me.photoUrl ? { photoUrl: me.photoUrl } : {}),
       isMe: true,
       points: me.weekly.weekId === weekId ? me.weekly.points : 0,
       finds: me.weekly.weekId === weekId ? me.weekly.finds : 0,
@@ -56,6 +60,7 @@ export function buildRanking(me: RankingMe, friends: FriendData[], weekId: strin
       return {
         uid: f.uid,
         nickname: f.nickname,
+        ...(f.photoUrl ? { photoUrl: f.photoUrl } : {}),
         isMe: false,
         points: thisWeek ? (f.weekly?.points ?? 0) : 0,
         finds: thisWeek ? (f.weekly?.finds ?? 0) : 0,

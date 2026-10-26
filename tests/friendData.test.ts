@@ -67,4 +67,11 @@ describe('parseFriendDoc', () => {
   it('truncates a very long nickname', () => {
     expect(parse({ nickname: 'a'.repeat(500) })!.nickname).toHaveLength(64);
   });
+  it('keeps a safe https icon url and drops anything else', () => {
+    expect(parse({ nickname: 'a', photoUrl: 'https://lh3.googleusercontent.com/a/abc=s96-c' })!.photoUrl).toBe('https://lh3.googleusercontent.com/a/abc=s96-c');
+    for (const bad of ['http://x.test/a.png', 'javascript:alert(1)', 'data:image/png;base64,AAAA', 'https://x.test/a b', 5, null, 'https://x.test/' + 'a'.repeat(600)]) {
+      expect(parse({ nickname: 'a', photoUrl: bad })!.photoUrl, String(bad)).toBeUndefined();
+    }
+    expect('photoUrl' in parse({ nickname: 'a' })!).toBe(false);
+  });
 });

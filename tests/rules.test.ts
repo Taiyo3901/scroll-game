@@ -59,6 +59,7 @@ describe('firestore.rules', () => {
       'friendUids',
       'genreFinds',
       'nickname',
+      'photoUrl',
       'shared',
       'showcase',
       'updatedAt',

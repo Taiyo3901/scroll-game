@@ -17,6 +17,7 @@ const items = JSON.parse(read('src/data/items.json'));
 const genres = JSON.parse(read('src/data/genres.json'));
 const config = read('src/config.ts');
 const friends = read('src/core/friends.ts');
+const friendData = read('src/core/friendData.ts');
 
 const pick = (src, re, what) => {
   const m = src.match(re);
@@ -29,6 +30,7 @@ const rarity = pick(config, /RARITY_POINTS:\s*\{([^}]*)\}/, 'RARITY_POINTS');
 const MAX_POINTS_PER_FIND = Math.max(...[...rarity.matchAll(/:\s*(\d+)/g)].map((m) => Number(m[1])));
 const ALPHABET = pick(friends, /FRIEND_CODE_ALPHABET\s*=\s*'([^']+)'/, 'FRIEND_CODE_ALPHABET');
 const CODE_LENGTH = Number(pick(friends, /FRIEND_CODE_LENGTH\s*=\s*(\d+)/, 'FRIEND_CODE_LENGTH'));
+const PHOTO_URL_MAX = Number(pick(friendData, /PHOTO_URL_MAX\s*=\s*(\d+)/, 'PHOTO_URL_MAX'));
 const MAX_FRIENDS = Number(pick(friends, /MAX_FRIENDS\s*=\s*(\d+)/, 'MAX_FRIENDS'));
 
 const MAX_FINDS_PER_WEEK = MAX_FINDS_PER_DAY * 7;
@@ -82,8 +84,11 @@ ${perKey('c', itemIds, MAX_ITEM_COUNT)};
 ${perKey('g', genreIds, MAX_GENRE_FINDS)};
     }
 
+    // Google アカウントのアイコン: https の URL だけ（長さの上限つき）
+    function validPhotoUrl(u) { return u is string && u.size() <= ${PHOTO_URL_MAX} && u.matches('^https://[^ ]+$'); }
+
     function validUser(d) {
-      return d.keys().hasOnly(['nickname', 'friendCode', 'friendUids', 'weekly', 'shared', 'collection', 'showcase', 'genreFinds', 'updatedAt']) &&
+      return d.keys().hasOnly(['nickname', 'friendCode', 'friendUids', 'weekly', 'shared', 'collection', 'showcase', 'genreFinds', 'photoUrl', 'updatedAt']) &&
         d.keys().hasAll(['nickname', 'friendCode', 'friendUids', 'weekly', 'shared', 'updatedAt']) &&
         validNickname(d.nickname) &&
         d.friendCode is string && d.friendCode.matches('${codeRegex}') &&
@@ -93,6 +98,7 @@ ${perKey('g', genreIds, MAX_GENRE_FINDS)};
         (!('collection' in d) || validCollection(d.collection)) &&
         (!('showcase' in d) || (d.showcase is list && d.showcase.size() <= 3)) &&
         (!('genreFinds' in d) || validGenreFinds(d.genreFinds)) &&
+        (!('photoUrl' in d) || validPhotoUrl(d.photoUrl)) &&
         d.updatedAt is timestamp;
     }
 

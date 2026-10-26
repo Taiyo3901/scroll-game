@@ -169,7 +169,7 @@ function FriendsPage() {
       {stage === 'signed-out' && (
         <section className="card">
           <h2>ログイン</h2>
-          <p>Googleアカウントでログインする。他者に公開されるのはニックネームのみ。名前・メールアドレス・アイコンは公開されない。</p>
+          <p>Googleアカウントでログインする。他者に公開されるのはニックネームとアイコン。名前・メールアドレスは公開されない。</p>
           <button type="button" className="primary" disabled={busy} onClick={() => void login()}>
             Googleでログイン
           </button>
@@ -390,7 +390,7 @@ function FriendsPage() {
                 {overview.friends.map((f) => (
                   <li key={f.uid}>
                     <span className="who">
-                      {f.nickname}
+                      <Avatar url={f.photoUrl} name={f.nickname} size={22} /> {f.nickname}
                       {f.suspicious && (
                         <span className="warn" title="上限を超える値を検出">
                           {' '}
