@@ -33,6 +33,7 @@ describe('stageWidth', () => {
   it('is the minimum on thin bands and grows with the band, so the gauge grows too', () => {
     expect(stageWidth(BAND_WIDTH_MIN)).toBe(STAGE_WIDTH_PX);
     expect(stageWidth(56)).toBe(STAGE_WIDTH_PX);
+    expect(trackInset(BAND_WIDTH_MIN)).toBeGreaterThanOrEqual(12);
     expect(stageWidth(96)).toBe(78);
     for (let w = BAND_WIDTH_MIN; w < BAND_WIDTH_MAX; w += 4) expect(stageWidth(w + 4)).toBeGreaterThanOrEqual(stageWidth(w));
   });

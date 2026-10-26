@@ -13,7 +13,8 @@ export interface BandLayout {
   top: number;
 }
 
-export const BAND_WIDTH_MIN = 48;
+/** これより細いと、探索者とゲージが、帯の左の階段状の縁（最大12px）にかかる */
+export const BAND_WIDTH_MIN = 56;
 export const BAND_WIDTH_MAX = 104;
 export const BAND_WIDTH_STEP = 4;
 export const BAND_WIDTH_DEFAULT = 56;

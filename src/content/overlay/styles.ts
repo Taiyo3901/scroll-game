@@ -143,7 +143,8 @@ export const OVERLAY_CSS = `
 .fly.r3 { filter: drop-shadow(0 0 5px rgba(255,210,70,1)); }
 
 /* ゲージ: 目盛りは6つで固定。進むと、目盛りが1つずつ点く（伸び縮みしない） */
-.gauge { width: calc(var(--stage-w, ${STAGE_WIDTH_PX}px) - 4px); height: 10px; padding: 2px; margin: 6px 0 0 2px; }
+/* 枠の左右に、影（3px）の分の余白を残して、帯の縁や目盛りにかぶらないようにする */
+.gauge { width: calc(var(--stage-w, ${STAGE_WIDTH_PX}px) - 10px); height: 9px; padding: 2px; margin: 6px 0 0 5px; }
 .gauge-inner { display: flex; gap: 1px; width: 100%; height: 100%; background: #1b1410; }
 .gauge-inner .cell { flex: 1 1 0; background: #3a2c20; }
 .gauge-inner .cell.on { background: #f6d44c; box-shadow: inset 0 -1px 0 #b8870f; }
