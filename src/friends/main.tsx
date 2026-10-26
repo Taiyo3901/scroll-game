@@ -22,6 +22,7 @@ import {
 import { NotConfiguredError } from '../firebase/app';
 import { currentUser, signInWithGoogle, signOutAll } from '../firebase/auth';
 import { isFirebaseConfigured } from '../firebase/config';
+import { STEP_LABELS, stepOf } from '../firebase/step';
 import { syncNow } from '../firebase/sync';
 import { loadSync, saveSettings } from '../storage';
 import { mount } from '../ui/mount';
@@ -37,7 +38,11 @@ function messageOf(e: unknown): string {
   if (e instanceof FriendError) return e.message;
   if (e instanceof NotConfiguredError) return 'Firebase が設定されていません。README の手順で設定してください。';
   const code = typeof e === 'object' && e !== null && 'code' in e ? String((e as { code: unknown }).code) : '';
-  if (code.includes('permission-denied')) return 'この操作は許可されていません。ログインし直すか、少し待ってからもう一度試してください。';
+  if (code.includes('permission-denied')) {
+    const step = stepOf(e);
+    const where = step ? `（${STEP_LABELS[step]}で拒否されました）` : '';
+    return `この操作は許可されていません${where}。ログインし直すか、Firestore のルールが最新か（README の手順 4）を確認してください。`;
+  }
   if (code.includes('unavailable') || code.includes('network')) return '通信できませんでした。ネットワークを確認して、もう一度試してください。';
   if (e instanceof Error && /canceled|cancelled|did not approve|closed/i.test(e.message)) return 'ログインが取り消されました。';
   return `うまくいきませんでした。もう一度試してください。${code ? `（${code}）` : ''}`;
@@ -135,7 +140,6 @@ function FriendsPage() {
           <Torch />
         </h1>
       </header>
-      <p className="lead">Googleでログインすると、フレンドと今週のポイントを比べられます。ログインしなくても、ゲームはそのまま遊べます。</p>
 
       {notice && (
         <p className={`flash ${notice.kind}`} role={notice.kind === 'error' ? 'alert' : 'status'}>
@@ -237,7 +241,6 @@ function FriendsPage() {
             >
               コピーする
             </button>
-            <p className="small muted">このコードを相手が入力すると、あなたに申請が届きます。承認するまで、フレンドにはなりません。</p>
 
             <h2>ニックネーム</h2>
             <form
@@ -259,7 +262,6 @@ function FriendsPage() {
 
           <section className="card">
             <h2>フレンドに見せる範囲</h2>
-            <p className="small muted">今週のポイントと発見数は、ランキングのために、フレンドに見えます。それ以外は、あなたが選んだものだけが見えます。</p>
             <label className="toggle">
               <input
                 type="checkbox"
@@ -329,8 +331,7 @@ function FriendsPage() {
               }}
             >
               <label>
-                <span className="small muted">相手のフレンドコード</span>
-                <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="XXXX-XXXX" autoComplete="off" spellCheck={false} />
+                <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="XXXX-XXXX" aria-label="相手のフレンドコード" autoComplete="off" spellCheck={false} />
               </label>
               <button type="submit" className="primary" disabled={busy || code.trim() === ''}>
                 申請する
@@ -397,8 +398,7 @@ function FriendsPage() {
                         </span>
                       )}
                       <small className="muted">
-                        {'　'}
-                        {f.weekly?.weekId === week ? `今週 ${f.weekly.points}点` : '今週はまだ'}
+                        {f.weekly?.weekId === week && `　今週 ${f.weekly.points}点`}
                       </small>
                     </span>
                     <span className="acts">

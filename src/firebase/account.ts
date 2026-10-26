@@ -33,6 +33,7 @@ import { CATALOG } from '../data';
 import { loadProfile, loadSettings, loadState, saveAccount, type AccountCache } from '../storage';
 import { db } from './app';
 import { currentUser, signOutAll } from './auth';
+import { inStep } from './step';
 
 /** 画面に出す、分かりやすい失敗の種類。 */
 export type FriendErrorCode =
@@ -85,7 +86,7 @@ const strings = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is
 /** 自分の公開プロフィール。まだ作っていなければ null。ローカルの控えも更新する。 */
 export async function getMyProfile(): Promise<MyProfile | null> {
   const uid = await requireUid();
-  const snap = await getDoc(doc(db(), 'users', uid));
+  const snap = await inStep('profile-read', () => getDoc(doc(db(), 'users', uid)));
   if (!snap.exists()) {
     await saveAccount(null);
     return null;
@@ -157,10 +158,9 @@ const toRequest = (id: string, d: Record<string, unknown>): FriendRequest | null
 
 async function loadRequests(uid: string): Promise<FriendRequest[]> {
   const col = collection(db(), 'friendRequests');
-  const [incoming, outgoing] = await Promise.all([
-    getDocs(query(col, where('toUid', '==', uid))),
-    getDocs(query(col, where('fromUid', '==', uid))),
-  ]);
+  const [incoming, outgoing] = await inStep('requests-read', () =>
+    Promise.all([getDocs(query(col, where('toUid', '==', uid))), getDocs(query(col, where('fromUid', '==', uid)))]),
+  );
   const out: FriendRequest[] = [];
   for (const s of [...incoming.docs, ...outgoing.docs]) {
     const r = toRequest(s.id, s.data());
@@ -220,13 +220,13 @@ export async function loadFriendsOverview(): Promise<FriendsOverview | null> {
     const added: string[] = [];
     for (const a of plan.add) {
       try {
-        await updateDoc(ref, { friendUids: arrayUnion(a) }); // ルール上、1人ずつ足す
+        await inStep('friends-update', () => updateDoc(ref, { friendUids: arrayUnion(a) })); // ルール上、1人ずつ足す
         added.push(a);
       } catch {
         // 相手が申請を取り消した直後などで、足せないことがある。この人だけ見送り、次の機会にやり直す
       }
     }
-    if (plan.remove.length > 0) await updateDoc(ref, { friendUids: arrayRemove(...plan.remove) });
+    if (plan.remove.length > 0) await inStep('friends-update', () => updateDoc(ref, { friendUids: arrayRemove(...plan.remove) }));
     friendUids = [...me.friendUids.filter((u) => !plan.remove.includes(u)), ...added];
     ({ readable, data } = await read(friendUids));
   }

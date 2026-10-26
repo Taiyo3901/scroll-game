@@ -114,8 +114,6 @@ export function Ranking(props: { overview: FriendsOverview; state: GameState; bu
         <h2>
           今週のランキング <small>{week}（月曜0時から）</small>
         </h2>
-        <p className="small muted">順位は、今週のポイントの合計で決まります。深さやスクロールの量は、関係ありません。フレンドの値は、相手の端末から、15分ごとに届きます。</p>
-
         <table className="ranking">
           <thead>
             <tr>
@@ -153,7 +151,6 @@ export function Ranking(props: { overview: FriendsOverview; state: GameState; bu
                       ⚠
                     </span>
                   )}
-                  {r.noWeek && <small className="muted">　今週はまだ</small>}
                 </td>
                 <td>{r.points}</td>
                 <td>{r.finds}</td>
@@ -171,9 +168,7 @@ export function Ranking(props: { overview: FriendsOverview; state: GameState; bu
 
       {chosen && chosenRow ? (
         <FriendDetail friend={chosen} row={chosenRow} />
-      ) : (
-        overview.friends.length > 0 && <p className="muted small">フレンドの名前を押すと、公開されている内容が見られます。</p>
-      )}
+      ) : null}
     </>
   );
 }

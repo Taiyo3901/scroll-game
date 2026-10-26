@@ -6,6 +6,7 @@ import { LIMITS, getMyProfile } from './account';
 import { db } from './app';
 import { isFirebaseConfigured } from './config';
 import { currentUser } from './auth';
+import { inStep } from './step';
 
 export type SyncResult = 'unconfigured' | 'signed-out' | 'no-profile' | 'unchanged' | 'synced';
 
@@ -32,14 +33,16 @@ export async function syncNow(force = false): Promise<SyncResult> {
   if (!force && last && last.uid === user.uid && last.json === json) return 'unchanged';
 
   // 見せない設定にしたものは、Firestore 上からも消す
-  await updateDoc(doc(db(), 'users', user.uid), {
-    weekly: fields.weekly,
-    shared: fields.shared,
-    collection: fields.collection ?? deleteField(),
-    showcase: fields.showcase ?? deleteField(),
-    genreFinds: fields.genreFinds ?? deleteField(),
-    updatedAt: serverTimestamp(),
-  });
+  await inStep('sync-write', () =>
+    updateDoc(doc(db(), 'users', user.uid), {
+      weekly: fields.weekly,
+      shared: fields.shared,
+      collection: fields.collection ?? deleteField(),
+      showcase: fields.showcase ?? deleteField(),
+      genreFinds: fields.genreFinds ?? deleteField(),
+      updatedAt: serverTimestamp(),
+    }),
+  );
   await saveSync({ uid: user.uid, json, at: Date.now() });
   return 'synced';
 }
