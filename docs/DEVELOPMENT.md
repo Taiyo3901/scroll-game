@@ -11,7 +11,10 @@ npm test           # 単体テスト（Vitest）
 npm run dev        # 開発用（変更が自動で反映される。dist/ を読み込む）
 ```
 
-ビルドのあとは、`chrome://extensions` で拡張機能の更新ボタンを押し、開いているページを再読み込みします。`dist/` は、ダウンロードしてすぐ使えるように、コミットしています（ソースを変えたら、ビルドして、一緒にコミットしてください）。
+- ビルドのあとは、`chrome://extensions` で拡張機能の更新ボタンを押します。
+- 開いているページは、再読み込みします。
+- `dist/` は、ダウンロードしてすぐ使えるように、コミットしています。
+- ソースを変えたら、ビルドして、一緒にコミットします。
 
 ## 構成
 
@@ -20,7 +23,7 @@ npm run dev        # 開発用（変更が自動で反映される。dist/ を�
 ├── src/
 │   ├── core/         判定や計算の純粋な関数（すべてテストあり）
 │   ├── content/      ページに挿入されるコード（スクロールの計測・物色・右端の帯）
-│   ├── background/   service worker（状態の更新、15 分ごとの同期）
+│   ├── background/   service worker（状態の更新、15分ごとの同期）
 │   ├── popup/ collection/ friends/ settings/   画面の中身（React）
 │   ├── firebase/     ログイン・フレンド・同期
 │   ├── data/         階層・部屋・発見品・ドット絵（JSON）
@@ -33,10 +36,12 @@ npm run dev        # 開発用（変更が自動で反映される。dist/ を�
 └── dist/             ビルド済みの拡張機能（そのまま読み込める）
 ```
 
-| 場所 | 内容 |
-|---|---|
-| `src/core/` | 深さ、抽選、入れ物、職業、ランキング、サイトの種類の判定など |
-| `src/data/` | 階層（`areas.json`）、部屋とサイトの辞書（`genres.json`）、発見品（`items.json`）、ドット絵（`sprites.json`、`actors.json`） |
+`src/data/` の中身は、次のとおりです。
+
+- `areas.json`: 階層
+- `genres.json`: 部屋と、サイトの辞書
+- `items.json`: 発見品
+- `sprites.json`、`actors.json`: ドット絵
 
 ## 調整できる値
 
@@ -44,13 +49,16 @@ npm run dev        # 開発用（変更が自動で反映される。dist/ を�
 
 | 値 | 意味 | 現在 |
 |---|---|---|
-| `DEPTH_MULTIPLIER` | 実際の距離(m)に掛ける倍率 | 100 |
-| `FIND_START_DELAY_SEC` / `FIND_DURATION_SEC` | 止まってから入れ物が現れるまで / 物色の長さ | 1秒 / 4秒 |
+| `DEPTH_MULTIPLIER` | 距離(m)に掛ける倍率 | 100 |
+| `FIND_START_DELAY_SEC` | 止まってから、入れ物が現れるまで | 1秒 |
+| `FIND_DURATION_SEC` | 物色の長さ | 4秒 |
 | `MAX_FINDS_PER_DAY` | 1日の発見数の上限 | 300 |
 | `RARITY_POINTS` | ★ごとのポイント | 1 / 3 / 10 |
-| `CONTAINER_WEIGHTS` / `CONTAINER_RARITY_MULT` / `MIMIC_IN_CHEST` | 入れ物の出やすさ / レア度の倍率 / ミミックの確率 | 45・40・15 / 表のとおり / 12% |
+| `CONTAINER_WEIGHTS` | 入れ物の出やすさ | 45・40・15 |
+| `CONTAINER_RARITY_MULT` | 入れ物ごとの、レア度の倍率 | 表のとおり |
+| `MIMIC_IN_CHEST` | 宝箱が、ミミックである確率 | 12% |
 | `SYNC_INTERVAL_MIN` | 同期の間隔 | 15分 |
-| `OVERLAY_WIDTH_PX` | 帯の標準の幅（設定で、56〜104px に変えられる） | 56px |
+| `OVERLAY_WIDTH_PX` | 帯の標準の幅（設定で変更可） | 56px |
 
 背景が移り変わる間隔は、`src/core/band.ts` の `BAND_STEP_M`（100m）です。
 
@@ -65,8 +73,9 @@ python tools/make-icons.py          # 拡張機能のアイコン → src/icons/
 node   tools/make-rules.mjs         # セキュリティルール → firestore/firestore.rules
 ```
 
-- 発見品や部屋を増やしたら、`firestore/firestore.rules` を作り直して、Firebase にも貼り直します（`tests/rules.test.ts` が、最新かどうかを確かめます）。
-- ドット絵の共通の部品と、色の表は `tools/art.py` です。
+- 発見品や部屋を増やしたら、`firestore/firestore.rules` を作り直して、Firebase にも貼り直します。
+- `tests/rules.test.ts` が、ルールが最新かどうかを確かめます。
+- ドット絵の共通の部品と、色の表は、`tools/art.py` です。
 
 ## 保存データ
 
@@ -77,4 +86,10 @@ node   tools/make-rules.mjs         # セキュリティルール → firestore/
 chrome.storage.local.clear()                      // 全消去
 ```
 
-キーは、`state`（ゲームの状態）、`profile`（飾り棚）、`settings`、`account`（ログイン中のアカウントの控え）、`sync`（最後に送った内容）です。
+キーは、次のとおりです。
+
+- `state`: ゲームの状態
+- `profile`: 飾り棚
+- `settings`: 設定
+- `account`: ログイン中のアカウントの控え
+- `sync`: 最後に送った内容

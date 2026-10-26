@@ -4,36 +4,42 @@
 
 ## 基本の流れ
 
-1. **下にスクロールする。** 迷宮を降りて、深さが増えます（1000px のスクロールで約 26m）。
-2. **止める。** 止めて1秒たつと、入れ物が1つ現れます。
-3. **物色する。** 探索者が約4秒、入れ物をあさります。
-4. **品が見つかる。** 見つけた品は、そのまま図鑑に入ります。
+1. **下にスクロールする。** 迷宮を降りて、深さが増えます。
+2. **止める。** 1秒たつと、入れ物が1つ現れます。
+3. **物色する。** 探索者が、約4秒かけて、入れ物をあさります。
+4. **品が見つかる。** そのまま図鑑に入ります。
+
+深さは、1000px のスクロールで、約 26m 増えます。
 
 > [!IMPORTANT]
-> 見つかる品は、**1回の立ち止まりにつき1つ**です。止まり続けても増えません。もう一度スクロールしてから止まると、次の入れ物が現れます。1日の発見数の上限は 300 個です。
+> 見つかる品は、**1回の立ち止まりにつき1つ**です。<br>
+> 止まり続けても増えません。もう一度スクロールしてから止まると、次の入れ物が現れます。<br>
+> 1日の発見数の上限は、300個です。
 
 ## <img src="images/icons/chest.png" width="28" height="28" align="absmiddle" alt=""> 入れ物
 
-| | 入れ物 | 出る確率 | 特徴 |
+| | 入れ物 | 確率 | 特徴 |
 |:-:|---|--:|---|
 | <img src="images/icons/pot.png" width="28" height="28" align="absmiddle" alt=""> | 壺 | 45% | ★1が出やすい |
 | <img src="images/icons/room-other.png" width="28" height="28" align="absmiddle" alt=""> | 箱 | 40% | ふつう |
-| <img src="images/icons/chest.png" width="28" height="28" align="absmiddle" alt=""> | 宝箱 | 15% | ★3が出やすい。12%はミミック |
-| <img src="images/icons/mimic.png" width="28" height="28" align="absmiddle" alt=""> | ミミック | （宝箱の12%） | 専用の戦利品が手に入る |
+| <img src="images/icons/chest.png" width="28" height="28" align="absmiddle" alt=""> | 宝箱 | 15% | ★3が出やすい |
+| <img src="images/icons/mimic.png" width="28" height="28" align="absmiddle" alt=""> | ミミック | 宝箱の12% | 専用の戦利品 |
 
-- 壺・宝箱・ミミックの見た目は、**階層**ごとに変わります。箱の見た目は、**部屋**（サイトの種類）ごとに変わります。
-- 階層は、深さ 0・50・150・400・800・1500m で変わります。深いほど、★2・★3が出やすくなります。
-- 入れ物ごとの倍率は、全体で見ると、レア度の出方がほぼ変わらないように決めてあります。
+- 壺・宝箱・ミミックの見た目は、**階層**ごとに変わります。
+- 箱の見た目は、**部屋**（サイトの種類）ごとに変わります。
+- 階層は、深さ 0・50・150・400・800・1500m で変わります。
+- 深い階層ほど、★2・★3が出やすくなります。
+- 入れ物ごとの倍率は、全体で見ると、レア度の出方がほぼ変わらない値です。
 
 ## 見つかる品
 
 | 種類 | 数 | 内容 |
 |---|--:|---|
-| 部屋の品 | 66 | 部屋ごとに6種（★1を3、★2を2、★3を1） |
-| 階層の秘宝 | 6 | 階層ごとに1つ。どの部屋でも、約3%の確率で見つかります |
-| ミミックの戦利品 | 4 | 宝箱に化けた魔物から、まれに手に入ります |
+| 部屋の品 | 66 | 部屋ごとに6種（★1が3、★2が2、★3が1） |
+| 階層の秘宝 | 6 | 階層ごとに1つ。約3%の確率 |
+| ミミックの戦利品 | 4 | 宝箱に化けた魔物から |
 
-ポイントは、★1 = **1点**、★2 = **3点**、★3 = **10点** です。
+ポイントは、★1 が **1点**、★2 が **3点**、★3 が **10点** です。
 
 ### なじみ具合
 
@@ -66,20 +72,25 @@
 
 ## <img src="images/icons/tome.png" width="28" height="28" align="absmiddle" alt=""> 職業の決まり方
 
-見つけた品が5個たまってから診断します。上から順に、当てはまったものになります。
+見つけた品が5個たまると、診断されます。<br>
+上から順に、当てはまったものになります。
 
-| 順 | 条件 | 職業 |
-|:-:|---|---|
-| 1 | 上位2つの部屋が、**それぞれ3割以上** | 2つを合わせた**組み合わせの職業**（例: 工房 + 書庫 = **魔導技師**） |
-| 2 | 1つの部屋が **4割以上** | その部屋の職業 |
-| 3 | どちらでもない | **勇者** |
+1. **組み合わせの職業**<br>
+   上位2つの部屋が、それぞれ3割以上のとき。<br>
+   例: 工房 + 書庫 = **魔導技師**
+2. **部屋の職業**<br>
+   1つの部屋が、4割以上のとき。
+3. **勇者**<br>
+   どちらでもないとき。
 
 - 1つの部屋が4割以上でも、2位が3割以上なら、組み合わせが優先です。
 - 「未踏の地」は、組み合わせに入りません。
-- 組み合わせの職業の見た目は、部屋の並び順で先の職業の「髪・帽子・持ち物」と、後の職業の「服・背中・盾」を合わせたものです。
+- 組み合わせの職業の見た目は、2つの職業を合わせたものです。
+  - 先の部屋の職業から、髪・帽子・持ち物
+  - 後の部屋の職業から、服・背中・盾
 
 <p align="center">
-<img src="images/icons/hero-hero.png" width="68" height="68" align="absmiddle" alt=""> <img src="images/icons/hero-warrior.png" width="68" height="68" align="absmiddle" alt=""> <img src="images/icons/hero-knight.png" width="68" height="68" align="absmiddle" alt=""> <img src="images/icons/hero-sage.png" width="68" height="68" align="absmiddle" alt=""> <img src="images/icons/hero-alchemist.png" width="68" height="68" align="absmiddle" alt=""> <img src="images/icons/hero-scout.png" width="68" height="68" align="absmiddle" alt=""> <img src="images/icons/hero-dancer.png" width="68" height="68" align="absmiddle" alt=""> <img src="images/icons/hero-jester.png" width="68" height="68" align="absmiddle" alt=""> <img src="images/icons/hero-merchant.png" width="68" height="68" align="absmiddle" alt=""> <img src="images/icons/hero-bard.png" width="68" height="68" align="absmiddle" alt=""> <img src="images/icons/hero-traveler.png" width="68" height="68" align="absmiddle" alt=""> <img src="images/icons/hero-wanderer.png" width="68" height="68" align="absmiddle" alt="">
+<img src="images/icons/hero-hero.png" width="56" height="56" align="absmiddle" alt=""> <img src="images/icons/hero-warrior.png" width="68" height="68" align="absmiddle" alt=""> <img src="images/icons/hero-knight.png" width="56" height="56" align="absmiddle" alt=""> <img src="images/icons/hero-sage.png" width="68" height="68" align="absmiddle" alt=""> <img src="images/icons/hero-alchemist.png" width="56" height="56" align="absmiddle" alt=""> <img src="images/icons/hero-scout.png" width="68" height="68" align="absmiddle" alt=""> <img src="images/icons/hero-dancer.png" width="56" height="56" align="absmiddle" alt=""> <img src="images/icons/hero-jester.png" width="68" height="68" align="absmiddle" alt=""> <img src="images/icons/hero-merchant.png" width="56" height="56" align="absmiddle" alt=""> <img src="images/icons/hero-bard.png" width="68" height="68" align="absmiddle" alt=""> <img src="images/icons/hero-traveler.png" width="56" height="56" align="absmiddle" alt=""> <img src="images/icons/hero-wanderer.png" width="68" height="68" align="absmiddle" alt="">
 </p>
 
 <details>
@@ -143,22 +154,32 @@
 
 画面の右端（スクロールバーのすぐ左）に出る、細い帯です。
 
-| | |
-|---|---|
-| **探索者** | 診断された職業の見た目で、ページを読み進めるほど、帯の上から下へ降ります。スクロール中は歩き、止まると入れ物をあさります |
-| **ゲージ** | 6つの目盛りが、物色の進みに合わせて点きます |
-| **壁** | サイトの種類で絵が変わります（劇場は赤いカーテン、書庫は本棚、工房は回路のタイルなど） |
-| **深さによる変化** | 100m ごとに、土と根 → 水と苔 → 坑道の梁 → 水晶 → 溶岩 → 深い闇の順に、壁の色と飾りがなめらかに移ります。600m でひと回りします |
-| **目印** | 品を見つけた場所に、開けた入れ物の小さな目印が残ります。深く進むと壁といっしょに上へ流れ、帯から出ると消えます。保存はしません |
-| **時間帯の演出** | 端末の時計に合わせて、朝は暖かい光、夕方は夕焼け、夜は青く暗くなり、松明が明るく燃えます。時刻は、保存も送信もしません |
-| **位置と幅** | 左右どちらに置くか、幅（56〜104px）、上の余白を、設定で変えられます |
-| **ページの余白** | 帯と重ならないよう、帯を置いた側のページに、帯の幅ぶんの余白を取ります（設定でオフにできます） |
+- **探索者**<br>
+  診断された職業の見た目です。ページを読み進めるほど、帯の上から下へ降ります。
+- **ゲージ**<br>
+  物色の進みに合わせて、6つの目盛りが点きます。
+- **壁**<br>
+  サイトの種類で絵が変わります。劇場は赤いカーテン、書庫は本棚、工房は回路のタイルです。
+- **深さによる変化**<br>
+  100m ごとに、壁の色と飾りが、なめらかに移ります。<br>
+  土と根 → 水と苔 → 坑道の梁 → 水晶 → 溶岩 → 深い闇の順で、600m でひと回りします。
+- **目印**<br>
+  品を見つけた場所に、開けた入れ物の小さな絵が残ります。<br>
+  深く進むと、壁といっしょに上へ流れて、帯から出ると消えます。保存はしません。
+- **時間帯の演出**<br>
+  端末の時計に合わせて、朝は暖かい光、夕方は夕焼け、夜は青く暗くなります。夜は、松明が明るく燃えます。<br>
+  時刻は、保存も送信もしません。
+- **位置と幅**<br>
+  左右の位置、幅（56〜104px）、上の余白を、設定で変えられます。
+- **ページの余白**<br>
+  帯と重ならないよう、帯を置いた側のページに、帯の幅ぶんの余白を取ります。設定でオフにできます。
 
 > [!TIP]
 > OS の「視覚効果を減らす」がオンのときは、色を混ぜずに、200m ごとに切り替えます。
 
 ## ランキング
 
-- 順位は、**今週のポイントの合計**だけで決まります。週は月曜0時に始まります。
+- 順位は、**今週のポイントの合計**だけで決まります。
+- 週は、月曜0時に始まります。
 - 深さやスクロールの量では、順位をつけません。
 - フレンドは、公開設定で「見せる」にした内容だけ見られます。
