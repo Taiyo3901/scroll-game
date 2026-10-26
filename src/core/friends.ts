@@ -30,11 +30,11 @@ export type NicknameCheck = { ok: true; nickname: string } | { ok: false; reason
 export function checkNickname(input: string): NicknameCheck {
   const nickname = input.normalize('NFKC').trim().replace(/\s+/g, ' ');
   const length = [...nickname].length;
-  if (length === 0) return { ok: false, reason: 'ニックネームを入力してください。' };
-  if (length > NICKNAME_MAX) return { ok: false, reason: `ニックネームは${NICKNAME_MAX}文字までです。` };
+  if (length === 0) return { ok: false, reason: 'ニックネームを入力すること。' };
+  if (length > NICKNAME_MAX) return { ok: false, reason: `ニックネームは${NICKNAME_MAX}文字まで。` };
   // eslint-disable-next-line no-control-regex
   if (/[\u0000-\u001f\u007f-\u009f​-‏‪-‮⁦-⁩]/.test(nickname)) {
-    return { ok: false, reason: '使えない文字が含まれています。' };
+    return { ok: false, reason: '使用できない文字を含む。' };
   }
   return { ok: true, nickname };
 }

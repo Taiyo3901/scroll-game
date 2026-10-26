@@ -7,7 +7,7 @@ import type { GameState } from '../core/state';
 import { isoWeekId } from '../core/week';
 import { CATALOG } from '../data';
 import type { FriendsOverview } from '../firebase/account';
-import { GenreBar, ItemCard, JobBadge } from '../ui/parts';
+import { GenreBar, ItemCard, JobBadge, Avatar } from '../ui/parts';
 
 const SECRET_COLOR = '#c9a227';
 const MIMIC_COLOR = '#b04a6a';
@@ -27,11 +27,11 @@ function FriendDetail({ friend, row }: { friend: FriendData; row: RankRow }) {
     .filter((i): i is NonNullable<typeof i> => i !== undefined);
 
   return (
-    <section className="card" aria-label={`${friend.nickname} さんの詳細`}>
+    <section className="card" aria-label={`${friend.nickname} の詳細`}>
       <h2>
         {friend.nickname}
         {friend.suspicious && (
-          <span className="warn" title="上限を超える不自然な値が含まれています">
+          <span className="warn" title="上限を超える値を検出">
             ⚠
           </span>
         )}
@@ -42,7 +42,7 @@ function FriendDetail({ friend, row }: { friend: FriendData; row: RankRow }) {
 
       <h2>今週の記録</h2>
       {row.noWeek ? (
-        <p className="muted">今週のデータは、まだ届いていません。</p>
+        <p className="muted">今週のデータなし</p>
       ) : (
         <p>
           <strong className="big">{row.points}</strong> 点　/　{row.finds}個発見
@@ -50,7 +50,7 @@ function FriendDetail({ friend, row }: { friend: FriendData; row: RankRow }) {
       )}
 
       {!friend.shared ? (
-        <p className="muted">この人は、図鑑・飾り棚・職業を公開していません。</p>
+        <p className="muted">図鑑・飾り棚・職業は非公開</p>
       ) : (
         <>
           <h2>職業</h2>
@@ -65,7 +65,7 @@ function FriendDetail({ friend, row }: { friend: FriendData; row: RankRow }) {
 
           <h2>飾り棚</h2>
           {shelf.length === 0 ? (
-            <p className="muted">飾っている品はありません。</p>
+            <p className="muted">飾り棚は空</p>
           ) : (
             <div className="item-grid">
               {shelf.map((i) => (
@@ -83,8 +83,8 @@ function FriendDetail({ friend, row }: { friend: FriendData; row: RankRow }) {
  * ランキング（自分とフレンドの今週のポイント）。順位の指標は、今週のポイントだけ。
  * フレンドを選ぶと、公開されている範囲の詳細を見られる。
  */
-export function Ranking(props: { overview: FriendsOverview; state: GameState; busy: boolean; onReload: () => void }) {
-  const { overview, state, busy, onReload } = props;
+export function Ranking(props: { overview: FriendsOverview; state: GameState; photoUrl?: string; busy: boolean; onReload: () => void }) {
+  const { overview, state, photoUrl, busy, onReload } = props;
   const [selected, setSelected] = useState<string | null>(null);
   const week = isoWeekId(new Date());
 
@@ -135,6 +135,7 @@ export function Ranking(props: { overview: FriendsOverview; state: GameState; bu
                   <RankBadge rank={r.rank} />
                 </td>
                 <td className="name">
+                  <Avatar url={r.isMe ? photoUrl : undefined} name={r.nickname} size={22} />{' '}
                   {r.isMe ? (
                     <>
                       {r.nickname} <small className="muted">（あなた）</small>
@@ -145,7 +146,7 @@ export function Ranking(props: { overview: FriendsOverview; state: GameState; bu
                     </button>
                   )}
                   {r.suspicious && (
-                    <span className="warn" title="上限を超える不自然な値が含まれています">
+                    <span className="warn" title="上限を超える値を検出">
                       {' '}
                       ⚠
                     </span>
@@ -159,7 +160,7 @@ export function Ranking(props: { overview: FriendsOverview; state: GameState; bu
             ))}
           </tbody>
         </table>
-        {overview.friends.length === 0 && <p className="muted">まだフレンドがいません。</p>}
+        {overview.friends.length === 0 && <p className="muted">フレンドなし</p>}
         <button type="button" disabled={busy} onClick={onReload}>
           最新の状態に更新
         </button>

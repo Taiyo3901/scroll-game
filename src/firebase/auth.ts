@@ -6,7 +6,7 @@ import { auth } from './app';
 async function googleToken(interactive: boolean): Promise<string> {
   const result = await chrome.identity.getAuthToken({ interactive });
   const token = typeof result === 'string' ? result : result?.token;
-  if (!token) throw new Error('Google のトークンを取得できませんでした');
+  if (!token) throw new Error('Google のトークンを取得できなかった');
   return token;
 }
 

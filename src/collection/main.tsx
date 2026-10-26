@@ -230,7 +230,7 @@ function Stats({ days }: { days: Record<string, DayStats> }) {
         </button>
       </div>
       {rows.length === 0 ? (
-        <p className="muted">まだ記録がありません。</p>
+        <p className="muted">記録なし</p>
       ) : (
         <>
           <div className="charts">
@@ -278,7 +278,6 @@ function Collection() {
           ))}
         </div>
       </header>
-      {demo && <p className="flash error">デモモード中です。ここに出ているのは、デモ用のデータです（本番のデータとは別です）。</p>}
       {tab === 'book' && <Book collection={state.collection} days={state.days} now={now} />}
       {tab === 'showcase' && (
         <Showcase

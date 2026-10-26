@@ -42,9 +42,9 @@ export type AddHostResult = { ok: true; hosts: string[] } | { ok: false; reason:
 /** 一覧にサイトを足す。 */
 export function addDisabledHost(list: readonly string[], input: string): AddHostResult {
   const h = normalizeHost(input);
-  if (!h) return { ok: false, reason: 'サイト名として読み取れません。例: example.com' };
-  if (list.includes(h)) return { ok: false, reason: 'すでに登録されています。' };
-  if (list.length >= MAX_DISABLED_HOSTS) return { ok: false, reason: `登録できるのは${MAX_DISABLED_HOSTS}件までです。` };
+  if (!h) return { ok: false, reason: 'サイト名を読み取れない。例: example.com' };
+  if (list.includes(h)) return { ok: false, reason: '登録済み。' };
+  if (list.length >= MAX_DISABLED_HOSTS) return { ok: false, reason: `登録は${MAX_DISABLED_HOSTS}件まで。` };
   return { ok: true, hosts: [...list, h] };
 }
 

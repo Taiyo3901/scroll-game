@@ -58,7 +58,7 @@ function SiteToggle({ disabled }: { disabled: string[] }) {
       </label>
       <p className="muted small">
         {host}
-        {off && entry && entry !== host ? `（「${entry}」の登録によって、無効です）` : ''}
+        {off && entry && entry !== host ? `（「${entry}」の登録により無効）` : ''}
       </p>
     </div>
   );
@@ -105,7 +105,7 @@ function Popup() {
           最近の発見 <small>今日 {findsToday(state, localDayKey(new Date(now)))}個</small>
         </h2>
         {recent.length === 0 ? (
-          <p className="muted">まだありません。</p>
+          <p className="muted">なし</p>
         ) : (
           <ul className="bag">
             {recent.map((item, i) => (

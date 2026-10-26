@@ -70,7 +70,7 @@ const randomInt = (n: number): number => {
 
 async function requireUid(): Promise<string> {
   const user = await currentUser();
-  if (!user) throw new FriendError('signed-out', 'ログインしていません。');
+  if (!user) throw new FriendError('signed-out', '未ログイン。');
   return user.uid;
 }
 
@@ -118,7 +118,7 @@ export async function createMyProfile(nicknameInput: string): Promise<MyProfile>
     try {
       await runTransaction(db(), async (tx) => {
         const codeRef = doc(db(), 'friendCodes', code);
-        if ((await tx.get(codeRef)).exists()) throw new FriendError('code-collision', 'コードが重なりました。');
+        if ((await tx.get(codeRef)).exists()) throw new FriendError('code-collision', 'コードが重複した。');
         tx.set(codeRef, { uid });
         tx.set(doc(db(), 'users', uid), {
           nickname: check.nickname,
@@ -140,7 +140,7 @@ export async function createMyProfile(nicknameInput: string): Promise<MyProfile>
       throw e;
     }
   }
-  throw new FriendError('code-collision', 'フレンドコードを発行できませんでした。もう一度試してください。');
+  throw new FriendError('code-collision', 'フレンドコードを発行できなかった。再試行すること。');
 }
 
 export async function changeNickname(nicknameInput: string): Promise<void> {
@@ -244,17 +244,17 @@ export async function loadFriendsOverview(): Promise<FriendsOverview | null> {
 export async function sendFriendRequest(codeInput: string): Promise<'sent' | 'accepted'> {
   const uid = await requireUid();
   const code = normalizeFriendCode(codeInput);
-  if (!code) throw new FriendError('invalid-code', 'フレンドコードは、英数字8文字です（0・O・1・I は使いません）。');
+  if (!code) throw new FriendError('invalid-code', 'フレンドコードは英数字8文字（0・O・1・I を除く）。');
 
   const me = await getMyProfile();
-  if (!me) throw new FriendError('signed-out', '先にニックネームを決めてください。');
+  if (!me) throw new FriendError('signed-out', '先にニックネームを設定すること。');
   const codeSnap = await getDoc(doc(db(), 'friendCodes', code));
-  if (!codeSnap.exists()) throw new FriendError('not-found', 'そのフレンドコードは見つかりませんでした。');
+  if (!codeSnap.exists()) throw new FriendError('not-found', 'フレンドコードが見つからない。');
   const toUid = String(codeSnap.data().uid ?? '');
-  if (!toUid) throw new FriendError('not-found', 'そのフレンドコードは見つかりませんでした。');
-  if (toUid === uid) throw new FriendError('self', '自分のコードには申請できません。');
-  if (me.friendUids.includes(toUid)) throw new FriendError('already-friend', 'すでにフレンドです。');
-  if (me.friendUids.length >= MAX_FRIENDS) throw new FriendError('too-many', `フレンドは${MAX_FRIENDS}人までです。`);
+  if (!toUid) throw new FriendError('not-found', 'フレンドコードが見つからない。');
+  if (toUid === uid) throw new FriendError('self', '自分のコードには申請できない。');
+  if (me.friendUids.includes(toUid)) throw new FriendError('already-friend', 'すでにフレンド。');
+  if (me.friendUids.length >= MAX_FRIENDS) throw new FriendError('too-many', `フレンドは${MAX_FRIENDS}人まで。`);
 
   const all = await loadRequests(uid);
   const reverse = all.find((r) => r.fromUid === toUid && r.toUid === uid && r.status === 'pending');
@@ -263,7 +263,7 @@ export async function sendFriendRequest(codeInput: string): Promise<'sent' | 'ac
     return 'accepted';
   }
   const existing = all.find((r) => r.fromUid === uid && r.toUid === toUid);
-  if (existing?.status === 'pending') throw new FriendError('already-sent', 'すでに申請しています。返事を待ってください。');
+  if (existing?.status === 'pending') throw new FriendError('already-sent', '申請済み。返答待ち。');
   if (existing) await deleteDoc(doc(db(), 'friendRequests', existing.id)); // 断られた申請を片づけてから、改めて申請する
 
   await writeBatch(db())
@@ -281,7 +281,7 @@ export async function sendFriendRequest(codeInput: string): Promise<'sent' | 'ac
 /** 届いた申請に返事をする。承認すると、自分の friendUids に相手が入る（相手側は、次に画面を開いたときに反映する）。 */
 export async function respondToRequest(req: FriendRequest, accept: boolean): Promise<void> {
   const uid = await requireUid();
-  if (req.toUid !== uid) throw new FriendError('signed-out', 'この申請には返事できません。');
+  if (req.toUid !== uid) throw new FriendError('signed-out', 'この申請には返答できない。');
   const reqRef = doc(db(), 'friendRequests', req.id);
   if (!accept) {
     await updateDoc(reqRef, { status: 'declined' });
@@ -317,7 +317,7 @@ export async function removeFriend(friendUid: string): Promise<void> {
  */
 export async function deleteMyAccount(): Promise<void> {
   const user = await currentUser();
-  if (!user) throw new FriendError('signed-out', 'ログインしていません。');
+  if (!user) throw new FriendError('signed-out', '未ログイン。');
   const uid = user.uid;
   const me = await getMyProfile();
   const requests = await loadRequests(uid);

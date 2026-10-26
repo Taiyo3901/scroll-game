@@ -92,7 +92,7 @@ export function JobBadge(props: { job: Job | null; genres: GenreDef[]; label: st
   if (!job) {
     return (
       <div className="job muted">
-        {label}: まだ診断できません（あと{need}個）
+        {label}: 未診断（あと{need}個）
       </div>
     );
   }

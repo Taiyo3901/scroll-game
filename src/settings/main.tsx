@@ -68,7 +68,7 @@ function Settings() {
     if (!r.ok) return setNotice({ kind: 'error', text: r.reason });
     void saveSettings({ disabledHosts: r.hosts });
     setHost('');
-    setNotice({ kind: 'ok', text: '登録しました。開いているページは、再読み込みすると反映されます。' });
+    setNotice({ kind: 'ok', text: '登録完了。開いているページは再読み込みで反映される。' });
   };
 
   return (
@@ -105,7 +105,7 @@ function Settings() {
           </button>
         </form>
         {settings.disabledHosts.length === 0 ? (
-          <p className="muted">登録しているサイトはありません。</p>
+          <p className="muted">登録なし</p>
         ) : (
           <ul className="people">
             {settings.disabledHosts.map((h) => (

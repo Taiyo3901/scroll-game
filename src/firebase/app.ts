@@ -6,7 +6,7 @@ import { FIREBASE_CONFIG, isFirebaseConfigured } from './config';
 /** 設定がないときに投げる。画面側は、この種類のエラーを「未設定」の案内に変える。 */
 export class NotConfiguredError extends Error {
   constructor() {
-    super('Firebase が設定されていません');
+    super('Firebase が未設定');
     this.name = 'NotConfiguredError';
   }
 }
