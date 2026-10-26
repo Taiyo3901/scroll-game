@@ -83,6 +83,20 @@ body.popup { width: 330px; }
 .item-name { font-weight: 700; }
 .item-count { font-size: 12px; color: var(--muted); }
 .item-desc { font-size: 12px; margin: 4px 0 0; }
+/* 同じ品を何度も見つけると、枠が変わる（銅・銀・金・虹） */
+.item.found.m1 { box-shadow: var(--px-small), inset 0 0 0 2px #b0763a; }
+.item.found.m2 { box-shadow: var(--px-small), inset 0 0 0 2px #c9ced6; }
+.item.found.m3 { box-shadow: var(--px-small), inset 0 0 0 2px #f6d44c, 0 0 8px 1px rgba(246, 212, 76, .3); }
+.item.found.m4 {
+  box-shadow: var(--px-small), 0 0 12px 2px rgba(180, 140, 255, .45);
+  border-image: linear-gradient(135deg, #ff6b6b, #f6d44c, #58b26c, #5cc3e8, #b78cff) 1;
+  border: 3px solid transparent;
+}
+.mastery { display: inline-block; margin-left: 8px; padding: 0 6px; font-size: 11px; font-weight: 700; color: #2a1f1a; }
+.mastery.m1 { background: #b0763a; color: #fff; }
+.mastery.m2 { background: #c9ced6; }
+.mastery.m3 { background: #f6d44c; }
+.mastery.m4 { background: linear-gradient(90deg, #ff9b9b, #f6d44c, #8fe3a2, #8fd9f2, #c9a8ff); }
 .item.r3.found { box-shadow: var(--px-small), 0 0 12px 2px rgba(246, 212, 76, .25); }
 
 /* 飾り棚: 坑道の壁（木の支柱つき）に、木の板を渡して品を置く */
@@ -173,6 +187,10 @@ th { font-size: 12px; color: var(--muted); font-weight: 600; }
 input[type="text"], input:not([type]) {
   font: inherit; color: var(--fg); background: #1a130e; border: 0; box-shadow: var(--px-small); padding: 7px 10px; margin: 3px; min-width: 0; width: 100%;
 }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 8px 0; }
+.form-grid label { display: flex; flex-direction: column; gap: 4px; }
+.form-grid select { font: inherit; color: var(--fg); background: #1a130e; border: 0; box-shadow: var(--px-small); padding: 7px 10px; }
+.form-grid input[type="range"] { width: 100%; accent-color: var(--accent); }
 .form-row { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
 .form-row label { display: flex; flex-direction: column; flex: 1 1 200px; }
 .code { font-size: 30px; font-weight: 800; letter-spacing: .12em; margin: 6px 0; text-shadow: 2px 2px 0 var(--edge); color: var(--accent); }

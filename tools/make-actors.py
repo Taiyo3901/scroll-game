@@ -7,6 +7,7 @@
 """
 import json
 import os
+import re
 
 from art import PALETTE, Art
 
@@ -721,6 +722,29 @@ def hero(job, pose, t):
     return a
 
 
+# ---- 組み合わせの職業: 部屋の並び順で、先の職業の「頭まわりと持ち物」と、後の職業の「服と背中」を合わせる
+def _load_combos():
+    base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    with open(os.path.join(base, 'src', 'data', 'genres.json'), encoding='utf-8') as f:
+        genres = json.load(f)
+    job_of = {g['id']: g['job'] for g in genres}
+    with open(os.path.join(base, 'src', 'core', 'jobCombos.ts'), encoding='utf-8') as f:
+        text = f.read()
+    return job_of, re.findall(r"'([a-z]+)\+([a-z]+)': '([^']+)'", text)
+
+
+HEAD_KEYS = ('hair', 'style', 'hat', 'hood', 'mask', 'beard', 'hold', 'orb')
+BODY_KEYS = ('body', 'dark', 'trim', 'pants', 'armor', 'robe', 'apron', 'skirt', 'scarf', 'ragged', 'back', 'off', 'offc')
+
+_job_of, _combos = _load_combos()
+for _a, _b, _name in _combos:
+    head, body = OUTFITS[_job_of[_a]], OUTFITS[_job_of[_b]]
+    merged = {k: head[k] for k in HEAD_KEYS if k in head}
+    merged.update({k: body[k] for k in BODY_KEYS if k in body})
+    if 'hood' in merged and 'hat' not in merged:
+        merged.pop('hood')
+    OUTFITS[_name] = merged
+
 HEROES = {}
 for job in OUTFITS:
     HEROES[job] = {
@@ -730,10 +754,32 @@ for job in OUTFITS:
         'cheer': [hero(job, 'cheer', 0).rows()],
     }
 
+def rle(rows):
+    """1コマの絵を、1つの文字列にする。行は / で区切り、同じ文字が2つ以上続くときは「文字+個数」。"""
+    out = []
+    for row in rows:
+        parts = []
+        i = 0
+        while i < len(row):
+            j = i
+            while j + 1 < len(row) and row[j + 1] == row[i]:
+                j += 1
+            n = j - i + 1
+            parts.append(row[i] + (str(n) if n > 1 else ''))
+            i = j + 1
+        out.append(''.join(parts))
+    return '/'.join(out)
+
+
 if __name__ == '__main__':
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     path = os.path.join(root, 'src', 'data', 'actors.json')
     with open(path, 'w', encoding='utf-8') as f:
-        json.dump({'palette': PALETTE, 'containers': CONTAINERS, 'heroes': HEROES}, f, ensure_ascii=False, indent=1)
+        packed = {
+            'palette': PALETTE,
+            'containers': {k: [rle(fr) for fr in v] for k, v in CONTAINERS.items()},
+            'heroes': {j: {pose: [rle(fr) for fr in frames] for pose, frames in poses.items()} for j, poses in HEROES.items()},
+        }
+        json.dump(packed, f, ensure_ascii=False, separators=(',', ':'))
         f.write('\n')
     print(len(CONTAINERS), 'containers,', len(HEROES), 'heroes ->', path)

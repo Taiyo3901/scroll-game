@@ -4,6 +4,8 @@ import type { Phase } from '../miner';
 import { OVERLAY_CSS, TILE_HEIGHT_PX } from './styles';
 import { BAND_STEP_CALM_M, BAND_STEP_M, BAND_TINTS, bandPosition } from '../../core/band';
 import { formatBadge } from '../../core/format';
+import { trackInset, type BandLayout } from '../../core/bandLayout';
+import type { TimeLook } from '../../core/timeband';
 import { TORCH_SVG, decoUri, wallUri } from './wall';
 
 export interface OverlayView {
@@ -31,6 +33,10 @@ export interface Overlay {
    * calm が true（視覚効果を減らす設定）のときは、間隔を広げ、混ぜずに切り替える。
    */
   setDepth(depthM: number, calm: boolean): void;
+  /** 帯を置く側・幅・上の余白を変える */
+  setLayout(layout: BandLayout): void;
+  /** 時間帯の演出（朝の光・夕焼け・夜の暗さ）。null なら、何も重ねない */
+  setTime(look: TimeLook | null): void;
   /** 入れ物から品が跳び出す演出 */
   reveal(iconUri: string, rarity: 1 | 2 | 3): void;
   /**
@@ -114,7 +120,8 @@ export function createOverlay(): Overlay {
   const shade = el('div', 'shade');
   const tint = el('div', 'tint');
   const glow = el('div', 'glow');
-  band.append(rock, tint, decoA, decoB, shade, glow);
+  const time = el('div', 'time');
+  band.append(rock, tint, decoA, decoB, shade, time, glow);
   for (const pos of ['t1', 't2']) {
     // 壁の松明（飾り）。SVG は自前の固定文字列で、ページの内容は入らない
     const torch = el('div', `torch ${pos}`);
@@ -224,6 +231,23 @@ export function createOverlay(): Overlay {
       set('gauge', String(lit), () => gaugeCells.forEach((c, i) => c.classList.toggle('on', i < lit)));
       const glowOpacity = (0.25 + 0.6 * g).toFixed(2);
       set('glow', glowOpacity, () => (glow.style.opacity = glowOpacity));
+    },
+
+    setLayout(l) {
+      set('layout', `${l.side}|${l.width}|${l.top}`, () => {
+        band.classList.toggle('left', l.side === 'left');
+        band.style.setProperty('--w', `${l.width}px`);
+        band.style.setProperty('--top', `${l.top}vh`);
+        band.style.setProperty('--inset', `${trackInset(l.width)}px`);
+      });
+    },
+
+    setTime(look) {
+      const key = look ? `${look.rgb.join(',')}|${look.alpha.toFixed(2)}|${look.torch.toFixed(2)}` : 'off';
+      set('time', key, () => {
+        band.style.setProperty('--time', look ? `rgba(${look.rgb.join(',')},${look.alpha.toFixed(2)})` : 'transparent');
+        band.style.setProperty('--torch', look ? look.torch.toFixed(2) : '0');
+      });
     },
 
     setDepth(depthM, calm) {

@@ -1,6 +1,7 @@
 import type { GenreDef, ItemDef } from '../core/catalog';
 import type { Job } from '../core/job';
 import { TORCH_SVG } from '../content/overlay/wall';
+import { masteryOf } from '../core/mastery';
 import { spriteUri } from '../core/sprites';
 
 /** 見出しの横に置く松明（飾り）。SVG は自前の固定文字列。 */
@@ -40,7 +41,10 @@ export function ItemCard(props: {
 }) {
   const { item, count, color, selected, onClick, compact } = props;
   const found = count > 0;
-  const cls = ['item', `r${item.rarity}`, found ? 'found' : 'unknown', selected ? 'selected' : ''].join(' ');
+  const mastery = masteryOf(count);
+  const cls = ['item', `r${item.rarity}`, found ? 'found' : 'unknown', mastery.level > 0 ? `m${mastery.level}` : '', selected ? 'selected' : '']
+    .filter(Boolean)
+    .join(' ');
   const body = (
     <>
       <ItemIcon itemId={item.id} found={found} rarity={item.rarity} fallbackColor={color} />
@@ -48,7 +52,12 @@ export function ItemCard(props: {
         <div className="item-name">
           <span className="stars">{RARITY_LABEL[item.rarity]}</span> {found ? item.name : '？？？'}
         </div>
-        {found && <div className="item-count">所持 {count}個</div>}
+        {found && (
+          <div className="item-count">
+            所持 {count}個
+            {mastery.level > 0 && <span className={`mastery m${mastery.level}`}>{mastery.name}</span>}
+          </div>
+        )}
         {found && !compact && <p className="item-desc">{item.description}</p>}
         {!found && !compact && <p className="item-desc muted">まだ見つけていない品</p>}
       </div>
@@ -74,13 +83,17 @@ export function JobBadge(props: { job: Job | null; genres: GenreDef[]; label: st
     );
   }
   const g = genres.find((x) => x.id === job.genreId);
+  const g2 = genres.find((x) => x.id === job.genreId2);
+  // 組み合わせの職業は、2つの部屋の色を、半分ずつ使う
+  const bg = g && g2 ? `linear-gradient(90deg, ${g.color} 50%, ${g2.color} 50%)` : (g?.color ?? '#b5651d');
+  const note = g && g2 ? `${g.name}と${g2.name}で多く発見` : g ? `${g.name}で多く発見` : 'まんべんなく発見';
   return (
     <div className="job">
       <span className="job-label">{label}</span>
-      <span className="chip" style={{ background: g?.color ?? '#b5651d' }}>
+      <span className="chip" style={{ background: bg }}>
         {job.name}
       </span>
-      <span className="muted small">{g ? `${g.name}で多く発見` : 'まんべんなく発見'}</span>
+      <span className="muted small">{note}</span>
     </div>
   );
 }

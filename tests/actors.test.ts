@@ -10,7 +10,9 @@ import {
   containerFrames,
   heroFrames,
   heroSheet,
+  unpackFrame,
 } from '../src/core/actors';
+import { COMBO_JOBS } from '../src/core/jobCombos';
 import { CATALOG } from '../src/data';
 
 const checkFrames = (name: string, frames: string[][] | undefined, count: number, size: number) => {
@@ -53,7 +55,7 @@ describe('container sprites', () => {
 
 describe('hero sprites', () => {
   it('there is one for every job and for the undiagnosed state, with all poses', () => {
-    const jobs = new Set([...CATALOG.genres.map((g) => g.job), '勇者', 'default']);
+    const jobs = new Set([...CATALOG.genres.map((g) => g.job), '勇者', 'default', ...Object.values(COMBO_JOBS)]);
     expect(new Set(ACTOR_HERO_JOBS)).toEqual(jobs);
     for (const j of jobs) {
       checkFrames(`${j}:walk`, heroFrames(j, 'walk'), 4, HERO_SIZE);
@@ -61,6 +63,10 @@ describe('hero sprites', () => {
       checkFrames(`${j}:idle`, heroFrames(j, 'idle'), 1, HERO_SIZE);
       checkFrames(`${j}:cheer`, heroFrames(j, 'cheer'), 1, HERO_SIZE);
     }
+  });
+  it('combination jobs are stored compactly and decode to full frames', () => {
+    expect(unpackFrame('a3b/.2c2')).toEqual(['aaab', '..cc']);
+    expect(Object.keys(COMBO_JOBS)).toHaveLength(45);
   });
   it('each job looks different from the others', () => {
     const looks = ACTOR_HERO_JOBS.map((j) => heroFrames(j, 'idle')!.flat().join('|'));

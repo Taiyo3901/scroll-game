@@ -1,4 +1,6 @@
 import { CONFIG } from './config';
+import { defaultBandLayout, normalizeBandLayout, type BandSide } from './core/bandLayout';
+import { normalizeTimeMode, type TimeMode } from './core/timeband';
 import { normalizeProfile, type Profile } from './core/profile';
 import { defaultShare, normalizeShare, type ShareSettings } from './core/publicProfile';
 import { normalizeDisabledHosts } from './core/hosts';
@@ -21,7 +23,15 @@ export interface Settings {
   debugOverlay: boolean;
   /** 画面右端の演出 */
   effects: boolean;
-  /** 帯の幅ぶんページの右に余白を取り、サイトと重ならないようにする */
+  /** 帯を置く側（右 / 左） */
+  bandSide: BandSide;
+  /** 帯の幅(px) */
+  bandWidth: number;
+  /** 帯の上の余白（画面の高さの%） */
+  bandTop: number;
+  /** 時間帯の演出（時刻に合わせる / 朝 / 昼 / 夕方 / 夜 / なし） */
+  bandTime: TimeMode;
+  /** 帯の幅ぶんページの端に余白を取り、サイトと重ならないようにする */
   reserveSpace: boolean;
   /** フレンドに見せる範囲（初期設定は、すべて見せない） */
   share: ShareSettings;
@@ -34,6 +44,10 @@ export interface Settings {
 export const defaultSettings = (): Settings => ({
   debugOverlay: CONFIG.DEBUG_OVERLAY_DEFAULT,
   effects: true,
+  bandSide: defaultBandLayout().side,
+  bandWidth: defaultBandLayout().width,
+  bandTop: defaultBandLayout().top,
+  bandTime: 'auto',
   reserveSpace: true,
   share: defaultShare(),
   disabledHosts: [],
@@ -47,9 +61,14 @@ export function normalizeSettings(raw: unknown): Settings {
   const base = defaultSettings();
   if (typeof raw !== 'object' || raw === null) return base;
   const r = raw as Partial<Settings>;
+  const layout = normalizeBandLayout({ side: r.bandSide, width: r.bandWidth, top: r.bandTop });
   return {
     ...base,
     ...r,
+    bandSide: layout.side,
+    bandWidth: layout.width,
+    bandTop: layout.top,
+    bandTime: normalizeTimeMode(r.bandTime),
     share: normalizeShare(r.share, GENRE_IDS),
     disabledHosts: normalizeDisabledHosts(r.disabledHosts),
     demoMode: r.demoMode === true,

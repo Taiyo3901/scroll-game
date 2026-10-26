@@ -1,4 +1,3 @@
-import { CONFIG } from '../config';
 import { findItem } from '../core/catalog';
 import { pxToDepth } from '../core/depth';
 import { classifyHost } from '../core/genre';
@@ -11,6 +10,7 @@ import { createDebug } from './debug';
 import { Miner } from './miner';
 import { createOverlay, openedContainerUri, type Overlay } from './overlay/overlay';
 import { createSpaceReserver } from './overlay/reserve';
+import { timeLookFor } from '../core/timeband';
 import { getView, initStore, onViewChange } from './store';
 import { startTracker } from './tracker';
 
@@ -49,9 +49,12 @@ function main(): void {
       overlay.destroy();
       overlay = null;
     }
-    // 帯と同じ幅の余白をページ側に取る（サイトと重ならないように）
-    reserver.set(wantOverlay && getView().settings.reserveSpace, CONFIG.OVERLAY_WIDTH_PX);
-    debug.setEnabled(getView().settings.debugOverlay);
+    const { bandSide, bandWidth, bandTop, reserveSpace, debugOverlay } = getView().settings;
+    overlay?.setLayout({ side: bandSide, width: bandWidth, top: bandTop });
+    // 帯と同じ幅の余白を、帯を置いた側のページに取る（サイトと重ならないように）
+    reserver.set(wantOverlay && reserveSpace, bandWidth, bandSide);
+    debug.setBand(bandSide, bandWidth);
+    debug.setEnabled(debugOverlay);
   };
 
   // 同じタブの中でページが切り替わったら（ページの再読み込みなしの移動を含む）、帯の目印を消す。
@@ -96,6 +99,7 @@ function main(): void {
 
     if (overlay) {
       overlay.setDepth(liveDepth(), reducedMotion.matches);
+      overlay.setTime(timeLookFor(getView().settings.bandTime, new Date()));
       overlay.update({
         roomId: ROOM_ID,
         phase: m.phase,

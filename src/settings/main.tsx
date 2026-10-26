@@ -1,5 +1,14 @@
 import { useState } from 'react';
 import { configFor } from '../config';
+import {
+  BAND_TOP_MAX,
+  BAND_TOP_MIN,
+  BAND_WIDTH_MAX,
+  BAND_WIDTH_MIN,
+  BAND_WIDTH_STEP,
+  defaultBandLayout,
+} from '../core/bandLayout';
+import { TIME_MODES, TIME_MODE_LABELS, normalizeTimeMode } from '../core/timeband';
 import { MAX_DISABLED_HOSTS, addDisabledHost, removeDisabledHost } from '../core/hosts';
 import { clearDemoData, saveSettings } from '../storage';
 import { mount } from '../ui/mount';
@@ -115,6 +124,65 @@ function Settings() {
       </section>
 
       <section className="card">
+        <h2>帯の位置と大きさ</h2>
+        <p className="small muted">開いているページは、再読み込みしなくても、すぐに変わります。</p>
+        <div className="form-grid">
+          <label>
+            <span className="small muted">帯を置く側</span>
+            <select value={settings.bandSide} disabled={!settings.effects} onChange={(e) => void saveSettings({ bandSide: e.target.value === 'left' ? 'left' : 'right' })}>
+              <option value="right">右（スクロールバーのそば）</option>
+              <option value="left">左</option>
+            </select>
+          </label>
+          <label>
+            <span className="small muted">幅: {settings.bandWidth}px</span>
+            <input
+              type="range"
+              min={BAND_WIDTH_MIN}
+              max={BAND_WIDTH_MAX}
+              step={BAND_WIDTH_STEP}
+              value={settings.bandWidth}
+              disabled={!settings.effects}
+              onChange={(e) => void saveSettings({ bandWidth: Number(e.target.value) })}
+            />
+          </label>
+          <label>
+            <span className="small muted">上の余白: 画面の高さの {settings.bandTop}%</span>
+            <input
+              type="range"
+              min={BAND_TOP_MIN}
+              max={BAND_TOP_MAX}
+              step={1}
+              value={settings.bandTop}
+              disabled={!settings.effects}
+              onChange={(e) => void saveSettings({ bandTop: Number(e.target.value) })}
+            />
+          </label>
+          <label>
+            <span className="small muted">時間帯の演出（朝の光・夕焼け・夜の暗さ）</span>
+            <select value={settings.bandTime} disabled={!settings.effects} onChange={(e) => void saveSettings({ bandTime: normalizeTimeMode(e.target.value) })}>
+              {TIME_MODES.map((m) => (
+                <option key={m} value={m}>
+                  {TIME_MODE_LABELS[m]}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <p className="small muted">「時刻に合わせる」は、この端末の時計を使います（朝 5〜10 時、昼 10〜16 時、夕方 16〜19 時、夜 19〜5 時。間はなめらかにつなぎます）。時刻は、保存も送信もしません。</p>
+        <button
+          type="button"
+          disabled={!settings.effects}
+          onClick={() => {
+            const d = defaultBandLayout();
+            void saveSettings({ bandSide: d.side, bandWidth: d.width, bandTop: d.top, bandTime: 'auto' });
+          }}
+        >
+          位置・大きさ・演出を、初期設定に戻す
+        </button>
+      </section>
+
+      <section className="card">
         <h2>表示</h2>
         <label className="toggle">
           <input type="checkbox" checked={settings.effects} onChange={(e) => void saveSettings({ effects: e.target.checked })} />
@@ -127,7 +195,7 @@ function Settings() {
             disabled={!settings.effects}
             onChange={(e) => void saveSettings({ reserveSpace: e.target.checked })}
           />
-          帯の幅ぶん、ページの右に余白を取る（サイトと重ならないようにする）
+          帯の幅ぶん、帯のある側のページに余白を取る（サイトと重ならないようにする）
         </label>
         <label className="toggle">
           <input type="checkbox" checked={settings.debugOverlay} onChange={(e) => void saveSettings({ debugOverlay: e.target.checked })} />

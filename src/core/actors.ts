@@ -2,12 +2,28 @@ import data from '../data/actors.json';
 
 /** 帯の中で動く絵（入れ物と探索者）。絵の元データは tools/make-actors.py が作る。 */
 type Pose = 'walk' | 'search' | 'idle' | 'cheer';
-type ActorData = {
+/** 保存は、同じ文字が続く部分をまとめた形（tools/make-actors.py の rle）。1コマは「行/行/行」で、続く文字は「文字+個数」 */
+type PackedData = {
   palette: Record<string, string>;
-  containers: Record<string, string[][]>;
-  heroes: Record<string, Record<Pose, string[][]>>;
+  containers: Record<string, string[]>;
+  heroes: Record<string, Record<Pose, string[]>>;
 };
-const { palette, containers, heroes } = data as ActorData;
+const packed = data as PackedData;
+
+/** 1コマの絵を、行ごとの文字列に戻す */
+export function unpackFrame(s: string): string[] {
+  return s.split('/').map((row) => row.replace(/(\D)(\d+)/g, (_, c: string, n: string) => c.repeat(Number(n))));
+}
+
+const { palette } = packed;
+const unpackAll = (frames: string[]): string[][] => frames.map(unpackFrame);
+const containers: Record<string, string[][]> = Object.fromEntries(Object.entries(packed.containers).map(([k, v]) => [k, unpackAll(v)]));
+const heroes: Record<string, Record<Pose, string[][]>> = Object.fromEntries(
+  Object.entries(packed.heroes).map(([job, poses]) => [
+    job,
+    Object.fromEntries(Object.entries(poses).map(([pose, frames]) => [pose, unpackAll(frames)])) as Record<Pose, string[][]>,
+  ]),
+);
 
 /** 入れ物の絵の1辺のマス数（縁取りを含む）。探索者は、もっと細かい */
 export const CONTAINER_SIZE = 14;

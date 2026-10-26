@@ -1,1 +1,0 @@
-function e(e){let t={};for(let n of e)for(let[e,r]of Object.entries(n.genreFinds))t[e]=(t[e]??0)+r;return t}function t(e,t){let n=Object.values(e).reduce((e,t)=>e+t,0);if(n<5)return null;let r,i=0;for(let n of t){let t=e[n.id]??0;t>i&&(r=n,i=t)}return r&&i/n>=.4?{name:r.job,genreId:r.id,total:n}:{name:`勇者`,genreId:null,total:n}}export{e as n,t};

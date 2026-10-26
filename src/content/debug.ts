@@ -13,7 +13,7 @@ import type { TrackerSnapshot } from './tracker';
 const STYLE = `
 :host { all: initial; }
 .box {
-  position: fixed; right: ${CONFIG.OVERLAY_WIDTH_PX + 8}px; bottom: 8px; z-index: 2147483646;
+  position: fixed; right: var(--gap, ${CONFIG.OVERLAY_WIDTH_PX + 8}px); bottom: 8px; z-index: 2147483646;
   pointer-events: none; padding: 6px 8px; border-radius: 6px;
   background: rgba(0, 0, 0, 0.72); color: #e8f5e9;
   font: 11px/1.45 ui-monospace, Consolas, "Yu Gothic UI", monospace; white-space: pre;
@@ -24,11 +24,19 @@ const STYLE = `
 export interface DebugView {
   update(t: TrackerSnapshot, m: MinerSnapshot): void;
   setEnabled(on: boolean): void;
+  /** 帯を置いている側と幅に合わせて、帯と重ならない場所へ動かす */
+  setBand(side: 'right' | 'left', width: number): void;
 }
 
 export function createDebug(): DebugView {
   let host: HTMLElement | null = null;
   let box: HTMLElement | null = null;
+  let band: { side: 'right' | 'left'; width: number } = { side: 'right', width: CONFIG.OVERLAY_WIDTH_PX };
+  const applyBand = () => {
+    if (!box) return;
+    // 帯が右にあるときは、その左隣。帯が左にあるときは、右下
+    box.style.setProperty('--gap', `${band.side === 'right' ? band.width + 8 : 8}px`);
+  };
 
   const show = () => {
     if (host) return;
@@ -40,6 +48,7 @@ export function createDebug(): DebugView {
     box.className = 'box';
     root.append(style, box);
     document.documentElement.append(host);
+    applyBand();
   };
   const hide = () => {
     host?.remove();
@@ -49,6 +58,10 @@ export function createDebug(): DebugView {
 
   return {
     setEnabled: (on) => (on ? show() : hide()),
+    setBand(side, width) {
+      band = { side, width };
+      applyBand();
+    },
     update(t, m) {
       if (!box) return;
       const { state, settings } = getView();

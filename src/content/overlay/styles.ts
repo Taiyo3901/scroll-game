@@ -1,18 +1,22 @@
 import { CONFIG } from '../../config';
+import { BAND_TOP_DEFAULT, STAGE_WIDTH_PX, TRACK_OUTER_PX, trackInset } from '../../core/bandLayout';
 import { CELL_PX, WALL_TILE_PX } from './wall';
 
 /** 石壁の左端を、ドット絵のように階段状にギザギザにする（毎回同じ形にするため疑似乱数は固定）。 */
-function stairEdge(): string {
-  const pts: string[] = ['8px 0'];
+function stairEdge(mirror: boolean): string {
+  // 左側に置くときは、左右を入れ替える（階段状の縁が、右側になる）
+  const X = (v: number) => (mirror ? `calc(100% - ${v}px)` : `${v}px`);
+  const far = mirror ? '0px' : '100%';
+  const pts: string[] = [`${X(8)} 0`];
   let seed = 7;
   const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
   let prev = 8;
   for (let y = 0; y < 100; y += 2) {
     const x = Math.round(rnd() * 3) * CELL_PX * 2; // 0, 4, 8, 12px
-    pts.push(`${prev}px ${y}%`, `${x}px ${y}%`);
+    pts.push(`${X(prev)} ${y}%`, `${X(x)} ${y}%`);
     prev = x;
   }
-  pts.push(`${prev}px 100%`, '100% 100%', '100% 0');
+  pts.push(`${X(prev)} 100%`, `${far} 100%`, `${far} 0`);
   return `polygon(${pts.join(',')})`;
 }
 
@@ -28,15 +32,16 @@ export const OVERLAY_CSS = `
 * { box-sizing: border-box; }
 
 .band {
-  position: fixed; top: 7vh; bottom: 0; right: 0;
-  width: ${CONFIG.OVERLAY_WIDTH_PX}px; z-index: 2147483647; pointer-events: none;
-  clip-path: ${stairEdge()};
+  position: fixed; top: var(--top, ${BAND_TOP_DEFAULT}vh); bottom: 0; right: 0;
+  width: var(--w, ${CONFIG.OVERLAY_WIDTH_PX}px); z-index: 2147483647; pointer-events: none;
+  clip-path: ${stairEdge(false)};
   color: #f5f0e6; font: 700 11px/1.2 system-ui, "Hiragino Sans", "Yu Gothic UI", sans-serif;
   text-shadow: 1px 1px 0 #2a1f1a;
   user-select: none; overflow: hidden;
   background: #2b1f16;
 }
 .band.hidden { display: none; }
+.band.left { right: auto; left: 0; clip-path: ${stairEdge(true)}; }
 
 .rock {
   position: absolute; left: 0; right: 0; top: 0; height: calc(100% + ${WALL_TILE_PX}px);
@@ -51,6 +56,8 @@ export const OVERLAY_CSS = `
   background-image: var(--deco); background-repeat: repeat-y; background-size: 100% ${WALL_TILE_PX}px;
   image-rendering: pixelated; will-change: transform;
 }
+/* 時間帯の演出（朝の光・夕焼け・夜の暗さ）。色と濃さは、--time で決める */
+.time { position: absolute; inset: 0; background: var(--time, transparent); }
 /* 上下は暗く、左（奥）も暗くして、通路の中にいるように見せる */
 .shade {
   position: absolute; inset: 0;
@@ -65,7 +72,8 @@ export const OVERLAY_CSS = `
   mix-blend-mode: screen; opacity: .3;
 }
 
-.torch { position: absolute; left: 0; width: 14px; height: 14px; }
+.torch { position: absolute; left: 0; width: 14px; height: 14px; filter: brightness(calc(1 + var(--torch, 0) * .5)); }
+.band.left .torch { left: auto; right: 0; }
 .torch.t1 { top: 30%; }
 .torch.t2 { top: 70%; }
 .torch svg { width: 14px; height: 14px; image-rendering: pixelated; display: block; }
@@ -75,6 +83,7 @@ export const OVERLAY_CSS = `
   position: absolute; left: -10px; top: -10px; width: 34px; height: 34px; border-radius: 50%;
   background: radial-gradient(closest-side, rgba(255,180,70,.5), rgba(255,140,40,0));
   animation: halo 1.2s ease-in-out infinite;
+  transform: scale(calc(1 + var(--torch, 0) * .6));
 }
 
 .col {
@@ -82,20 +91,29 @@ export const OVERLAY_CSS = `
   /* 左は階段状の縁（最大12px）と枠の影を避けて、右寄りに置く */
   padding: 12px 3px 0 13px;
 }
+.band.left .shade {
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,0) 14%, rgba(0,0,0,0) 86%, rgba(0,0,0,.6) 100%),
+    linear-gradient(270deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.1) 45%, rgba(0,0,0,0) 100%);
+}
+.band.left .col { padding: 12px 13px 0 3px; }
 .panel { background: #1b1410; box-shadow: 0 0 0 2px #2a1f1a, 0 0 0 3px #7a6040; }
 .demo-tag { display: none; font-size: 9px; letter-spacing: .1em; padding: 1px 4px; margin-bottom: 4px; background: #b3261e; color: #fff; box-shadow: 0 0 0 2px #2a1f1a; }
 .demo-tag.on { display: block; }
 .depth { font-size: 10px; letter-spacing: -0.05em; padding: 2px 2px; white-space: nowrap; }
 
 /* 帯の長さ = ページの長さ。探索者は、読み進めるほど上から下へ降りていく */
-.track { position: absolute; left: 12px; right: 6px; top: 46px; bottom: 24px; }
+.track { position: absolute; left: var(--inset, ${trackInset(CONFIG.OVERLAY_WIDTH_PX)}px); right: ${TRACK_OUTER_PX}px; top: 46px; bottom: 24px; }
+.band.left .track { left: ${TRACK_OUTER_PX}px; right: var(--inset, ${trackInset(CONFIG.OVERLAY_WIDTH_PX)}px); }
 .band:has(.demo-tag.on) .track { top: 66px; }
 /* 10% ごとの目盛り（スクロールバーのすぐ内側） */
 .ruler {
   position: absolute; right: -6px; top: 0; bottom: 0; width: 3px;
   background: repeating-linear-gradient(180deg, rgba(245,240,230,.55) 0 2px, transparent 2px 10%);
 }
-.stage { position: absolute; left: 0; top: 0; width: 38px; height: 79px; transition: transform .25s steps(5, end); will-change: transform; }
+.band.left .ruler { right: auto; left: -${TRACK_OUTER_PX}px; }
+.band.left .mark { right: auto; left: -3px; }
+.stage { position: absolute; left: 0; top: 0; width: ${STAGE_WIDTH_PX}px; height: 79px; transition: transform .25s steps(5, end); will-change: transform; }
 .scene { position: relative; width: 38px; height: 61px; }
 .marks { position: absolute; inset: 0; }
 .mark { position: absolute; right: -3px; top: 0; width: 18px; height: 18px; opacity: .85; }
