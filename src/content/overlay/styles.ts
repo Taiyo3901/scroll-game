@@ -113,8 +113,8 @@ export const OVERLAY_CSS = `
 }
 .band.left .ruler { right: auto; left: -${TRACK_OUTER_PX}px; }
 .band.left .mark { right: auto; left: -3px; }
-.stage { position: absolute; left: 0; top: 0; width: ${STAGE_WIDTH_PX}px; height: 79px; transition: transform .25s steps(5, end); will-change: transform; }
-.scene { position: relative; width: 38px; height: 61px; }
+.stage { position: absolute; left: 0; top: 0; width: var(--stage-w, ${STAGE_WIDTH_PX}px); height: 79px; transition: transform .25s steps(5, end); will-change: transform; }
+.scene { position: relative; width: var(--stage-w, ${STAGE_WIDTH_PX}px); height: 61px; }
 .marks { position: absolute; inset: 0; }
 .mark { position: absolute; right: -3px; top: 0; width: 18px; height: 18px; opacity: .85; }
 .mark img { width: 18px; height: 18px; image-rendering: pixelated; display: block; filter: drop-shadow(1px 1px 0 #2a1f1a); }
@@ -143,7 +143,7 @@ export const OVERLAY_CSS = `
 .fly.r3 { filter: drop-shadow(0 0 5px rgba(255,210,70,1)); }
 
 /* ゲージ: 目盛りは6つで固定。進むと、目盛りが1つずつ点く（伸び縮みしない） */
-.gauge { width: 34px; height: 10px; padding: 2px; margin: 6px 0 0 2px; }
+.gauge { width: calc(var(--stage-w, ${STAGE_WIDTH_PX}px) - 4px); height: 10px; padding: 2px; margin: 6px 0 0 2px; }
 .gauge-inner { display: flex; gap: 1px; width: 100%; height: 100%; background: #1b1410; }
 .gauge-inner .cell { flex: 1 1 0; background: #3a2c20; }
 .gauge-inner .cell.on { background: #f6d44c; box-shadow: inset 0 -1px 0 #b8870f; }

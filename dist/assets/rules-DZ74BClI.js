@@ -1,1 +1,0 @@
-import{I as e}from"./storage-DANGqkPg.js";function t(t){let n=e(t);return{depthMultiplier:n.DEPTH_MULTIPLIER,maxFindsPerDay:n.MAX_FINDS_PER_DAY,minFindIntervalMs:n.FIND_DURATION_SEC*500,rarityPoints:n.RARITY_POINTS,containers:{weights:n.CONTAINER_WEIGHTS,rarityMult:n.CONTAINER_RARITY_MULT,mimicInChest:n.MIMIC_IN_CHEST}}}t(!1);export{t};

@@ -30,7 +30,7 @@
   "content_scripts": [
     {
       "js": [
-        "assets/index.ts-loader-DWnkXyNH.js"
+        "assets/index.ts-loader-wskHFv9-.js"
       ],
       "matches": [
         "<all_urls>"
@@ -55,11 +55,11 @@
       "resources": [
         "assets/depth-PpLhwrWV.js",
         "assets/job-CfC_7-oG.js",
-        "assets/storage-DANGqkPg.js",
-        "assets/wall-Cr82zuQ5.js",
-        "assets/game-cZd8oSmM.js",
-        "assets/rules-DZ74BClI.js",
-        "assets/src-content-index.ts-C-ksCiXv.js"
+        "assets/storage-B_nB2J0D.js",
+        "assets/wall-CDlBrdc_.js",
+        "assets/game-CaKMfPn6.js",
+        "assets/rules-riSjoipO.js",
+        "assets/src-content-index.ts-DMwSIBhO.js"
       ],
       "use_dynamic_url": false
     }

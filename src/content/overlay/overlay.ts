@@ -4,7 +4,7 @@ import type { Phase } from '../miner';
 import { OVERLAY_CSS, TILE_HEIGHT_PX } from './styles';
 import { BAND_STEP_CALM_M, BAND_STEP_M, BAND_TINTS, bandPosition } from '../../core/band';
 import { formatBadge } from '../../core/format';
-import { trackInset, type BandLayout } from '../../core/bandLayout';
+import { stageWidth, trackInset, type BandLayout } from '../../core/bandLayout';
 import type { TimeLook } from '../../core/timeband';
 import { TORCH_SVG, decoUri, wallUri } from './wall';
 
@@ -239,6 +239,7 @@ export function createOverlay(): Overlay {
         band.style.setProperty('--w', `${l.width}px`);
         band.style.setProperty('--top', `${l.top}vh`);
         band.style.setProperty('--inset', `${trackInset(l.width)}px`);
+        band.style.setProperty('--stage-w', `${stageWidth(l.width)}px`);
       });
     },
 

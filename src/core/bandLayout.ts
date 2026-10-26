@@ -36,9 +36,17 @@ export function normalizeBandLayout(raw: { side?: unknown; width?: unknown; top?
   };
 }
 
-/** 探索者の枠（幅38px）と、右の目盛り（6px）を置いた残りが、左の余白（最小4px） */
+/** 探索者の枠の最小の幅（探索者の絵が34px）。右の目盛りは6px、左の余白は、ふつう12px（狭いときは、最小4px） */
 export const STAGE_WIDTH_PX = 38;
 export const TRACK_OUTER_PX = 6;
+const TRACK_INSET_PX = 12;
+
+/** 探索者の枠（探索者・入れ物・ゲージが入る）の幅。帯が広いほど広がり、ゲージも長くなる。 */
+export function stageWidth(width: number): number {
+  return Math.max(STAGE_WIDTH_PX, width - TRACK_INSET_PX - TRACK_OUTER_PX);
+}
+
+/** 帯の左の余白 = 帯の幅 - 枠の幅 - 右の目盛り（最小4px） */
 export function trackInset(width: number): number {
-  return Math.max(4, width - STAGE_WIDTH_PX - TRACK_OUTER_PX);
+  return Math.max(4, width - stageWidth(width) - TRACK_OUTER_PX);
 }
