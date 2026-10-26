@@ -25,7 +25,7 @@ import { STEP_LABELS, stepOf } from '../firebase/step';
 import { syncNow } from '../firebase/sync';
 import { loadSync, saveSettings } from '../storage';
 import { mount } from '../ui/mount';
-import { Avatar } from '../ui/parts';
+import { Avatar, Torch } from '../ui/parts';
 import { Ranking } from './Ranking';
 import { useAccount, useView } from '../ui/store';
 
@@ -133,7 +133,11 @@ function FriendsPage() {
   return (
     <main className="page narrow">
       <header>
-        <h1>ランキング・フレンド</h1>
+        <h1>
+          <Torch />
+          ランキング・フレンド
+          <Torch />
+        </h1>
       </header>
 
       {notice && (

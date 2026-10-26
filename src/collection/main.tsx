@@ -10,7 +10,7 @@ import { isoWeekId } from '../core/week';
 import { CATALOG } from '../data';
 import { saveProfile } from '../storage';
 import { mount } from '../ui/mount';
-import { GenreBar, ItemCard, JobBadge } from '../ui/parts';
+import { GenreBar, ItemCard, JobBadge, Torch } from '../ui/parts';
 import { useView } from '../ui/store';
 
 type Tab = 'book' | 'showcase' | 'stats';
@@ -246,7 +246,11 @@ function Collection() {
   return (
     <main className="page">
       <header>
-        <h1>図鑑</h1>
+        <h1>
+          <Torch />
+          図鑑
+          <Torch />
+        </h1>
         <div role="tablist" className="tabs">
           {tabs.map(([id, label]) => (
             <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)}>
