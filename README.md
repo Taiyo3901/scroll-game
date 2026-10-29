@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 <div align="center">
 
 <img src="docs/images/banner.png" alt="迷宮スクロール" width="100%">
@@ -95,9 +97,9 @@
 
 <table>
 <tr>
-<td align="center" valign="top"><img src="docs/images/screenshot-band-narrow.png" alt="ページの右端の帯" width="120"><br><sub>右端の帯</sub></td>
-<td align="center" valign="top"><img src="docs/images/screenshot-popup.png" alt="ポップアップ" width="200"><br><sub>ポップアップ</sub></td>
-<td align="center" valign="top"><img src="docs/images/screenshot-collection.png" alt="図鑑" width="400"><br><sub>図鑑</sub></td>
+<td align="center" valign="top"><img src="docs/images/demo.gif" alt="スクロールして止めると、入れ物が現れて物色が始まる" width="228"><br><sub>右端の帯</sub></td>
+<td align="center" valign="top"><img src="docs/images/screenshot-popup.png" alt="ポップアップ" width="190"><br><sub>ポップアップ</sub></td>
+<td align="center" valign="top"><img src="docs/images/screenshot-collection.png" alt="図鑑" width="360"><br><sub>図鑑</sub></td>
 </tr>
 </table>
 
@@ -107,6 +109,8 @@
 - 設定で帯の位置と大きさ、時間帯の演出、ゲームを動かさないサイトを選べます。
 
 くわしい遊び方は [docs/GAMEPLAY.md](docs/GAMEPLAY.md) にまとめています。
+
+<p align="right"><sub><a href="#top">↑ 先頭へ</a></sub></p>
 
 <p align="center"><img src="docs/images/divider.png" width="640" alt=""></p>
 
@@ -122,6 +126,8 @@
 - 時間帯の演出は端末の時計に合わせるか、朝・昼・夕方・夜に固定するか、なしにできます。
 - 設定の上の見本で、変えた結果をすぐ確かめられます。
 - ゲームを動かさないサイトに登録すると、帯が出ず、品も見つかりません。ポップアップのスイッチからも登録できます。
+
+<p align="right"><sub><a href="#top">↑ 先頭へ</a></sub></p>
 
 <p align="center"><img src="docs/images/divider.png" width="640" alt=""></p>
 
@@ -158,13 +164,15 @@
 - ニックネーム、フレンドコード、フレンド一覧
 - 今週のポイントと発見数
 - Google アカウントのアイコン（画像の URL）
-- 図鑑・飾り棚・部屋の分布は、公開設定で「見せる」にしたものだけを送ります。初期設定は「見せない」です。
+- 図鑑・飾り棚・部屋の分布は公開設定で「見せる」にしたものだけを送ります。初期設定は「見せない」です。
 
 </td>
 </tr>
 </table>
 
 本名とメールアドレスは、他の人には見えません。
+
+<p align="right"><sub><a href="#top">↑ 先頭へ</a></sub></p>
 
 <p align="center"><img src="docs/images/divider.png" width="640" alt=""></p>
 
@@ -243,6 +251,11 @@ npm run dev     # 開発用
 ├── docs/       ドキュメントと画像
 └── dist/       ビルド済みの拡張機能
 ```
+
+## <img src="docs/images/icons/medal.png" width="28" height="28" align="absmiddle" alt=""> フィードバック
+
+- 不具合や要望は、[Issues](https://github.com/Taiyo3901/scroll-game/issues) に書いてください。
+- 作者は [@Taiyo3901](https://github.com/Taiyo3901) です。
 
 ## <img src="docs/images/icons/pouch.png" width="28" height="28" align="absmiddle" alt=""> ドキュメント
 
