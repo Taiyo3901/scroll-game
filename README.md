@@ -239,18 +239,7 @@ npm run dev     # 開発用
 ```
 
 - ビルドのあとに `chrome://extensions` で拡張機能を更新し、開いているページを再読み込みします。
-- `dist/` は、ダウンロードしてすぐ使えるように、コミットしています。
-
-```text
-.
-├── src/        core（判定・計算）/ content / background / 各画面 / firebase / data
-├── pages/      画面の入り口（HTML）
-├── firestore/  セキュリティルール（自動生成）
-├── tools/      ドット絵・ルールの生成ツール
-├── tests/      単体テスト
-├── docs/       ドキュメントと画像
-└── dist/       ビルド済みの拡張機能
-```
+- くわしくは [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) を見てください。
 
 ## <img src="docs/images/icons/medal.png" width="28" height="28" align="absmiddle" alt=""> フィードバック
 
@@ -270,11 +259,7 @@ npm run dev     # 開発用
 </tr>
 <tr>
 <td><a href="docs/DEVELOPMENT.md"><b>開発メモ</b></a></td>
-<td>構成、調整できる値、生成ツール、保存データ</td>
-</tr>
-<tr>
-<td><a href="docs/CONCEPT-DUNGEON.md"><b>コンセプト</b></a> ・ <a href="docs/PHASE4.md"><b>フレンドの設計</b></a></td>
-<td>企画と設計のメモ</td>
+<td>構成、調整できる値、生成ツール</td>
 </tr>
 </table>
 

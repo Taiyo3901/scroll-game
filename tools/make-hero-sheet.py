@@ -1,7 +1,6 @@
 """
-全職業の探索者の見た目を、1枚の画像（docs/images/hero-sheet.png）にする。
+組み合わせの職業（45種類）の見た目を、1枚の画像（docs/images/hero-sheet-combos.png）にする。
 `python tools/make-hero-sheet.py`（Pillow が必要。日本語のフォントは、Windows の Meiryo を使う）
-行ごとに職業、列は 立ち / 歩く(4コマ) / 物色(2コマ) / 喜ぶ。
 """
 import json
 import os
@@ -49,26 +48,8 @@ def font(size):
     return ImageFont.load_default()
 
 
-cols = [('立ち', ('idle', 0))] + [(f'歩く{i + 1}', ('walk', i)) for i in range(4)] + [(f'物色{i + 1}', ('search', i)) for i in range(2)] + [('喜ぶ', ('cheer', 0))]
 combo_names = [m for m in re.findall(r"'[a-z]+\+[a-z]+': '([^']+)'", open(os.path.join(root, 'src', 'core', 'jobCombos.ts'), encoding='utf-8').read())]
-jobs = [j for j in data['heroes'] if j not in combo_names]
 names = {'default': '診断前'}
-head_h = 28
-W = LABEL_W + SIZE * K * len(cols)
-H = head_h + SIZE * K * len(jobs)
-sheet = Image.new('RGB', (W, H), BG)
-d = ImageDraw.Draw(sheet)
-f = font(15)
-for c, (label, _) in enumerate(cols):
-    d.text((LABEL_W + c * SIZE * K + 8, 5), label, fill=(235, 225, 205), font=f)
-for r, job in enumerate(jobs):
-    y0 = head_h + r * SIZE * K
-    d.text((10, y0 + SIZE * K // 2 - 9), names.get(job, job), fill=(245, 215, 120), font=font(17))
-    for c, (_, (pose, i)) in enumerate(cols):
-        sheet.paste(render(unrle(data['heroes'][job][pose][i])), (LABEL_W + c * SIZE * K, y0))
-out = os.path.join(root, 'docs', 'images', 'hero-sheet.png')
-sheet.save(out)
-print(len(jobs), 'jobs ->', out)
 
 
 # 組み合わせの職業（45種類）は、立ち姿だけを、格子状に並べる

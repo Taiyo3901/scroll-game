@@ -76,8 +76,6 @@ bbobbhlfhcagdknjegkibkekcbnaiagm
 - Google アカウントのアイコン（画像の URL）
 - 図鑑・飾り棚・部屋の分布は公開設定で「見せる」にしたときだけ
 
-設計とルールの詳細は、[PHASE4.md](PHASE4.md) を見てください。
-
 ## 困ったとき
 
 ### 「このアプリは確認されていません」と出る
