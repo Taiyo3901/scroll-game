@@ -30,7 +30,7 @@
 1. このリポジトリを ZIP でダウンロードして、展開します。
 2. Chrome で `chrome://extensions` を開き、「デベロッパーモード」をオンにします。
 3. 「パッケージ化されていない拡張機能を読み込む」で、`dist` フォルダを選びます。
-4. 好きなページを、スクロールしてみてください。
+4. 好きなページをスクロールしてみてください。
 
 > [!NOTE]
 > 学校や会社のアカウントでは、使えない場合があります。<br>
@@ -38,18 +38,12 @@
 
 ## <img src="docs/images/icons/sword.png" width="28" height="28" align="absmiddle" alt=""> 特長
 
-- <img src="docs/images/icons/room-video.png" width="28" height="28" align="absmiddle" alt=""> **サイトで品が変わる**<br>
-  動画、SNS、ニュース、学習、買い物など、サイトの種類ごとに、見つかる品が違います。
-- <img src="docs/images/icons/chest.png" width="28" height="28" align="absmiddle" alt=""> **立ち止まるたびに、1つ**<br>
-  止めて1秒で入れ物が現れ、約4秒の物色のあと、中身が見つかります。宝箱は、まれにミミックです。
-- <img src="docs/images/icons/tome.png" width="28" height="28" align="absmiddle" alt=""> **職業が診断される**<br>
-  集めた品の傾向で、探索者の職業が決まります。傾向が2つあると、組み合わせの職業になります（全45通り）。
-- <img src="docs/images/icons/torch.png" width="28" height="28" align="absmiddle" alt=""> **帯が深さに合わせて変わる**<br>
-  壁の色と飾りが、スクロールに合わせて変わります。時刻によって、朝は明るく、夜は暗くなります。
-- <img src="docs/images/icons/feather.png" width="28" height="28" align="absmiddle" alt=""> **フレンドと比べられる**<br>
-  ログインすると、今週のポイントを比べられます。ログインしなくても遊べます。
-- <img src="docs/images/icons/key.png" width="28" height="28" align="absmiddle" alt=""> **記録しない**<br>
-  見たページの URL・タイトル・本文は、記録も送信もしません。
+- <img src="docs/images/icons/room-video.png" width="28" height="28" align="absmiddle" alt=""> サイトで品が変わります。動画、SNS、ニュース、学習、買い物など、サイトの種類ごとに見つかる品が違います。
+- <img src="docs/images/icons/chest.png" width="28" height="28" align="absmiddle" alt=""> 立ち止まるたびに、品が1つ見つかります。止めて1秒で入れ物が現れ、約4秒の物色のあと中身が見つかります。宝箱はまれにミミックです。
+- <img src="docs/images/icons/tome.png" width="28" height="28" align="absmiddle" alt=""> 職業が診断されます。集めた品の傾向で探索者の職業が決まり、傾向が2つあると組み合わせの職業になります（全45通り）。
+- <img src="docs/images/icons/torch.png" width="28" height="28" align="absmiddle" alt=""> 帯が深さに合わせて変わります。壁の色と飾りがスクロールに合わせて移り、時刻によって朝は明るく、夜は暗くなります。
+- <img src="docs/images/icons/feather.png" width="28" height="28" align="absmiddle" alt=""> フレンドと今週のポイントを比べられます。ログインしなくても遊べます。
+- <img src="docs/images/icons/key.png" width="28" height="28" align="absmiddle" alt=""> 見たページの URL・タイトル・本文は、記録も送信もしません。
 
 ## <img src="docs/images/icons/screen.png" width="28" height="28" align="absmiddle" alt=""> 画面
 
@@ -60,12 +54,12 @@
 </tr>
 </table>
 
-- **ポップアップ:** 深さ、職業、最近の発見を見られます。右下の歯車が設定です。
-- **図鑑:** 発見品の一覧、飾り棚（3つまで）、日ごと・週ごとの記録があります。
-- **ランキング・フレンド:** 今週のポイントを比べます。順位は、ポイントの合計だけで決まります。
-- **設定:** 帯の位置と大きさ、時間帯の演出、ゲームを動かさないサイトを選べます。
+- ポップアップで深さ、職業、最近の発見を見られます。右下の歯車が設定です。
+- 図鑑には、発見品の一覧、飾り棚（3つまで）、日ごと・週ごとの記録があります。
+- ランキング・フレンドで今週のポイントを比べます。順位はポイントの合計だけで決まります。
+- 設定で帯の位置と大きさ、時間帯の演出、ゲームを動かさないサイトを選べます。
 
-くわしい遊び方は、[docs/GAMEPLAY.md](docs/GAMEPLAY.md) にまとめています。
+くわしい遊び方は [docs/GAMEPLAY.md](docs/GAMEPLAY.md) にまとめています。
 
 ## <img src="docs/images/icons/gear.png" width="28" height="28" align="absmiddle" alt=""> 設定
 
@@ -73,41 +67,43 @@
 
 <img src="docs/images/screenshot-settings.png" alt="設定画面の見本" width="520">
 
-- **帯の位置と大きさ:** 左右の位置、幅（56〜104px）、上の余白を変えられます。
-- **時間帯の演出:** 端末の時計に合わせるか、朝・昼・夕方・夜に固定するか、なしにします。
-- **見本:** 設定の上の見本で、変えた結果をすぐ確かめられます。
-- **ゲームを動かさないサイト:** 登録したサイトでは、帯が出ず、品も見つかりません。ポップアップのスイッチからも登録できます。
+- 帯の左右の位置、幅（56〜104px）、上の余白を変えられます。
+- 時間帯の演出は端末の時計に合わせるか、朝・昼・夕方・夜に固定するか、なしにできます。
+- 設定の上の見本で、変えた結果をすぐ確かめられます。
+- ゲームを動かさないサイトに登録すると、帯が出ず、品も見つかりません。ポップアップのスイッチからも登録できます。
 
 ## <img src="docs/images/icons/key.png" width="28" height="28" align="absmiddle" alt=""> プライバシー
 
-**記録しないもの**
+### 記録しないもの
 
 - 見たページの URL、サイト名、タイトル、本文
 - 入力した内容
 
-**端末の中だけで行うこと**
+### 端末の中だけで行うこと
 
-- サイトの種類は、拡張機能の中で、ホスト名を辞書と照合して決めます。
+- サイトの種類は拡張機能の中で、ホスト名を辞書と照合して決めます。
 - 残すのは「種類」だけです。
 - 成人向け・医療・金融などのサイトは、辞書に載せていません。
 
-**端末に保存するもの**
+### 端末に保存するもの
 
 - 深さ、図鑑、飾り棚、日ごとの集計、設定
 
-**フレンド機能を使うときだけ、Firebase に送るもの**
+### Firebase に送るもの
+
+フレンド機能を使うときだけ送ります。
 
 - ニックネーム、フレンドコード、フレンド一覧
 - 今週のポイントと発見数
 - Google アカウントのアイコン（画像の URL）
-- 図鑑・飾り棚・部屋の分布は、公開設定で「見せる」にしたときだけです。初期設定は「見せない」です。
+- 図鑑・飾り棚・部屋の分布は、公開設定で「見せる」にしたものだけを送ります。初期設定は「見せない」です。
 
 本名とメールアドレスは、他の人には見えません。
 
 ## <img src="docs/images/icons/feather.png" width="28" height="28" align="absmiddle" alt=""> フレンド機能（任意）
 
 ログインとフレンド機能には、自分の Firebase プロジェクトが必要です。<br>
-手順は [docs/FRIENDS.md](docs/FRIENDS.md) にあります。ゲーム本体は、設定なしで遊べます。
+手順は [docs/FRIENDS.md](docs/FRIENDS.md) にあります。ゲーム本体は設定なしで遊べます。
 
 ## <img src="docs/images/icons/pen.png" width="28" height="28" align="absmiddle" alt=""> よくある質問
 
@@ -117,7 +113,7 @@
 <br>
 
 学校や会社のアカウントで起きます。<br>
-管理者が、デベロッパーモードの拡張機能を許可していない可能性があります。<br>
+管理者がデベロッパーモードの拡張機能を許可していない可能性があります。<br>
 個人のプロファイルに読み込むと、消えません。
 
 </details>
@@ -160,8 +156,7 @@ npm test        # 単体テスト（Vitest）
 npm run dev     # 開発用
 ```
 
-- ビルドのあとは、`chrome://extensions` で拡張機能を更新します。
-- 開いているページは、再読み込みします。
+- ビルドのあとに `chrome://extensions` で拡張機能を更新し、開いているページを再読み込みします。
 - `dist/` は、ダウンロードしてすぐ使えるように、コミットしています。
 
 ```text
