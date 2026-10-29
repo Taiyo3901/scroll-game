@@ -81,4 +81,10 @@ HEROES = {
 for job, name in HEROES.items():
     save('hero-' + name, draw(unrle(actors['heroes'][job]['idle'][0]), palette, 2))
 
+# 大きい版（4倍。56px）: README の特長のカードに使う
+for name, item in {'tome': 'sage-tome', 'torch': 'broken-torch', 'feather': 'carrier-feather', 'key': 'mystery-key'}.items():
+    save(name + '-l', draw([r for r in sprites['sprites'][item]], sprites['palette'], 4))
+save('chest-l', draw(unrle(cont['chest:cave'][0]), palette, 4))
+save('room-video-l', draw(unrle(cont['box:video'][0]), palette, 4))
+
 print(len(os.listdir(out_dir)), 'icons ->', out_dir)

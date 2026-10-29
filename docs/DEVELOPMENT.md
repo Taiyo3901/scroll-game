@@ -68,6 +68,7 @@ python tools/make-sprites.py        # 発見品のアイコン → src/data/spri
 python tools/make-actors.py         # 入れ物と職業別の探索者 → src/data/actors.json
 python tools/make-hero-sheet.py     # 全職業の見た目の一覧 → docs/images/（Pillow が必要）
 python tools/make-readme-icons.py   # README のドット絵アイコン → docs/images/icons/（Pillow が必要）
+python tools/make-banner.py          # README のバナーと区切り線 → docs/images/（Pillow が必要）
 python tools/make-icons.py          # 拡張機能のアイコン → src/icons/（Pillow が必要）
 node   tools/make-rules.mjs         # セキュリティルール → firestore/firestore.rules
 ```
